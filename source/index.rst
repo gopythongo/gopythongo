@@ -16,7 +16,9 @@ Contents:
    
    intro
    build_process
-
+   virtualenvs
+   docker
+   configuration
 
 Indices and tables
 ==================
