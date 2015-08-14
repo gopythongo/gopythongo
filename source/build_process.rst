@@ -11,7 +11,7 @@ typically what you want to happen when you push to a `feature/*` branch is this:
 * Your repository host sends a webhook to your build server and code health analytics tools like landscape.io
 * Your build server "builds" the affected code repository. For Python projects that usually means:
     - running the unit tests (perhaps against multiple Python versions using tox) 
-    - running static analysis tools (flake8 et al)
+    - running static analysis tools (`flake8 <TODO>`_, `mypy <TODO>`_ et al)
     - analyzing and reporting code coverage
     
 At a minimum, when you push to your `develop` branch or merge a pull request for a feature branch, you will want to
