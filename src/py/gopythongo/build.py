@@ -24,12 +24,12 @@ def parse_opts():
                                         "as its location doesn't change from its build path). "
                                         "This tool must be used with aptly and pbuilder. "
                                         "Paramters that start with '--' (eg. --mode) can "
-                                        "also be set in a config file (.buildhelpers) by using .ini or .yaml-style "
+                                        "also be set in a config file (.gopythongo) by using .ini or .yaml-style "
                                         "syntax (eg. mode=value). If a parameter is specified in more than one place, "
                                         "then command-line values override config file values which override defaults. "
                                         "More information at http://gopythongo.com/.",
                             fromfile_prefix_chars="@",
-                            default_config_files=["./.buildhelpers"],
+                            default_config_files=["./.gopythongo"],
                             add_config_file_help=False)
     pos_args = parser.add_argument_group("Positional arguments")
     pos_args.add_argument("build_path",

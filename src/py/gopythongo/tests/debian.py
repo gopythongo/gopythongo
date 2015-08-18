@@ -1,6 +1,6 @@
 # -* coding: utf-8 *-
 from unittest.case import TestCase
-from buildhelpers.debian import debian_substr_compare, split_version_parts, DebianVersion, InvalidDebianVersionString
+from gopythongo.debian import debian_substr_compare, split_version_parts, DebianVersion, InvalidDebianVersionString
 
 
 class DebianVersionTests(TestCase):
