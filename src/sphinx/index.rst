@@ -18,11 +18,10 @@ This project consists of two parts:
   2. a tool, written in Python, that makes it easy to build ready-to-deploy .deb/.rpm packages and put them on an
      APT or YUM repository for easy installation
 
-The Process
------------
-
 .. toctree::
     :maxdepth: 1
+    :numbered:
+    :caption: The process
 
     process/intro
     process/build_process
@@ -30,11 +29,10 @@ The Process
     process/virtualenvs
     process/docker
 
-The toolkit
------------
-
 .. toctree::
     :maxdepth: 1
+    :numbered:
+    :caption: The toolkit
 
     toolkit/intro
 
