@@ -1,13 +1,15 @@
-The problem with Python deployment
-==================================
+Introduction to the process
+===========================
 
+The problem with Python deployment
+----------------------------------
 There are many deployment models for Python. A lot of people resort to shipping source code and compiling
 virtual environments on their servers, or installing Python programs in the interpreter shipped with the OS.
 Some people also just push code to their servers using Git... whatever you are currently doing, it's worth
 noting that *it might work for you*.
 
 Obviously many people also use Docker to isolate their deployment artifacts into easily shippable containers.
-Again, some people build the containers on the hardware where they'll later run. 
+Again, some people build the containers on the hardware where they'll later run.
 
 We have seen time and time again that given a deployment platform, it's hard to design a deployment process
 that will not at some point involve building code on the deployment platform. Some platforms like Heroku were
@@ -34,13 +36,13 @@ at our company:
     This covers most microservices and applications you develop inside your company. For a Python application that
     means shipping a Docker container with a virtual environment or the application installed in the "main OS
     Python interpreter" inside the container.
-    
+
   * There are services which typically can consume most if not all available IO and CPU resources on a server. That
     covers your typical database. Also, you might want to take advantage of 3rd party updates for these services or
-    depdendency updates by your OS provider. Some of your user-facing applications might also fall under this group, 
+    depdendency updates by your OS provider. Some of your user-facing applications might also fall under this group,
     where you'd rather deploy a single service instance to a VM or physical server. For a Python application that
     means shipping a virtual environment.
-  
+
 
 Deploying virtual environments
 ------------------------------
