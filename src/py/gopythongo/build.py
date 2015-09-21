@@ -73,9 +73,15 @@ def parse_opts():
                            help="Add one or more service folders to be linked from /etc/service when this .deb is "
                                 "being installed. The folders must exist below (i.e. relative to) the build path "
                                 "after all packages have been installed.")
-    gr_deb = parser.add_argument_group("Debian .deb settings")
-    gr_deb.add_argument("--fpm", dest="fpm", default="/usr/local/bin/fpm",
+    gr_fpm = parser.add_argument_group("FPM related options and common packaging options")
+    gr_fpm.add_argument("--fpm", dest="fpm", default="/usr/local/bin/fpm",
                         help="The full path to the fpm executable to use")
+    gr_fpm.add_argument("--file-map", dest="file_map", action="append",
+                        help="Install a file in any loction on the target system. The format of its parameter "
+                             "is the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
+                             "You can specify this argument multiple times. See "
+                             "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information.")
+    gr_deb = parser.add_argument_group("Debian .deb settings")
     gr_deb.add_argument("--package-name", dest="package_name", default=None,
                         help="The name to assign to the package (passed to fpm -n)")
     gr_deb.add_argument("--preinst", dest="preinst", default=None,
@@ -148,6 +154,10 @@ def parse_opts():
 
     _args = parser.parse_args()
 
+    if not os.path.exists(_args.fpm) or not os.access(_args.fpm, os.X_OK):
+        print("error: %s does not exist, is not accessible by GoPythonGo or is not executable." % _args.fpm)
+        sys.exit(1)
+
     if _args.static_outfile or _args.collect_static:
         if not (_args.static_outfile and _args.collect_static):
             print("error: --static-out and --collect-static must be used together")
@@ -168,6 +178,13 @@ def parse_opts():
         print("       Or you can specify --version AND --epoch, then")
         print("       specifying a target repo is optional.")
         sys.exit(1)
+
+    for mapping in _args.file_map:
+        if "=" not in mapping:
+            print("error: %s does not contain '='. A mapping must be [source file]=[destination file/dir]." % mapping)
+            sys.exit(1)
+        if not os.path.exists(mapping.split("=")[0]):
+            print("error: %s in mapping %s does not exist and can't be packaged." % (mapping.split("=")[0], mapping))
 
     for f in [_args.preinst, _args.postinst, _args.prerm, _args.postrm]:
         if f and not os.path.exists(f):
@@ -353,6 +370,10 @@ def _create_deb():
     if _args.postrm:
         scriptfile = _process_template(_args.postrm, ctx)
         fpm_deb += ["--after-remove", scriptfile]
+
+    if _args.file_map:
+        for mapping in _args.file_map:
+            fpm_deb += [mapping]
 
     if _args.repo:
         # TODO: compare outfile and _args.repo and copy built package
