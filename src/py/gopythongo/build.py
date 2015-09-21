@@ -18,11 +18,11 @@ _tempfiles = []
 
 def parse_opts():
     global _args
-    parser = ArgumentParser(description="build a Python virtualenv deployment artifact and collect "
+    parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "
-                                        "virtualenv is ready to be deployed to a server (as long "
-                                        "as its location doesn't change from its build path). "
-                                        "This tool must be used with aptly and pbuilder. "
+                                        "virtualenv is ready to be deployed to a server. "
+                                        "This tool is designed to be used with pbuilder so it can build a virtual "
+                                        "environment in the path where it will be deployed within a chroot. "
                                         "Paramters that start with '--' (eg. --mode) can "
                                         "also be set in a config file (.gopythongo) by using .ini or .yaml-style "
                                         "syntax (eg. mode=value). If a parameter is specified in more than one place, "
