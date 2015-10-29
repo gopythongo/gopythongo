@@ -18,7 +18,9 @@ setup(
         '': _package_root,
     },
     install_requires=[
-        'Jinja2',
-        'ConfigArgParse'
+        'Jinja2==2.8',
+        'ConfigArgParse==0.9.3',
+        'Sphinx==1.3.1',
+        'sphinx-rtd-theme==0.1.9',
     ],
 )
