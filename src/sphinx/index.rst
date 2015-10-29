@@ -5,7 +5,7 @@ A sane, fully documented Python deployment model
 
 During my tenure as CTO of `LaterPay <https://laterpay.net/>`_ we (that mostly being @jdelic (me), @arenstar and
 @doismellburning) experimented a lot with deploying Python in different ways. Now that I am a free agent, I first
-started reimplementing what we had at LaterPay for my own use, but subsequently realized that it might be useful
+started improving on what we had at LaterPay for my own use, but subsequently realized that it might be useful
 for other people. So, have a fully documented sane deployment model for Python. For free. :)
 
 The two parts of GoPythonGo
