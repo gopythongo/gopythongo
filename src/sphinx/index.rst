@@ -14,9 +14,11 @@ This project consists of two parts:
 
   1. a process description, information and links on what a good Python deployment process looks like and how you can
      implement one for your project, how you integrate it with configuration data and other services in your project
+     and how it relates to your organization's development process.
 
   2. a tool, written in Python, that makes it easy to build ready-to-deploy .deb/.rpm packages and put them on an
-     APT or YUM repository for easy installation
+     APT or YUM repository and Docker registry for easy deployment on continuous integration, testing and release
+     servers.
 
 .. toctree::
     :maxdepth: 1

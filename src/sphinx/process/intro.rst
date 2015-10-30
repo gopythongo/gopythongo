@@ -1,3 +1,5 @@
+.. intro:
+
 Introduction to the process
 ===========================
 
@@ -16,14 +18,21 @@ that will not at some point involve building code on the deployment platform. So
 even built around the concept of "pushing code" to the deployment.
 
 This collection of documents is about giving you a fully documented deployment process which offers the
-following properties:
+following properties, which are supposed to make it easy to integrate this process with your own organization and
+efforts:
 
   * it's repeatable
+  * it relies on proven best-practice development processes where absolutely necessary and leaves freedom of choice
+    otherwise
   * it separates testing stages i.e. running unittests and running integration tests from building release artifacts
-  * the components needed to run it can easily be swapped out
+    making each step separately as fast as possible, trying to fail early when tests fail or a build goes haywire
+  * make it easy to depend on forks and branches of in-development code during development while also making it easy
+    to pin exact dependencies for testing and release builds
+  * the components needed to run the process can easily be swapped out and customized
   * it produces shippable binary artifacts which can be deployed and upgraded independently and are versioned
     separately from your source code
-  * it follows the same deployment process for release builds, release candidates and cutting-edge builds
+  * the deployment process for release builds, release candidates and cutting-edge development builds is exactly the
+    same
 
 
 The service model underlying GoPythonGo
@@ -31,17 +40,25 @@ The service model underlying GoPythonGo
 When we designed our deployment model we made a couple of assumptions about the service types we were building
 at our company:
 
-  * There are services which can easily be put into containers and combined with other service containers on the
-    same hardware or VM. These services typically use a fraction of the underlying available IO or CPU resources.
-    This covers most microservices and applications you develop inside your company. For a Python application that
-    means shipping a Docker container with a virtual environment or the application installed in the "main OS
-    Python interpreter" inside the container.
+  1. There are services which can easily be put into containers and combined with other service containers on the
+     same hardware or VM. These services typically use a fraction of the underlying available IO or CPU resources.
+     This covers most microservices and applications you develop inside your company. For a Python application that
+     means either shipping a Docker container with a virtual environment or the application installed in the "main OS
+     Python interpreter" inside the container or shipping multiple virtual environments without the additional isolation
+     provided by Docker.
 
-  * There are services which typically can consume most if not all available IO and CPU resources on a server. That
-    covers your typical database. Also, you might want to take advantage of 3rd party updates for these services or
-    depdendency updates by your OS provider. Some of your user-facing applications might also fall under this group,
-    where you'd rather deploy a single service instance to a VM or physical server. For a Python application that
-    means shipping a virtual environment.
+  2. On the other hand, there are services which typically can consume most if not all available IO and CPU resources on
+     a server. That covers your typical database, where you really run multiple database servers, not containers.
+     Also, you might want to take advantage of 3rd party updates for these services or dependency updates by your OS
+     provider. Some of your user-facing applications might also fall under this group, where you'd rather deploy a
+     single service instance to a VM or physical server. For a Python application that means shipping a virtual
+     environment.
+
+Again it is worth noting: Sometimes it makes sense to deploy "type 2" services in containers anyway, because, for
+example, doing so unifies your deployment pipeline or streamlines your service management. You have to make smart
+choices for the type of service you're building. However, if you follow the processes laid out here, it will be easy to
+switch between the two when needed. I personally tend to deploy user-facing applications to containers and databases
+to servers.
 
 
 Deploying virtual environments
@@ -62,7 +79,8 @@ in manageable packages or Docker containers.
 How does GoPythonGo address these requirements and assumptions
 --------------------------------------------------------------
 This document describes a process that fulfills the properties mentioned above. But it does so not independently of
-previous art. Instead, it very much relies on established useful standards written by other smart people. In particular:
+previous art. Instead, it encourages you to use it together with other established useful standards written by
+smart people. In particular:
 
   * The `Git Flow <http://nvie.com/posts/a-successful-git-branching-model/>`_ development process
   * The `SemVer <http://semver.org/>`_ versioning system
