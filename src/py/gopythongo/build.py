@@ -10,6 +10,8 @@ import tempfile
 import time
 import jinja2
 
+import gopythongo.main
+
 from configargparse import ArgParser as ArgumentParser
 
 _args = None
@@ -41,14 +43,9 @@ def get_parser():
     pos_args.add_argument("packages", metavar="package<=>version", nargs="+",
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.6,<1.7\"")
-    gr_mode = parser.add_argument_group("General settings")
-    gr_mode.add_argument("--mode", dest="mode", choices=["deb", "tar", "docker"], default="deb",
-                         help="Build a .tar.gz old-style bundle, a Docker container or a .deb package")
-    gr_mode.add_argument("-o", "--output", dest="outfile", required=True,
-                         help="output filename for the .tar.gz bundle or Debian package")
-    gr_mode.add_argument("--apt-get", dest="build_deps", action="append",
-                         help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver libs "
-                              "for databases so that Python C extensions compile correctly.")
+
+    parser = gopythongo.main.add_common_parameters_to_parser(parser)
+
     gr_rev = parser.add_mutually_exclusive_group()
     gr_rev.add_argument("--rev", dest="revision", default=None,
                         help="use this revision number. Helpful to supply the Jenkins build number, for example.")
@@ -63,6 +60,7 @@ def get_parser():
                              "--version and increment it by 1.")
     gr_rev.add_argument("--increment-epoch", dest="increment_epoch", action="store_true",
                         help="Take the latest epoch for this package from the repository and increment it by 1.")
+
     gr_bundle = parser.add_argument_group("Bundle settings")
     gr_bundle.add_argument("--bundle-relative-paths", dest="bundle_relative",
                            default=False, action="store_true",
@@ -74,6 +72,7 @@ def get_parser():
                            help="Add one or more service folders to be linked from /etc/service when this .deb is "
                                 "being installed. The folders must exist below (i.e. relative to) the build path "
                                 "after all packages have been installed.")
+
     gr_fpm = parser.add_argument_group("FPM related options and common packaging options")
     gr_fpm.add_argument("--fpm", dest="fpm", default="/usr/local/bin/fpm",
                         help="The full path to the fpm executable to use")
@@ -83,41 +82,6 @@ def get_parser():
                              "You can specify this argument multiple times. See "
                              "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information.")
 
-    gr_deb = parser.add_argument_group("Debian .deb settings")
-    gr_deb.add_argument("--package-name", dest="package_name", default=None,
-                        help="The name to assign to the package (passed to fpm -n)")
-    gr_deb.add_argument("--preinst", dest="preinst", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--postinst", dest="postinst", default=None,
-                        help="A shell script to package as the postinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--prerm", dest="prerm", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--postrm", dest="postrm", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--provides", dest="provides", action="append",
-                        help=".deb 'Provides:' setting")
-    gr_deb.add_argument("--conflicts", dest="conflicts", action="append",
-                        help=".deb 'Conflicts:' setting")
-    gr_deb.add_argument("--replaces", dest="replaces", action="append",
-                        help=".deb 'Replaces:' setting")
-    gr_deb.add_argument("--mark-config", dest="debconfig", action="append",
-                        help="Marks files or folders as configuration for .deb packages. Please note that "
-                             "/etc/mn-config is provided by SaltStack")
-    gr_deb.add_argument("--dir", dest="dirs", action="append",
-                        help="Mark a folder as owned by the package")
-    gr_deb.add_argument("--depends", dest="depends", action="append",
-                        help="Add a .deb dependency")
-    gr_deb.add_argument("--version", dest="version", default=None,
-                        help="The package version. If not specified, this script will use the latest version from "
-                             "'repo'")
-    gr_deb.add_argument("--epoch", dest="epoch", default=None,
-                        help="The package epoch. If not specified, this script will use the lastest epoch from "
-                             "'repo'")
-    gr_deb.add_argument("--aptly-config", dest="aptly_config", default=None,
-                        help="Path to the aptly config file to use")
-    gr_deb.add_argument("--repo", dest="repo", default=None,
-                        help="Name of the aptly repository to place the package in. (This must be accessible from the "
-                             "pbuilder chroot to be useful.)")
     gr_django = parser.add_argument_group("Django options")
     gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
                            help="run 'django-admin.py collectstatic' inside the bundle")
@@ -140,16 +104,19 @@ def get_parser():
     gr_django.add_argument("--django-settings", dest="django_settings_module",
                            help="'--settings' argument to pass to django-admin.py when it is called by " +
                                 "this script")
+
     gr_pip = parser.add_argument_group("PIP options")
     gr_pip.add_argument("--pip-opt", dest="pip_opts", action="append",
                         help="option string to pass to pip (can be used multiple times). Make sure " +
                              "that you use an equals sign, i.e. --pip-opt='' to avoid 'Unknown " +
                              "parameter' errors! http://bugs.python.org/issue9334")
+    
     gr_setuppy = parser.add_argument_group("Additional source packages")
     gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append",
                             help="after all pip commands have run, this can run 'python setup.py install' on " +
                                  "additional packages available in any filesystem path. This option can be " +
                                  "used multiple times.")
+
     gr_out = parser.add_argument_group('Output options')
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
                         help="more output")
