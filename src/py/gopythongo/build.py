@@ -16,8 +16,7 @@ _args = None
 _tempfiles = []
 
 
-def parse_opts():
-    global _args
+def get_parser():
     parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "
                                         "virtualenv is ready to be deployed to a server. "
@@ -30,7 +29,9 @@ def parse_opts():
                                         "More information at http://gopythongo.com/.",
                             fromfile_prefix_chars="@",
                             default_config_files=["./.gopythongo"],
-                            add_config_file_help=False)
+                            add_config_file_help=False,
+                            prog="gopythongo.main build")
+
     pos_args = parser.add_argument_group("Positional arguments")
     pos_args.add_argument("build_path",
                           help="set the location where the virtual environment will be built, this " +
@@ -42,7 +43,7 @@ def parse_opts():
                                "strings as in \"Django>=1.6,<1.7\"")
     gr_mode = parser.add_argument_group("General settings")
     gr_mode.add_argument("--mode", dest="mode", choices=["deb", "tar", "docker"], default="deb",
-                         help="Build a .tar.gz old-style bundle instead of a .deb")
+                         help="Build a .tar.gz old-style bundle, a Docker container or a .deb package")
     gr_mode.add_argument("-o", "--output", dest="outfile", required=True,
                          help="output filename for the .tar.gz bundle or Debian package")
     gr_mode.add_argument("--apt-get", dest="build_deps", action="append",
@@ -77,10 +78,11 @@ def parse_opts():
     gr_fpm.add_argument("--fpm", dest="fpm", default="/usr/local/bin/fpm",
                         help="The full path to the fpm executable to use")
     gr_fpm.add_argument("--file-map", dest="file_map", action="append",
-                        help="Install a file in any loction on the target system. The format of its parameter "
+                        help="Install a file in any location on the target system. The format of its parameter "
                              "is the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
                              "You can specify this argument multiple times. See "
                              "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information.")
+
     gr_deb = parser.add_argument_group("Debian .deb settings")
     gr_deb.add_argument("--package-name", dest="package_name", default=None,
                         help="The name to assign to the package (passed to fpm -n)")
@@ -152,6 +154,12 @@ def parse_opts():
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
                         help="more output")
 
+    return parser
+
+
+def parse_opts():
+    global _args
+    parser = get_parser()
     _args = parser.parse_args()
 
     if not os.path.exists(_args.fpm) or not os.access(_args.fpm, os.X_OK):
