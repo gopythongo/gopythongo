@@ -2,15 +2,17 @@
 # -* coding: utf-8 *-
 
 import gopythongo.main
+import gopythongo.build
+import gopythongo.prepare
 import gopythongo.assemble
 import gopythongo.pack
-import gopythongo.build
 import sys
 
 
 commands = {
-    "assemble": gopythongo.assemble,
     "build": gopythongo.build,
+    "prepare": gopythongo.prepare,
+    "assemble": gopythongo.assemble,
     "pack": gopythongo.pack,
     "help": sys.modules[__name__],  # invoke this module's .main()
 }
@@ -29,22 +31,28 @@ def add_common_parameters_to_parser(parser):
     return parser
 
 
-
 def print_help():
-    print("Usage: python -m gopythongo.main build|assemble|help")
+    print("Usage: python -m gopythongo.main build|prepare|assemble|pack|help")
     print("")
-    print("    build          - build a package or container using gopythongo")
+    print("    build          - build a package or container using gopythongo. This")
+    print("                     will run prepare on the build machine and then run")
+    print("                     assemble->pack inside the container or chroot.")
+    print("    prepare        - Create a build container or chroot, install dependencies and")
+    print("                     mount host paths.")
     print("    assemble       - assemble a build inside a container or chroot (usually")
-    print("                     invoked by 'build')")
+    print("                     invoked by 'build').")
     print("    pack           - create a Docker container, deb package or .tar.gz archive")
-    print("                     (usually invoked by 'build')")
-    print("    help [command] - print this message or help for a specific command")
+    print("                     (usually invoked by 'build').")
+    print("    help [command] - print this message or help for a specific command.")
     print("")
     print("While the command-line interface provides a useful reference and can be")
     print("used for testing and development, you really want to put all build")
     print("instructions into a .gopythongo rc file inside your project.")
     print("")
-    print("Find more information at http://gopythongo.com/")
+    print("Generally you will then only call 'build' which will run assemble and pack as")
+    print("needed.")
+    print("")
+    print("You can find more information at http://gopythongo.com/")
 
 
 def route():
