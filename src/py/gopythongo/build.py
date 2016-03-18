@@ -1,5 +1,5 @@
 #!/usr/bin/python -u
-# -* coding: utf-8 *-
+# -* encoding: utf-8 *-
 
 from configargparse import ArgParser as ArgumentParser
 

@@ -1,4 +1,4 @@
-# -* coding: utf-8 *-
+# -* encoding: utf-8 *-
 
 """
 tools to parse and compare Debian version strings as per

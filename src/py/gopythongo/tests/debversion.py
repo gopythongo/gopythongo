@@ -1,4 +1,4 @@
-# -* coding: utf-8 *-
+# -* encoding: utf-8 *-
 from unittest.case import TestCase
 from gopythongo.utils.debversion import debian_substr_compare, split_version_parts, DebianVersion, \
                                         InvalidDebianVersionString

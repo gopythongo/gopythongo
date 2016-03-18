@@ -1,12 +1,14 @@
 #!/usr/bin/python -u
-# -* coding: utf-8 *-
+# -* encoding: utf-8 *-
 
 import gopythongo.main
 import gopythongo.build
 import gopythongo.prepare
 import gopythongo.assemble
 import gopythongo.pack
+import atexit
 import sys
+import os
 
 
 commands = {
@@ -17,16 +19,22 @@ commands = {
     "help": sys.modules[__name__],  # invoke this module's .main()
 }
 
+tempfiles = []
+
 
 def add_common_parameters_to_parser(parser):
     gr_mode = parser.add_argument_group("General settings")
-    gr_mode.add_argument("--mode", dest="mode", choices=["deb", "tar", "docker"], default="deb",
-                         help="Build a .tar.gz old-style bundle, a Docker container or a .deb package")
+    gr_mode.add_argument("--mode", dest="mode", choices=["deb", "docker"], default="deb",
+                         help="Build a Docker container or a .deb package")
     gr_mode.add_argument("-o", "--output", dest="outfile", required=True,
                          help="output filename for the .tar.gz bundle or Debian package")
     gr_mode.add_argument("--apt-get", dest="build_deps", action="append",
                          help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver libs "
                               "for databases so that Python C extensions compile correctly.")
+
+    gr_out = parser.add_argument_group('Output options')
+    gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
+                        help="more output")
 
     return parser
 
@@ -55,7 +63,15 @@ def print_help():
     print("You can find more information at http://gopythongo.com/")
 
 
+def _cleanup_tmpfiles():
+    print("Cleaning up temporary files...")
+    for f in tempfiles:
+        if os.path.exists(f):
+            os.unlink(f)
+
+
 def route():
+    atexit.register(_cleanup_tmpfiles)
     if len(sys.argv) > 1 and sys.argv[1] in commands:
         commands[sys.argv[1]].main()
     else:

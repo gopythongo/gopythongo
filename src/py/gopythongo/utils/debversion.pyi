@@ -1,4 +1,4 @@
-# -* coding: utf-8 *-
+# -* encoding: utf-8 *-
 
 # Type stub for gopythongo.debian so we're Python2 compatible
 from typing import Tuple, List
