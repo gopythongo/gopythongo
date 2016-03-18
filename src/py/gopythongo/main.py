@@ -17,7 +17,7 @@ commands = {
     "prepare": gopythongo.prepare,
     "assemble": gopythongo.assemble,
     "pack": gopythongo.pack,
-    #"help": sys.modules[__name__],  # invoke this module's .main()
+    "help": sys.modules[__name__],  # invoke this module's .main()
 }
 
 tempfiles = []
@@ -52,6 +52,7 @@ def get_parser():
                                         "then command-line values override config file values which override defaults. "
                                         "More information at http://gopythongo.com/.",
                             prog="gopythongo.main")
+    add_common_parameters_to_parser(parser)
     subparsers = parser.add_subparsers()
     for m in commands.values():
         m.add_parser(subparsers)
@@ -84,10 +85,11 @@ def print_help():
 
 
 def _cleanup_tmpfiles():
-    print("Cleaning up temporary files...")
-    for f in tempfiles:
-        if os.path.exists(f):
-            os.unlink(f)
+    if tempfiles:
+        print("Cleaning up temporary files...")
+        for f in tempfiles:
+            if os.path.exists(f):
+                os.unlink(f)
 
 
 def route():

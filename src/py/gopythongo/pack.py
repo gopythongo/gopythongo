@@ -19,7 +19,7 @@ _args = None
 def add_parser(subparsers):
     parser = subparsers.add_parser(name="pack",
                                    description="",
-                                   help="gopythongo.main pack")
+                                   help="create a Docker container, deb package or .tar.gz archive.")
 
     gr_deb = parser.add_argument_group("Debian .deb settings")
     gr_deb.add_argument("--package-name", dest="package_name", default=None,

@@ -14,7 +14,8 @@ modules = {
 def add_parser(subparsers):
     parser = subparsers.add_parser(name="prepare",
                                    description="",
-                                   help="gopythongo.main prepare")
+                                   help="Create a build container or chroot, install dependencies and mount host "
+                                        "paths.")
 
     pos_args = parser.add_argument_group("Positional arguments")
     pos_args.add_argument("build_path",

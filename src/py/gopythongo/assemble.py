@@ -14,7 +14,7 @@ _args = None
 def add_parser(subparsers):
     parser = subparsers.add_parser(name="assemble",
                                    description="",
-                                   help="gopythongo.main assemble")
+                                   help="assemble a build inside a container or chroot.")
 
     gr_django = parser.add_argument_group("Django options")
     gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
