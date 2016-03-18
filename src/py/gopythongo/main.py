@@ -10,13 +10,14 @@ import atexit
 import sys
 import os
 
+from configargparse import ArgParser as ArgumentParser
 
 commands = {
     "build": gopythongo.build,
     "prepare": gopythongo.prepare,
     "assemble": gopythongo.assemble,
     "pack": gopythongo.pack,
-    "help": sys.modules[__name__],  # invoke this module's .main()
+    #"help": sys.modules[__name__],  # invoke this module's .main()
 }
 
 tempfiles = []
@@ -39,6 +40,25 @@ def add_common_parameters_to_parser(parser):
     return parser
 
 
+def get_parser():
+    parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
+                                        "a Django project's static content if needed. The created "
+                                        "virtualenv is ready to be deployed to a server. "
+                                        "This tool is designed to be used with pbuilder so it can build a virtual "
+                                        "environment in the path where it will be deployed within a chroot. "
+                                        "Parameters that start with '--' (eg. --mode) can "
+                                        "also be set in a config file (.gopythongo) by using .ini or .yaml-style "
+                                        "syntax (eg. mode=value). If a parameter is specified in more than one place, "
+                                        "then command-line values override config file values which override defaults. "
+                                        "More information at http://gopythongo.com/.",
+                            prog="gopythongo.main")
+    subparsers = parser.add_subparsers()
+    for m in commands.values():
+        m.add_parser(subparsers)
+
+    return parser
+
+
 def print_help():
     print("Usage: python -m gopythongo.main build|prepare|assemble|pack|help")
     print("")
@@ -51,7 +71,7 @@ def print_help():
     print("                     invoked by 'build').")
     print("    pack           - create a Docker container, deb package or .tar.gz archive")
     print("                     (usually invoked by 'build').")
-    print("    help [command] - print this message or help for a specific command.")
+    print("    --help         - Get more information.")
     print("")
     print("While the command-line interface provides a useful reference and can be")
     print("used for testing and development, you really want to put all build")
@@ -60,7 +80,7 @@ def print_help():
     print("Generally you will then only call 'build' which will run assemble and pack as")
     print("needed.")
     print("")
-    print("You can find more information at http://gopythongo.com/")
+    print("You can find more information at http://gopythongo.com/.")
 
 
 def _cleanup_tmpfiles():
@@ -72,11 +92,9 @@ def _cleanup_tmpfiles():
 
 def route():
     atexit.register(_cleanup_tmpfiles)
-    if len(sys.argv) > 1 and sys.argv[1] in commands:
-        commands[sys.argv[1]].main()
+    if len(sys.argv) > 1:
+        get_parser().parse_args()
     else:
-        if len(sys.argv) > 1:
-            print("*** Unknown command: %s" % sys.argv[1])
         print_help()
 
 

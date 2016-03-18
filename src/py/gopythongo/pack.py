@@ -16,14 +16,10 @@ from configargparse import ArgParser as ArgumentParser
 _args = None
 
 
-def get_parser():
-    parser = ArgumentParser(description="",
-                            fromfile_prefix_chars="@",
-                            default_config_files=["./.gopythongo"],
-                            add_config_file_help=False,
-                            prog="gopythongo.main pack")
-
-    parser = gopythongo.main.add_common_parameters_to_parser(parser)
+def add_parser(subparsers):
+    parser = subparsers.add_parser(name="pack",
+                                   description="",
+                                   help="gopythongo.main pack")
 
     gr_deb = parser.add_argument_group("Debian .deb settings")
     gr_deb.add_argument("--package-name", dest="package_name", default=None,
@@ -107,6 +103,17 @@ def validate_args(args):
     if args.service_folders and not args.mode == "deb":
         print("error: --service-folder requires --deb")
         sys.exit(1)
+
+    for f in _args.service_folders:
+        if os.path.isabs(f):
+            if not os.path.exists(f):
+                print("Error: service-folder does not exist %s" % f)
+                sys.exit(1)
+        else:
+            full = os.path.join(_args.build_path, f)
+            if not os.path.exists(full):
+                print("Error: service-folder does not exist %s (%s)" % (f, full,))
+                sys.exit(1)
 
     if args.mode == "deb" and (not args.repo or not args.aptly_config) and \
             (not args.version or not args.epoch):
@@ -288,19 +295,9 @@ def _build_deb():
     _create_deb(_args.outfile, _args.build_path)
 
 
-def main():
-    for f in _args.service_folders:
-        if os.path.isabs(f):
-            if not os.path.exists(f):
-                print("Error: service-folder does not exist %s" % f)
-                sys.exit(1)
-        else:
-            full = os.path.join(_args.build_path, f)
-            if not os.path.exists(full):
-                print("Error: service-folder does not exist %s (%s)" % (f, full,))
-                sys.exit(1)
+def main(args):
+    validate_args(args)
 
-    print('')
     if _args.mode == "deb":
         _build_deb()
     elif _args.mode == "tar":

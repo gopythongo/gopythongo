@@ -11,12 +11,10 @@ import os
 _args = None
 
 
-def get_parser():
-    parser = ArgumentParser(description="",
-                            fromfile_prefix_chars="@",
-                            default_config_files=["./.gopythongo"],
-                            add_config_file_help=False,
-                            prog="gopythongo.main assemble")
+def add_parser(subparsers):
+    parser = subparsers.add_parser(name="assemble",
+                                   description="",
+                                   help="gopythongo.main assemble")
 
     gr_django = parser.add_argument_group("Django options")
     gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
@@ -53,14 +51,8 @@ def get_parser():
                                  "additional packages available in any filesystem path. This option can be " +
                                  "used multiple times.")
 
-    return parser
 
-
-def validate_args():
-    pass
-
-
-def parse_args():
+def validate_args(args):
     pass
 
 

@@ -3,7 +3,7 @@
 import tempfile
 import jinja2
 
-from gopythongo import main
+import gopythongo.main
 
 
 def process_to_tempfile(filepath, context):
@@ -21,5 +21,5 @@ def process_to_tempfile(filepath, context):
     outf.write(tpl.render(context))
     outf.close()
 
-    main.tempfiles.append(outf)
+    gopythongo.main.tempfiles.append(outf)
     return ofname
