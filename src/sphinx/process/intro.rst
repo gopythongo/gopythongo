@@ -15,7 +15,7 @@ Again, some people build the containers on the hardware where they'll later run.
 
 We have seen time and time again that given a deployment platform, it's hard to design a deployment process
 that will not at some point involve building code on the deployment platform. Some platforms like Heroku were
-even built around the concept of "pushing code" to the deployment.
+even built around the concept of "pushing code" to the deployment pipeline.
 
 This collection of documents is about giving you a fully documented deployment process which offers the
 following properties, which are supposed to make it easy to integrate this process with your own organization and
@@ -88,9 +88,9 @@ smart people. In particular:
 GoPythonGo also uses a variety of supporting software to reach its goals:
 
   * GitHub, of course, but really any source code repository host which can send webhooks
-  * The Jenkins build server (or TravisCI or CircleCI or whatever else you want to use)
+  * The Jenkins build server, the go.cd build pipeline (or TravisCI or CircleCI or whatever else you want to use)
   * pbuilder, a chroot-based build automation tool from the Debian project
-  * My reimplementation of LaterPay's "buildhelpers" toolset
+  * The GoPythonGo bulld helper tools
   * DjangoPyPi2, a pypi compatible server for serving Python packages
   * The docker registry project to keep pre-built Docker containers
   * Aptly, the excellent Debian repository management tool by @xxx
