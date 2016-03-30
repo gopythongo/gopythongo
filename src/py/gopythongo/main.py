@@ -40,6 +40,10 @@ def add_common_parameters_to_parser(parser):
     return parser
 
 
+def add_parser(subparsers):
+    pass
+
+
 def get_parser():
     parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "

@@ -3,7 +3,6 @@
 
 from gopythongo.prepare import docker, pbuilder
 
-_args = None
 
 modules = {
     "pbuilder": pbuilder,
@@ -31,6 +30,8 @@ def add_parser(subparsers):
     gr_bundle.add_argument("--virtualenv-binary", dest="virtualenv_binary",
                            help="set an alternative virtualenv binary to use",
                            default="/usr/bin/virtualenv")
+    gr_bundle.add_argument("--use", dest="use", choices=list(modules.keys()), default=list(modules.keys())[0],
+                           help="Use a chroot or Docker to build")
 
     for m in modules.values():
         m.add_args(parser)
@@ -43,11 +44,9 @@ def validate_args(args):
 
 
 def main(args):
-    global _args
     validate_args(args)
-
     print('***')
 
 
 if __name__ == "__main__":
-    main()
+    pass

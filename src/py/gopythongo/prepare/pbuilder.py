@@ -3,7 +3,7 @@
 
 def add_args(parser):
     grp_pbuilder = parser.add_argument_group("pbuilder")
-    grp_pbuilder.add_argument("--use-pbuilder", dest="use_pbuilder", action="store_true")
+    grp_pbuilder.add_argument("--baseenv", dest="use_pbuilder", action="store_true")
 
 
 def validate_args():

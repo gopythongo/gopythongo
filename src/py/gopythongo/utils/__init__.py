@@ -29,3 +29,7 @@ def run_process(*args):
     if process.returncode != 0:
         print("%s exited with return code %s" % (str(args), process.returncode))
         sys.exit(process.returncode)
+
+
+class BuildContext(object):
+    pass
