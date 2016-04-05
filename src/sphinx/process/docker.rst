@@ -2,8 +2,8 @@
 
 Docker deployments
 ==================
-Lightweight isolation currently is clearly the future of service deployment. Primarily
-
+Lightweight isolation, i.e. application containers is currently clearly the future of service deployment. Docker
+seems to be the defacto standard in this space.
 
 The art of the minimal container
 --------------------------------
@@ -16,10 +16,9 @@ imply doing that, but it's really a bad idea for a couple of reasons. Some of th
     a huge risk. There are still hundreds of pre-built containers out there which contain software that is vulnerable
     to Heartbleed. Don't be one of those developers.
 
-  * The smeller your containers, the more shipable, convenient and plain usable they are.
+  * The smaller your containers, the more shipable, convenient and plain usable they are.
 
   * ...
-
 
 Build isolation containers and deployment containers
 ----------------------------------------------------

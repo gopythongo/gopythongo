@@ -55,7 +55,10 @@ def get_parser():
                                         "syntax (eg. mode=value). If a parameter is specified in more than one place, "
                                         "then command-line values override config file values which override defaults. "
                                         "More information at http://gopythongo.com/.",
-                            prog="gopythongo.main")
+                            prog="gopythongo.main",
+                            args_for_setting_config_path=["-c", "--config"],
+                            config_arg_help_message="Use this path instead of the default (.gopythongo)",
+                            default_config_files=[".gopythongo"])
     add_common_parameters_to_parser(parser)
     subparsers = parser.add_subparsers()
     for m in commands.values():
