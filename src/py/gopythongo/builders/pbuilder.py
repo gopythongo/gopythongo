@@ -2,8 +2,16 @@
 
 
 def add_args(parser):
-    grp_pbuilder = parser.add_argument_group("pbuilder")
-    grp_pbuilder.add_argument("--baseenv", dest="use_pbuilder", action="store_true")
+    gr_pbuilder = parser.add_argument_group("pbuilder")
+    gr_pbuilder.add_argument("--baseenv", dest="baseenv", default=None,
+                             help="Cache and reuse the pbuilder base environment. gopythongo will call pbuilder create "
+                                  "on this file if it doesn't exist.")
+    gr_pbuilder.add_argument("--pbuilder-force-recreate", dest="pbuilder_force_recreate", action="store_true",
+                             help="Delete the base environment if it exists already.")
+
+    gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append",
+                             help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
+                                  "libs for databases so that Python C extensions compile correctly.")
 
 
 def validate_args():

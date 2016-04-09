@@ -2,8 +2,8 @@
 
 
 def add_args(parser):
-    grp_pbuilder = parser.add_argument_group("docker")
-    grp_pbuilder.add_argument("--use-docker", dest="use_docker", action="store_true")
+    gr_docker = parser.add_argument_group("docker")
+    gr_docker.add_argument("--use-docker", dest="use_docker", action="store_true")
 
 
 def validate_args():

@@ -16,12 +16,10 @@ from configargparse import ArgParser as ArgumentParser
 _args = None
 
 
-def add_parser(subparsers):
-    parser = subparsers.add_parser(name="pack",
-                                   description="",
-                                   help="create a Docker container, deb package or .tar.gz archive.")
-
+def add_args(parser):
     gr_deb = parser.add_argument_group("Debian .deb settings")
+    gr_deb.add_argument("-o", "--output", dest="outfile", required=True,
+                        help="output filename for the .tar.gz bundle or Debian package")
     gr_deb.add_argument("--package-name", dest="package_name", default=None,
                         help="The name to assign to the package (passed to fpm -n)")
     gr_deb.add_argument("--preinst", dest="preinst", default=None,

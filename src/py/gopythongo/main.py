@@ -17,18 +17,6 @@ tempfiles = []
 
 def add_common_parameters_to_parser(parser):
     gr_mode = parser.add_argument_group("General settings")
-    gr_mode.add_argument("--mode", dest="mode", choices=["deb", "docker"], default="deb",
-                         help="Build a Docker container or a .deb package")
-    gr_mode.add_argument("-o", "--output", dest="outfile", required=True,
-                         help="output filename for the .tar.gz bundle or Debian package")
-    gr_mode.add_argument("--apt-get", dest="build_deps", action="append",
-                         help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver libs "
-                              "for databases so that Python C extensions compile correctly.")
-
-    gr_out = parser.add_argument_group('Output options')
-    gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
-                        help="more output")
-
     return parser
 
 
@@ -51,10 +39,29 @@ def get_parser():
                             args_for_setting_config_path=["-c", "--config"],
                             config_arg_help_message="Use this path instead of the default (.gopythongo)",
                             default_config_files=[".gopythongo"])
-    add_common_parameters_to_parser(parser)
-    subparsers = parser.add_subparsers()
+
+    gr_plan = parser.add_argument_group("Execution plan")
+    gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
+                         help="Select an ecosystem to build from. (Default and only option right now: Python)")
+    gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"],
+                         help="Select the builder used to build the project")
+    gr_plan.add_argument("--versioner", dest="versioner", choices=["aptly", "pymodule", "static"],
+                         help="Select the versioner used to select the version string for the build")
+    gr_plan.add_argument("--assembler", dest="assembler",
+                         choices=["django", "pip"], action="append",
+                         help="Select one or more assemblers to build the project inside the builder, i.e. install, "
+                              "compile, pull all necessary source code and libraries.")
+    gr_plan.add_argument("--packer", choices=["fpm", "targz"],
+                         help="Select the packer used to pack up the built project")
+    gr_plan.add_argument("--store", choices=["docker", "aptly"],
+                         help="Select the store used to store the packed up project")
+
+    gr_out = parser.add_argument_group("Output options")
+    gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
+                        help="more output")
+
     for m in [gopythongo.builders, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
-        m.add_parser(subparsers)
+        m.add_args(parser)
 
     return parser
 
