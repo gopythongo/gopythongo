@@ -15,11 +15,6 @@ from configargparse import ArgParser as ArgumentParser
 tempfiles = []
 
 
-def add_common_parameters_to_parser(parser):
-    gr_mode = parser.add_argument_group("General settings")
-    return parser
-
-
 def add_parser(subparsers):
     pass
 
@@ -42,7 +37,7 @@ def get_parser():
 
     gr_plan = parser.add_argument_group("Execution plan")
     gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
-                         help="Select an ecosystem to build from. (Default and only option right now: Python)")
+                         help="Choose the ecosystem to build from. (Default and only option right now: Python)")
     gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"],
                          help="Select the builder used to build the project")
     gr_plan.add_argument("--versioner", dest="versioner", choices=["aptly", "pymodule", "static"],
@@ -67,16 +62,18 @@ def get_parser():
 
 
 def print_help():
-    print("Usage: python -m gopythongo.main -c [configfile]")
+    print("Usage: python -m gopythongo.main [--help] -c [configfile]")
     print("")
     print("While the command-line interface provides a useful reference and can be")
     print("used for testing and development, you really want to put all build")
     print("instructions into a .gopythongo rc file inside your project.")
     print("")
-    print("You can find more information at http://gopythongo.com/.")
+    print("    --help        Run \"python -m gopythongo.main --help\" to get more help.")
+    print("")
+    print("You can also find more information at http://gopythongo.com/.")
 
 
-def _cleanup_tmpfiles():
+def _cleanup_tempfiles():
     if tempfiles:
         print("Cleaning up temporary files...")
         for f in tempfiles:
@@ -85,7 +82,7 @@ def _cleanup_tmpfiles():
 
 
 def route():
-    atexit.register(_cleanup_tmpfiles)
+    atexit.register(_cleanup_tempfiles)
     if len(sys.argv) > 1:
         get_parser().parse_args()
     else:

@@ -33,7 +33,7 @@ class DebianVersionTests(TestCase):
         self.assertListEqual(split_version_parts("1"), ["1"])
         self.assertListEqual(split_version_parts(""), [""])
 
-    def test_sorting_compaitibility_aptpkg(self):
+    def test_sorting_compatibility_aptpkg(self):
         version_strings = ["~~a", "~", "~~", "a1", "1.0", "1.0-1", "1.0~bpo1", "1.0-1~bpo1"]
         # sorted using python-apt's apt_pkg.version_compare
         aptpkg_sorting = ['~~', '~~a', '~', '1.0~bpo1', '1.0', '1.0-1~bpo1', '1.0-1', 'a1']

@@ -58,17 +58,17 @@ def validate_args(args):
 
 def main():
     if _args.build_deps:
-        print('*** Installing apt-get dependencies')
-        utils.run_process('/usr/bin/sudo', '/usr/bin/apt-get', *_args.build_deps)
+        print("*** Installing apt-get dependencies")
+        utils.run_process("/usr/bin/sudo", "/usr/bin/apt-get", *_args.build_deps)
 
-    print('*** Creating bundle %s' % _args.outfile)
-    print('Initializing virtualenv in %s' % _args.build_path)
+    print("*** Creating bundle %s" % _args.outfile)
+    print("Initializing virtualenv in %s" % _args.build_path)
     utils.run_process(_args.virtualenv_binary, _args.build_path)
     os.chdir(_args.build_path)
 
-    print('')
-    print('Installing pip packages')
-    pip_binary = utils.create_script_path(_args.build_path, 'pip')
+    print("")
+    print("Installing pip packages")
+    pip_binary = utils.create_script_path(_args.build_path, "pip")
 
     run_pip = [pip_binary, "install"]
     if _args.pip_opts:
@@ -76,14 +76,14 @@ def main():
     run_pip += _args.packages
     utils.run_process(*run_pip)
 
-    envpy = utils.create_script_path(_args.build_path, 'python')
+    envpy = utils.create_script_path(_args.build_path, "python")
     if _args.setuppy_install:
-        print('')
-        print('Installing setup.py packages')
+        print("")
+        print("Installing setup.py packages")
         for path in _args.setuppy_install:
-            if not (os.path.exists(path) and os.path.exists(os.path.join(path, 'setup.py'))):
-                print('Cannot run setup.py in %s because it does not exist' % path)
+            if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
+                print("Cannot run setup.py in %s because it does not exist" % path)
                 sys.exit(1)
             os.chdir(path)
-            run_spy = [envpy, 'setup.py', 'install']
+            run_spy = [envpy, "setup.py", "install"]
             utils.run_process(*run_spy)

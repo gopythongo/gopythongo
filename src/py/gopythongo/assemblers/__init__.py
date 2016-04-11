@@ -11,5 +11,4 @@ def add_args(parser):
     pos_args.add_argument("packages", metavar="package<=>version", nargs="+",
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.6,<1.7\"")
-
     pass
