@@ -133,7 +133,7 @@ class DebianVersion(object):
         if self.epoch is not None:
             try:
                 if int(self.epoch) == 0:
-                    # special case: zero Epcoh is no Epoch
+                    # special case: zero Epoch is no Epoch
                     self.epoch = None
             except ValueError:
                 raise InvalidDebianVersionString("Epoch must be an integer")
