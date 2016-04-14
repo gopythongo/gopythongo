@@ -3,6 +3,8 @@
 
 def add_args(parser):
     gr_pbuilder = parser.add_argument_group("pbuilder")
+    gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
+                             help="Specify an alternative pbuilder executable.")
     gr_pbuilder.add_argument("--baseenv", dest="baseenv", default=None,
                              help="Cache and reuse the pbuilder base environment. gopythongo will call pbuilder create "
                                   "on this file if it doesn't exist.")

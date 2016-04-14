@@ -3,6 +3,7 @@
 
 import gopythongo.main
 import gopythongo.builders
+import gopythongo.versioners
 import gopythongo.stores
 import gopythongo.assemblers
 import gopythongo.packers
@@ -15,19 +16,15 @@ from configargparse import ArgParser as ArgumentParser
 tempfiles = []
 
 
-def add_parser(subparsers):
-    pass
-
-
 def get_parser():
     parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "
                                         "virtualenv is ready to be deployed to a server. "
-                                        "This tool is designed to be used with pbuilder so it can build a virtual "
-                                        "environment in the path where it will be deployed within a chroot. "
+                                        "This tool is designed to be used with pbuilder or docker so it can build a "
+                                        "virtual environment in the path where it will be deployed. "
                                         "Parameters that start with '--' (eg. --mode) can "
-                                        "also be set in a config file (.gopythongo) by using .ini or .yaml-style "
-                                        "syntax (eg. mode=value). If a parameter is specified in more than one place, "
+                                        "also be set in a config file (e.g. .gopythongo) by using .ini or .yaml-style "
+                                        "syntax (e.g. mode=value). If a parameter is specified in more than one place, "
                                         "then command-line values override config file values which override defaults. "
                                         "More information at http://gopythongo.com/.",
                             prog="gopythongo.main",
@@ -40,8 +37,6 @@ def get_parser():
                          help="Choose the ecosystem to build from. (Default and only option right now: Python)")
     gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"],
                          help="Select the builder used to build the project")
-    gr_plan.add_argument("--versioner", dest="versioner", choices=["aptly", "pymodule", "static"],
-                         help="Select the versioner used to select the version string for the build")
     gr_plan.add_argument("--assembler", dest="assembler",
                          choices=["django", "pip"], action="append",
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
@@ -55,7 +50,7 @@ def get_parser():
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
                         help="more output")
 
-    for m in [gopythongo.builders, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
+    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
         m.add_args(parser)
 
     return parser

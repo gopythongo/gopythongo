@@ -1,9 +1,10 @@
 # -* encoding: utf-8 *-
 
+import gopythongo.shared.docker_args
+
 
 def add_args(parser):
-    gr_docker = parser.add_argument_group("docker")
-    gr_docker.add_argument("--use-docker", dest="use_docker", action="store_true")
+    gopythongo.shared.docker_args.add_shared_args(parser)
 
 
 def validate_args():

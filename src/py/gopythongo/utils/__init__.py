@@ -32,4 +32,7 @@ def run_process(*args):
 
 
 class BuildContext(object):
-    pass
+    def __init__(self):
+        self.packs = []
+        self.read_version = None
+        self.out_version = None

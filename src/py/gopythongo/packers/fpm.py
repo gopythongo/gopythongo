@@ -10,63 +10,28 @@ import shutil
 import os
 import sys
 
-from configargparse import ArgParser as ArgumentParser
-
-
-_args = None
-
 
 def add_args(parser):
     gr_deb = parser.add_argument_group("Debian .deb settings")
-    gr_deb.add_argument("-o", "--output", dest="outfile", required=True,
-                        help="output filename for the .tar.gz bundle or Debian package")
-    gr_deb.add_argument("--package-name", dest="package_name", default=None,
-                        help="The name to assign to the package (passed to fpm -n)")
-    gr_deb.add_argument("--preinst", dest="preinst", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--postinst", dest="postinst", default=None,
-                        help="A shell script to package as the postinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--prerm", dest="prerm", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--postrm", dest="postrm", default=None,
-                        help="A shell script to package as the preinst script (see Debian Policy Chapter 6)")
-    gr_deb.add_argument("--provides", dest="provides", action="append",
-                        help=".deb 'Provides:' setting")
-    gr_deb.add_argument("--conflicts", dest="conflicts", action="append",
-                        help=".deb 'Conflicts:' setting")
-    gr_deb.add_argument("--replaces", dest="replaces", action="append",
-                        help=".deb 'Replaces:' setting")
-    gr_deb.add_argument("--mark-config", dest="debconfig", action="append",
-                        help="Marks files or folders as configuration for .deb packages. Please note that "
-                             "/etc/mn-config is provided by SaltStack")
-    gr_deb.add_argument("--dir", dest="dirs", action="append",
-                        help="Mark a folder as owned by the package")
-    gr_deb.add_argument("--depends", dest="depends", action="append",
-                        help="Add a .deb dependency")
-    gr_deb.add_argument("--version", dest="version", default=None,
-                        help="The package version. If not specified, this script will use the latest version from "
-                             "'repo'")
-    gr_deb.add_argument("--epoch", dest="epoch", default=None,
-                        help="The package epoch. If not specified, this script will use the lastest epoch from "
-                             "'repo'")
-    gr_deb.add_argument("--aptly-config", dest="aptly_config", default=None,
-                        help="Path to the aptly config file to use")
-    gr_deb.add_argument("--repo", dest="repo", default=None,
-                        help="Name of the aptly repository to place the package in. (This must be accessible from the "
-                             "pbuilder chroot to be useful.)")
-    gr_deb.add_argument("--service-folder", dest="service_folders", action="append",
-                        help="Add one or more service folders to be linked from /etc/service when this .deb is "
-                             "being installed. The folders must exist below (i.e. relative to) the build path "
-                             "after all packages have been installed.")
+    gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append",
+                        help="Execute FPM (can be used multiple times). You must pass a filename to this parameter, "
+                             "which specifies a file containing the command-line parameters for invoking FPM. FPM will "
+                             "be invoked with the CWD set to the build folder inside the selected builder. You can use "
+                             "template processing here.")
 
     gr_fpm = parser.add_argument_group("FPM related options and common packaging options")
-    gr_fpm.add_argument("--fpm", dest="fpm", default="/usr/local/bin/fpm",
+    gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
                         help="The full path to the fpm executable to use")
     gr_fpm.add_argument("--file-map", dest="file_map", action="append",
                         help="Install a file in any location on the target system. The format of its parameter "
                              "is the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
                              "You can specify this argument multiple times. See "
                              "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information.")
+    gr_fpm.add_argument("--fpm-opts", dest="fpm_opts", action="append",
+                        help="Any string specified here will be directly appended to the FPM command-line when it is "
+                             "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
+                             "that you use an equals sign, i.e. --pip-opt='' to avoid 'Unknown "
+                             "parameter' errors! http://bugs.python.org/issue9334")
 
     gr_rev = parser.add_mutually_exclusive_group()
     gr_rev.add_argument("--rev", dest="revision", default=None,

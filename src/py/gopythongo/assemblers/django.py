@@ -1,14 +1,10 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
 
-from configargparse import ArgParser as ArgumentParser
 from gopythongo import utils
 
 import sys
 import os
-
-
-_args = None
 
 
 def add_parser(subparsers):
@@ -40,14 +36,15 @@ def add_parser(subparsers):
                                 "this script")
 
     gr_pip = parser.add_argument_group("PIP options")
-    gr_pip.add_argument("--pip-opt", dest="pip_opts", action="append",
-                        help="option string to pass to pip (can be used multiple times). Make sure " +
-                             "that you use an equals sign, i.e. --pip-opt='' to avoid 'Unknown " +
+    gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append",
+                        help="Any string specified here will be directly appended to all pip command-lines when it is "
+                             "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
+                             "that you use an equals sign, i.e. --pip-opts='' to avoid 'Unknown "
                              "parameter' errors! http://bugs.python.org/issue9334")
 
     gr_setuppy = parser.add_argument_group("Additional source packages")
     gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append",
-                            help="after all pip commands have run, this can run 'python setup.py install' on " +
+                            help="After all pip commands have run, this can run 'python setup.py install' on " +
                                  "additional packages available in any filesystem path. This option can be " +
                                  "used multiple times.")
 
@@ -56,31 +53,31 @@ def validate_args(args):
     pass
 
 
-def main():
-    if _args.build_deps:
+def execute(args):
+    if args.build_deps:
         print("*** Installing apt-get dependencies")
-        utils.run_process("/usr/bin/sudo", "/usr/bin/apt-get", *_args.build_deps)
+        utils.run_process("/usr/bin/sudo", "/usr/bin/apt-get", *args.build_deps)
 
-    print("*** Creating bundle %s" % _args.outfile)
-    print("Initializing virtualenv in %s" % _args.build_path)
-    utils.run_process(_args.virtualenv_binary, _args.build_path)
-    os.chdir(_args.build_path)
+    print("*** Creating bundle %s" % args.outfile)
+    print("Initializing virtualenv in %s" % args.build_path)
+    utils.run_process(args.virtualenv_binary, args.build_path)
+    os.chdir(args.build_path)
 
     print("")
     print("Installing pip packages")
-    pip_binary = utils.create_script_path(_args.build_path, "pip")
+    pip_binary = utils.create_script_path(args.build_path, "pip")
 
     run_pip = [pip_binary, "install"]
-    if _args.pip_opts:
-        run_pip += _args.pip_opts
-    run_pip += _args.packages
+    if args.pip_opts:
+        run_pip += args.pip_opts
+    run_pip += args.packages
     utils.run_process(*run_pip)
 
-    envpy = utils.create_script_path(_args.build_path, "python")
-    if _args.setuppy_install:
+    envpy = utils.create_script_path(args.build_path, "python")
+    if args.setuppy_install:
         print("")
         print("Installing setup.py packages")
-        for path in _args.setuppy_install:
+        for path in args.setuppy_install:
             if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
                 print("Cannot run setup.py in %s because it does not exist" % path)
                 sys.exit(1)
