@@ -22,5 +22,6 @@ setup(
         'ConfigArgParse==0.9.3',
         'Sphinx==1.3.1',
         'sphinx-rtd-theme==0.1.9',
+        'colorama==0.3.7',
     ],
 )
