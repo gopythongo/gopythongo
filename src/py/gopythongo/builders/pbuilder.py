@@ -1,5 +1,10 @@
 # -* encoding: utf-8 *-
 
+import os
+import sys
+
+from gopythongo.utils import print_error, print_info, highlight_color, color_reset
+
 
 def add_args(parser):
     gr_pbuilder = parser.add_argument_group("Pbuilder options")
@@ -16,5 +21,13 @@ def add_args(parser):
                                   "libs for databases so that Python C extensions compile correctly.")
 
 
-def validate_args():
-    pass
+def validate_args(args):
+    if not os.path.exists(args.pbuilder_executable) or not os.access(args.pbuilder_executable, os.X_OK):
+        print_error("pbuilder not found in path or not executable (%s). You can specify\n"
+                    "an alternative path using %s--use-pbuilder%s" % (args.pbuilder_executable, highlight_color,
+                                                                      color_reset))
+        sys.exit(1)
+
+
+def build(args):
+    print_info("Building with %spbuilder%s" % (highlight_color, color_reset))

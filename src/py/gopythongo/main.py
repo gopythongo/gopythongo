@@ -7,11 +7,13 @@ import gopythongo.versioners
 import gopythongo.stores
 import gopythongo.assemblers
 import gopythongo.packers
+import colorama
 import atexit
 import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
+from gopythongo.utils import print_error, print_info, init_color
 
 tempfiles = []
 
@@ -49,6 +51,8 @@ def get_parser():
     gr_out = parser.add_argument_group("Output options")
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
                         help="more output")
+    gr_out.add_argument("--no-color", dest="no_color", action="store_true", default=False,
+                        help="Do not use ANSI color sequences in output")
 
     for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
         m.add_args(parser)
@@ -58,13 +62,13 @@ def get_parser():
 
 def validate_args(args):
     if not args.builder:
-        print("You must select a builder using --builder.")
+        print_error("You must select a builder using --builder.")
         sys.exit(1)
     if not args.packer:
-        print("You must select a packer using --packer.")
+        print_error("You must select a packer using --packer.")
         sys.exit(1)
     if not args.store:
-        print("You must select a store using --store.")
+        print_error("You must select a store using --store.")
         sys.exit(1)
 
     for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
@@ -85,7 +89,7 @@ def print_help():
 
 def _cleanup_tempfiles():
     if tempfiles:
-        print("Cleaning up temporary files...")
+        print_info("Cleaning up temporary files...")
         for f in tempfiles:
             if os.path.exists(f):
                 os.unlink(f)
@@ -95,7 +99,9 @@ def route():
     atexit.register(_cleanup_tempfiles)
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
+        init_color(args.no_color)
         validate_args(args)
+        gopthongo.builders.build()
     else:
         print_help()
 

@@ -1,7 +1,10 @@
 # -* encoding: utf-8 *-
 
-from gopythongo.builders import docker, pbuilder
+import os
+import sys
 
+from gopythongo.builders import docker, pbuilder
+from gopythongo.utils import print_error
 
 modules = {
     "pbuilder": pbuilder,
@@ -21,4 +24,14 @@ def add_args(parser):
 
 
 def validate_args(args):
-    return True
+    if args.builder:
+        if args.builder in modules.keys():
+            modules[args.builder].validate_args(args)
+
+    if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
+        print_error("virtualenv binary does not exist or is not executable in path %s" % args.virtualenv_binary)
+        sys.exit(1)
+
+
+def build(args):
+    modules[args.builder].build(args)
