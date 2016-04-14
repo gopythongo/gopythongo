@@ -31,3 +31,5 @@ def validate_args(args):
 
 def build(args):
     print_info("Building with %spbuilder%s" % (highlight_color, color_reset))
+
+    # TODO: execute pbuilder create if baseenv does not exist, select temporary baseenv otherwise
