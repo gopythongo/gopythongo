@@ -10,7 +10,7 @@ def add_args(parser):
 
 
 def validate_args(args):
-    pass
+    gopythongo.shared.docker_args.validate_shared_args(args)
 
 
 def build(args):
