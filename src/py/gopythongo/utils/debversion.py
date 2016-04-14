@@ -37,7 +37,7 @@ def debian_substr_compare(a, b):
     :type b: str
     :return: negative int if a<b; 0 if a==b; positive int if a>b
     """
-    # '^' is our character representing an "empty part" as '^' is not allowed in Debian version strings
+    # '^' is our special character representing an "empty part" as '^' is not allowed in Debian version strings
     sortorder = "~^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-.:"
 
     def order(c):
