@@ -35,15 +35,15 @@ def get_parser():
     gr_plan = parser.add_argument_group("Execution plan")
     gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
                          help="Choose the ecosystem to build from. (Default and only option right now: Python)")
-    gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"],
+    gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"], default=None,
                          help="Select the builder used to build the project")
     gr_plan.add_argument("--assembler", dest="assembler",
                          choices=["django", "pip"], action="append",
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
                               "compile, pull all necessary source code and libraries.")
-    gr_plan.add_argument("--packer", choices=["fpm", "targz"],
+    gr_plan.add_argument("--packer", choices=["fpm", "targz"], default=None,
                          help="Select the packer used to pack up the built project")
-    gr_plan.add_argument("--store", choices=["docker", "aptly"],
+    gr_plan.add_argument("--store", choices=["docker", "aptly", "none"], default=None,
                          help="Select the store used to store the packed up project")
 
     gr_out = parser.add_argument_group("Output options")
@@ -54,6 +54,21 @@ def get_parser():
         m.add_args(parser)
 
     return parser
+
+
+def validate_args(args):
+    if not args.builder:
+        print("You must select a builder using --builder.")
+        sys.exit(1)
+    if not args.packer:
+        print("You must select a packer using --packer.")
+        sys.exit(1)
+    if not args.store:
+        print("You must select a store using --store.")
+        sys.exit(1)
+
+    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
+        m.validate_args(args)
 
 
 def print_help():
@@ -79,7 +94,8 @@ def _cleanup_tempfiles():
 def route():
     atexit.register(_cleanup_tempfiles)
     if len(sys.argv) > 1:
-        get_parser().parse_args()
+        args = get_parser().parse_args()
+        validate_args(args)
     else:
         print_help()
 

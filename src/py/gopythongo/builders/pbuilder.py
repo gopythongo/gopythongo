@@ -2,7 +2,7 @@
 
 
 def add_args(parser):
-    gr_pbuilder = parser.add_argument_group("pbuilder")
+    gr_pbuilder = parser.add_argument_group("Pbuilder options")
     gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                              help="Specify an alternative pbuilder executable.")
     gr_pbuilder.add_argument("--baseenv", dest="baseenv", default=None,

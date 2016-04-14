@@ -21,4 +21,4 @@ def add_args(parser):
 
 
 def validate_args(args):
-    pass
+    return True

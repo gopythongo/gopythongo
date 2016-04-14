@@ -13,7 +13,7 @@ import sys
 
 def add_args(parser):
     gr_deb = parser.add_argument_group("Debian .deb settings")
-    gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append",
+    gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
                         help="Execute FPM (can be used multiple times). You must pass a filename to this parameter, "
                              "which specifies a file containing the command-line parameters for invoking FPM. FPM will "
                              "be invoked with the CWD set to the build folder inside the selected builder. You can use "
@@ -32,21 +32,6 @@ def add_args(parser):
                              "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
                              "that you use an equals sign, i.e. --pip-opt='' to avoid 'Unknown "
                              "parameter' errors! http://bugs.python.org/issue9334")
-
-    gr_rev = parser.add_mutually_exclusive_group()
-    gr_rev.add_argument("--rev", dest="revision", default=None,
-                        help="use this revision number. Helpful to supply the Jenkins build number, for example.")
-    gr_rev.add_argument("--timestamp-revision-base", dest="timestamp_revision", default=None,
-                        help="takes a UTC Unix Epoch timestamp as a parameter. The package revision will be "
-                             "calculated from the current date's timestamp (current - timestamp-revision-base).")
-    gr_rev.add_argument("--timestamp-epoch-base", dest="timestamp_epoch", default=None,
-                        help="takes a UTC Unix Epoch timestamp as a parameter. The package epoch will be "
-                             "calculated from the current date's timestamp (current - timestamp-epoch-base).")
-    gr_rev.add_argument("--increment-revision", dest="increment_revision", action="store_true",
-                        help="Take the latest revision for either the latest version or the version specified by "
-                             "--version and increment it by 1.")
-    gr_rev.add_argument("--increment-epoch", dest="increment_epoch", action="store_true",
-                        help="Take the latest epoch for this package from the repository and increment it by 1.")
 
 
 def validate_args(args):
