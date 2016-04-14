@@ -217,7 +217,6 @@ class DebianVersion(object):
             return res < 0
 
     def __eq__(self, other):
-        print("self: %s other: %s" % (repr(self), repr(other)))
         return repr(self) == repr(other)
 
     def as_tuple(self):
