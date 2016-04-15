@@ -23,9 +23,9 @@ def add_args(parser):
 
 def validate_args(args):
     if not os.path.exists(args.pbuilder_executable) or not os.access(args.pbuilder_executable, os.X_OK):
-        print_error("pbuilder not found in path or not executable (%s). You can specify\n"
-                    "an alternative path using %s--use-pbuilder%s" % (args.pbuilder_executable, highlight_color,
-                                                                      color_reset))
+        print_error("pbuilder not found in path or not executable (%s).\n"
+                    "You can specify an alternative path using %s--use-pbuilder%s" % (args.pbuilder_executable,
+                                                                                      highlight_color, color_reset))
         sys.exit(1)
 
 
