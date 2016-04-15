@@ -3,7 +3,7 @@
 import os
 import sys
 
-from gopythongo.utils import print_error, highlight_color, color_reset
+from gopythongo.utils import print_error, highlight
 
 
 _docker_shared_args_added = False
@@ -23,6 +23,6 @@ def add_shared_args(parser):
 def validate_shared_args(args):
     if not os.path.exists(args.docker_executable) or not os.access(args.docker_executable, os.X_OK):
         print_error("docker not found in path or not executable (%s). You can specify\n"
-                    "an alternative path using %s--use-docker%s" % (args.docker_executable, highlight_color,
-                                                                    color_reset))
+                    "an alternative path using %s" % (args.docker_executable,
+                                                      highlight("--use-docker")))
         sys.exit(1)

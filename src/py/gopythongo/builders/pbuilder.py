@@ -3,7 +3,7 @@
 import os
 import sys
 
-from gopythongo.utils import print_error, print_info, highlight_color, color_reset
+from gopythongo.utils import print_error, print_info, highlight
 
 
 def add_args(parser):
@@ -24,12 +24,12 @@ def add_args(parser):
 def validate_args(args):
     if not os.path.exists(args.pbuilder_executable) or not os.access(args.pbuilder_executable, os.X_OK):
         print_error("pbuilder not found in path or not executable (%s).\n"
-                    "You can specify an alternative path using %s--use-pbuilder%s" % (args.pbuilder_executable,
-                                                                                      highlight_color, color_reset))
+                    "You can specify an alternative path using %s" % (args.pbuilder_executable,
+                                                                      highlight("--use-pbuilder")))
         sys.exit(1)
 
 
 def build(args):
-    print_info("Building with %spbuilder%s" % (highlight_color, color_reset))
+    print_info("Building with %s" % highlight("pbuilder"))
 
     # TODO: execute pbuilder create if baseenv does not exist, select temporary baseenv otherwise

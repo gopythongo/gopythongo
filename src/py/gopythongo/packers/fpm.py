@@ -3,7 +3,7 @@
 
 import gopythongo.main
 from gopythongo import utils
-from gopythongo.utils import template, print_error, highlight_color, color_reset
+from gopythongo.utils import template, print_error, highlight
 
 import tarfile
 import shutil
@@ -37,13 +37,14 @@ def add_args(parser):
 def validate_args(args):
     if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
         print_error("fpm not found in path or not executable (%s).\n"
-                    "You can specify an alternative executable using %s--use-fpm%s" %
-                    (args.fpm, highlight_color, color_reset))
+                    "You can specify an alternative executable using %s" %
+                    (args.fpm, highlight("--use-fpm")))
         sys.exit(1)
 
     if args.static_outfile or args.collect_static:
         if not (args.static_outfile and args.collect_static):
-            print("error: --static-out and --collect-static must be used together")
+            print_error("%s and %s must be used together" %
+                        (highlight("--static-out"), highlight("--collect-static")))
             sys.exit(1)
 
     if args.mode == "deb" and not args.package_name:

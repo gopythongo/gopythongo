@@ -75,6 +75,10 @@ def success(message):
     print("%s%s%s" % (success_color, message, color_reset))
 
 
+def highlight(message):
+    print("%s%s%s" % (highlight_color, message, color_reset))
+
+
 class BuildContext(object):
     def __init__(self):
         self.packs = []

@@ -4,7 +4,7 @@ import os
 import sys
 
 from gopythongo.builders import docker, pbuilder
-from gopythongo.utils import print_error, highlight_color, color_reset
+from gopythongo.utils import print_error, highlight
 
 modules = {
     "pbuilder": pbuilder,
@@ -30,8 +30,8 @@ def validate_args(args):
 
     if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
         print_error("virtualenv not found in path or not executable (%s).\n"
-                    "You can specify an alternative path with %s--use-virtualenv%s" %
-                    (args.virtualenv_binary, highlight_color, color_reset))
+                    "You can specify an alternative path with %s" %
+                    (args.virtualenv_binary, highlight("--use-virtualenv")))
         sys.exit(1)
 
 

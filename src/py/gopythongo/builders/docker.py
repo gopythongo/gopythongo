@@ -2,7 +2,7 @@
 
 import gopythongo.shared.docker_args
 
-from gopythongo.utils import print_info, highlight_color, color_reset
+from gopythongo.utils import print_info, highlight
 
 
 def add_args(parser):
@@ -14,4 +14,4 @@ def validate_args(args):
 
 
 def build(args):
-    print_info("Building with %sdocker%s" % (highlight_color, color_reset))
+    print_info("Building with %s" % highlight("docker"))
