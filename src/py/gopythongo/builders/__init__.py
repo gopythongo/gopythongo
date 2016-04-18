@@ -15,7 +15,10 @@ modules = {
 def add_args(parser):
     gr_bundle = parser.add_argument_group("Bundle settings")
     gr_bundle.add_argument("--use-virtualenv", dest="virtualenv_binary", default="/usr/bin/virtualenv",
-                           help="set an alternative virtualenv binary to use inside the builder container")
+                           help="Set an alternative virtualenv binary to use inside the builder container")
+    gr_bundle.add_argument("--mount", dest="mounts", action="append", default=[],
+                           help="Additional folders to mount into the build environment. Use "
+                                "\"hostfolder:mountdestination\" syntax to mount the folder in a different place.")
 
     for m in modules.values():
         m.add_args(parser)
@@ -33,6 +36,11 @@ def validate_args(args):
                     "You can specify an alternative path with %s" %
                     (args.virtualenv_binary, highlight("--use-virtualenv")))
         sys.exit(1)
+
+    for mount in args.mounts:
+        if not os.path.exists(mount):
+            print_error("Folder to be mounted does not exist:\n%s" % highlight(mount))
+            sys.exit(1)
 
 
 def build(args):

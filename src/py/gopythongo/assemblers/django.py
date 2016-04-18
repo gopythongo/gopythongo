@@ -1,11 +1,10 @@
-#!/usr/bin/python -u
 # -* encoding: utf-8 *-
-
-from gopythongo import utils
 
 import sys
 import os
 
+from gopythongo import utils
+from gopythongo.utils import print_error, highlight
 
 def add_parser(subparsers):
     parser = subparsers.add_parser(name="assemble",
@@ -35,52 +34,28 @@ def add_parser(subparsers):
                            help="'--settings' argument to pass to django-admin.py when it is called by " +
                                 "this script")
 
-    gr_pip = parser.add_argument_group("PIP options")
-    gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append",
-                        help="Any string specified here will be directly appended to all pip command-lines when it is "
-                             "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
-                             "that you use an equals sign, i.e. --pip-opts='' to avoid 'Unknown "
-                             "parameter' errors! http://bugs.python.org/issue9334")
-
-    gr_setuppy = parser.add_argument_group("Additional source packages")
-    gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append",
-                            help="After all pip commands have run, this can run 'python setup.py install' on " +
-                                 "additional packages available in any filesystem path. This option can be " +
-                                 "used multiple times.")
-
 
 def validate_args(args):
-    pass
+    if args.static_outfile or args.collect_static:
+        if not (args.static_outfile and args.collect_static):
+            print_error("%s and %s must be used together" %
+                        (highlight("--static-out"), highlight("--collect-static")))
+            sys.exit(1)
 
 
-def execute(args):
-    if args.build_deps:
-        print("*** Installing apt-get dependencies")
-        utils.run_process("/usr/bin/sudo", "/usr/bin/apt-get", *args.build_deps)
+def _collect_static():
+    global _args
+    envpy = utils.create_script_path(_args.build_path, "python")
+    print("Collecting static artifacts")
+    if os.path.exists(_args.static_root):
+        print("    %s exists." % _args.static_root)
+        if _args.fresh_static:
+            shutil.rmtree(_args.static_root)
 
-    print("*** Creating bundle %s" % args.outfile)
-    print("Initializing virtualenv in %s" % args.build_path)
-    utils.run_process(args.virtualenv_binary, args.build_path)
-    os.chdir(args.build_path)
-
-    print("")
-    print("Installing pip packages")
-    pip_binary = utils.create_script_path(args.build_path, "pip")
-
-    run_pip = [pip_binary, "install"]
-    if args.pip_opts:
-        run_pip += args.pip_opts
-    run_pip += args.packages
-    utils.run_process(*run_pip)
-
-    envpy = utils.create_script_path(args.build_path, "python")
-    if args.setuppy_install:
-        print("")
-        print("Installing setup.py packages")
-        for path in args.setuppy_install:
-            if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
-                print("Cannot run setup.py in %s because it does not exist" % path)
-                sys.exit(1)
-            os.chdir(path)
-            run_spy = [envpy, "setup.py", "install"]
-            utils.run_process(*run_spy)
+    django_admin = utils.create_script_path(_args.build_path, 'django-admin.py')
+    run_dja = [envpy, django_admin, "collectstatic"]
+    if _args.django_settings_module:
+        run_dja.append('--settings=%s' % _args.django_settings_module)
+    run_dja.append("--noinput")
+    run_dja.append("--traceback")
+    utils.run_process(*run_dja)

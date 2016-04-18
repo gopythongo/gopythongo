@@ -1,14 +1,12 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
 
-import gopythongo.main
-from gopythongo import utils
-from gopythongo.utils import template, print_error, highlight
-
-import tarfile
-import shutil
 import os
 import sys
+import shutil
+import gopythongo.main
+
+from gopythongo.utils import template, print_error, print_info, highlight
 
 
 def add_args(parser):
@@ -18,11 +16,15 @@ def add_args(parser):
                              "which specifies a file containing the command-line parameters for invoking FPM. FPM will "
                              "be invoked with the CWD set to the build folder inside the selected builder. You can use "
                              "template processing here.")
+    gr_deb.add_argument("--package-name", dest="package_name",
+                        help="The canonical package name to set using 'fpm -n'.")
 
     gr_fpm = parser.add_argument_group("FPM related options and common packaging options")
     gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
                         help="The full path to the fpm executable to use")
-    gr_fpm.add_argument("--file-map", dest="file_map", action="append",
+    gr_fpm.add_argument("--fpm-format", dest="fpm_format", choices=["deb"], default="deb",
+                        help="Output package format. Only .deb is supported for now.")
+    gr_fpm.add_argument("--file-map", dest="file_map", action="append", default=[],
                         help="Install a file in any location on the target system. The format of its parameter "
                              "is the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
                              "You can specify this argument multiple times. See "
@@ -41,118 +43,19 @@ def validate_args(args):
                     (args.fpm, highlight("--use-fpm")))
         sys.exit(1)
 
-    if args.static_outfile or args.collect_static:
-        if not (args.static_outfile and args.collect_static):
-            print_error("%s and %s must be used together" %
-                        (highlight("--static-out"), highlight("--collect-static")))
-            sys.exit(1)
-
-    if args.mode == "deb" and not args.package_name:
-        print("error: --deb requires --package-name")
-        sys.exit(1)
-
-    if args.service_folders and not args.mode == "deb":
-        print("error: --service-folder requires --deb")
-        sys.exit(1)
-
-    for f in _args.service_folders:
-        if os.path.isabs(f):
-            if not os.path.exists(f):
-                print("Error: service-folder does not exist %s" % f)
-                sys.exit(1)
-        else:
-            full = os.path.join(_args.build_path, f)
-            if not os.path.exists(full):
-                print("Error: service-folder does not exist %s (%s)" % (f, full,))
-                sys.exit(1)
-
-    if args.mode == "deb" and (not args.repo or not args.aptly_config) and \
-            (not args.version or not args.epoch):
-        print("error: You must either specify a repo and a aptly config file then --version and")
-        print("       --epoch are optional.")
-        print("       Or you can specify --version AND --epoch, then")
-        print("       specifying a target repo is optional.")
+    if args.fpm_format == "deb" and not args.package_name:
+        print_error("%s requires %s" % (highlight("--fpm_format=deb"), highlight("--package-name")))
         sys.exit(1)
 
     for mapping in args.file_map:
         if "=" not in mapping:
-            print("error: %s does not contain '='. A mapping must be [source file]=[destination file/dir]." % mapping)
+            print_error("%s does not contain '='.\nA mapping must be formatted as "
+                        "[source file]=[destination file/dir]." % highlight(mapping))
             sys.exit(1)
         if not os.path.exists(mapping.split("=")[0]):
-            print("error: %s in mapping %s does not exist and can't be packaged." % (mapping.split("=")[0], mapping))
-
-    for f in [args.preinst, args.postinst, args.prerm, args.postrm]:
-        if f and not os.path.exists(f):
-            print("error: %s does not exist" % f)
-            sys.exit(1)
-
-
-def _create_targzip(outfile, basepath, make_paths_relative=False):
-    """
-    creates a .tar.gz of everything below basepath, making sure all
-    stored paths are relative
-    """
-    global _args
-    if os.path.exists(outfile):
-        os.remove(outfile)
-
-    f = open(outfile, 'w')
-    # we're using stream mode here as otherwise tarfile seems
-    # to add spurious information about f's path to the gzip
-    # wrapper... this can be seen inside 7-zip :(
-    tf = tarfile.open(fileobj=f, mode='w|gz')
-    for root, dir, files in os.walk(basepath):
-        for filename in files:
-            filepath = os.path.join(root, filename)
-            arcpath = root
-            if make_paths_relative:
-                arcpath = root[len(basepath):]
-            arcname = os.path.join(arcpath, filename)
-            if _args.verbose:
-                print('adding %s as %s' % (filepath, arcname,))
-            tf.add(filepath, arcname, recursive=False)
-    tf.close()
-    f.close()
-
-
-def _collect_static():
-    global _args
-    envpy = utils.create_script_path(_args.build_path, 'python')
-    print('Collecting static artifacts')
-    if os.path.exists(_args.static_root):
-        print('    %s exists.' % _args.static_root)
-        if _args.fresh_static:
-            shutil.rmtree(_args.static_root)
-
-    django_admin = utils.create_script_path(_args.build_path, 'django-admin.py')
-    run_dja = [envpy, django_admin, "collectstatic"]
-    if _args.django_settings_module:
-        run_dja.append('--settings=%s' % _args.django_settings_module)
-    run_dja.append("--noinput")
-    run_dja.append("--traceback")
-    utils.run_process(*run_dja)
-
-
-def _build_tar():
-    global _args
-    if _args.collect_static:
-        _collect_static()
-
-        if os.path.exists(_args.static_root):
-            print("creating static tarball of %s in %s" % (_args.static_root, _args.static_outfile,))
-            _create_targzip(_args.static_outfile, _args.static_root, _args.static_relative)
-        else:
-            print('')
-            print("error: %s should now exist, but it doesn't" % _args.static_root)
-            sys.exit(1)
-
-        if _args.remove_static:
-            print("removing static artifacts in %s" % _args.static_root)
-            shutil.rmtree(_args.static_root)
-
-    print('')
-    print('Creating bundle tarball of %s in %s' % (_args.build_path, _args.outfile,))
-    _create_targzip(_args.outfile, _args.build_path, _args.bundle_relative)
+            print_error("%s in file mapping %s\n"
+                        "does not exist and can't be packaged." % (highlight(mapping.split("=")[0]),
+                                                                   highlight(mapping)))
 
 
 def _create_deb():
@@ -246,14 +149,9 @@ def _build_deb():
     _create_deb(_args.outfile, _args.build_path)
 
 
-def main(args):
+def pack(args):
     validate_args(args)
+    _build_deb()
 
-    if _args.mode == "deb":
-        _build_deb()
-    elif _args.mode == "tar":
-        _build_tar()
-
-    print('')
-    print('Cleaning up')
+    print_info("Cleaning up")
     shutil.rmtree(_args.build_path)
