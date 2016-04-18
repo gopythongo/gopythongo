@@ -17,10 +17,15 @@ def add_args(parser):
                              help="Use this distribution for creating the pbuilder environment using debootstrap.")
     gr_pbuilder.add_argument("--pbuilder-force-recreate", dest="pbuilder_force_recreate", action="store_true",
                              help="Delete the base environment if it exists already.")
-
-    gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append",
+    gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append", default=[],
                              help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
                                   "libs for databases so that Python C extensions compile correctly.")
+    gr_pbuilder.add_argument("--pbuilder-opts", dest="pbuilder_opts", action="append", default=[],
+                             help="Options which will be put into every pbuilder command-line executed by gopythongo.")
+    gr_pbuilder.add_argument("--pbuilder-create-opts", dest="pbuilder_create_opts", action="append", default=[],
+                             help="Options which will be appended to the pbuilder --create command-line.")
+    gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", action="append", default=[],
+                             help="Options which will be appended to the pbuilder --execute command-line.")
 
 
 def validate_args(args):
@@ -30,7 +35,7 @@ def validate_args(args):
                                                                       highlight("--use-pbuilder")))
         sys.exit(1)
 
-    if os.path.exists(args.basetgz) and not os.path.isfile(args.basetgz):
+    if args.basetgz and os.path.exists(args.basetgz) and not os.path.isfile(args.basetgz):
         print_error("pbuilder basetgz %s\nexists but is not a file. Can't continue with this inconsistency." %
                     highlight(args.basetgz))
         sys.exit(1)
@@ -40,11 +45,23 @@ def build(args):
     print_info("Building with %s" % highlight("pbuilder"))
 
     # TODO: execute pbuilder create if baseenv does not exist, select temporary baseenv otherwise
-    if not os.path.exists(args.basetgz) or args.pbuilder_force_recreate:
-        if os.path.exists(args.basetgz) and args.pbuilder_force_recreate:
-            os.unlink(args.basetgz)
+    if args.basetgz and os.path.exists(args.basetgz) and not args.pbuilder_force_recreate:
+        return
 
-        create_cmdline = [args.pbuilder_executable, "create"]
-        if args.pbuilder_distribution:
-            create_cmdline += ["--distribution", args.pbuilder_distribution]
-        
+    if args.basetgz and os.path.exists(args.basetgz) and args.pbuilder_force_recreate:
+        os.unlink(args.basetgz)
+
+    create_cmdline = [args.pbuilder_executable, "--create"]
+    create_cmdline += args.pbuilder_opts
+    create_cmdline += args.pbuilder_create_opts
+    if args.pbuilder_distribution:
+        create_cmdline += ["--distribution", args.pbuilder_distribution]
+
+    if args.basetgz:
+        create_cmdline += ["--basetgz", args.basetgz]
+
+    if args.mounts:
+        create_cmdline += ["--bindmounts", '"%s"' % " ".join(args.mounts)]
+
+
+    print_info(" ".join(create_cmdline))
