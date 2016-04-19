@@ -63,5 +63,4 @@ def build(args):
     if args.mounts:
         create_cmdline += ["--bindmounts", '"%s"' % " ".join(args.mounts)]
 
-
     print_info(" ".join(create_cmdline))

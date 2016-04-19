@@ -58,100 +58,98 @@ def validate_args(args):
                                                                    highlight(mapping)))
 
 
-def _create_deb():
-    global _args
+def _create_deb(args):
     fpm_deb = [
-        _args.fpm, "-t", "deb", "-s", "dir", "-p", _args.outfile,
-        "-n", _args.package_name,
+        args.fpm, "-t", "deb", "-s", "dir", "-p", args.outfile,
+        "-n", args.package_name,
     ]
-    for p in _args.provides:
+    for p in args.provides:
         fpm_deb.append("--provides")
         fpm_deb.append(p)
-    for c in _args.conflicts:
+    for c in args.conflicts:
         fpm_deb.append("--conflicts")
         fpm_deb.append(c)
-    for r in _args.replaces:
+    for r in args.replaces:
         fpm_deb.append("--replaces")
         fpm_deb.append(r)
-    for d in _args.depends:
+    for d in args.depends:
         fpm_deb.append("--depends")
         fpm_deb.append(d)
-    for c in _args.debconfig:
+    for c in args.debconfig:
         fpm_deb.append("--config-files")
         fpm_deb.append(c)
-    for d in _args.dirs:
+    for d in args.dirs:
         fpm_deb.append("--directories")
         fpm_deb.append(d)
 
-    if _args.repo and not _args.version:
+    if args.repo and not args.version:
         # TODO: find latest version
         pass
-    elif _args.version:
-        version = _args.version
+    elif args.version:
+        version = args.version
 
-    if _args.repo and not _args.epoch:
+    if args.repo and not args.epoch:
         # TODO: find latest epoch and increment by one
         pass
-    elif _args.epoch:
-        epoch = _args.epoch
+    elif args.epoch:
+        epoch = args.epoch
 
     ctx = {
-        'basedir': _args.build_path,
-        'service_folders': _args.service_folders,
-        'service_folders_str': " ".join(_args.service_folders),
+        'basedir': args.build_path,
+        'service_folders': args.service_folders,
+        'service_folders_str': " ".join(args.service_folders),
     }
 
     # build package
     fpm_deb += ["-v", version, "--epoch", epoch]
-    if _args.preinst:
-        scriptfile = template.process_to_tempfile(_args.preinst, ctx)
+    if args.preinst:
+        scriptfile = template.process_to_tempfile(args.preinst, ctx)
         fpm_deb += ["--before-install", scriptfile]
 
-    if _args.postinst:
-        scriptfile = template.process_to_tempfile(_args.postinst, ctx)
+    if args.postinst:
+        scriptfile = template.process_to_tempfile(args.postinst, ctx)
         fpm_deb += ["--after-install", scriptfile]
 
-    if _args.prerm:
-        scriptfile = template.process_to_tempfile(_args.prerm, ctx)
+    if args.prerm:
+        scriptfile = template.process_to_tempfile(args.prerm, ctx)
         fpm_deb += ["--before-remove", scriptfile]
 
-    if _args.postrm:
-        scriptfile = template.process_to_tempfile(_args.postrm, ctx)
+    if args.postrm:
+        scriptfile = template.process_to_tempfile(args.postrm, ctx)
         fpm_deb += ["--after-remove", scriptfile]
 
-    if _args.file_map:
-        for mapping in _args.file_map:
+    if args.file_map:
+        for mapping in args.file_map:
             fpm_deb += [mapping]
 
-    if _args.repo:
+    if args.repo:
         # TODO: compare outfile and _args.repo and copy built package
         # if necessary then update repo index
         pass
 
 
-def _build_deb():
-    global _args
-    if _args.collect_static:
+def _build_deb(args):
+    if args.collect_static:
         _collect_static()
-        if os.path.exists(_args.static_root):
-            print("creating static .deb package of %s in %s" % (_args.static_root, _args.static_outfile,))
-            _create_deb(_args.static_outfile, _args.static_root)
+        if os.path.exists(args.static_root):
+            print("creating static .deb package of %s in %s" % (args.static_root, args.static_outfile,))
+            _create_deb(args.static_outfile, args.static_root)
         else:
             print('')
-            print("error: %s should now exist, but it doesn't" % _args.static_root)
+            print("error: %s should now exist, but it doesn't" % args.static_root)
             sys.exit(1)
 
-        if _args.remove_static:
-            print("removing static artifacts in %s" % _args.static_root)
-            shutil.rmtree(_args.static_root)
+        if args.remove_static:
+            print("removing static artifacts in %s" % args.static_root)
+            shutil.rmtree(args.static_root)
 
-    print('Creating .deb of %s in %s' % (_args.build_path, _args.outfile,))
-    _create_deb(_args.outfile, _args.build_path)
+    print('Creating .deb of %s in %s' % (args.build_path, args.outfile,))
+    _create_deb(args.outfile, _args.build_path)
 
 
 def pack(args):
     validate_args(args)
-    _build_deb()
+    _build_deb(args)
 
     print_info("Cleaning up")
-    shutil.rmtree(_args.build_path)
+    shutil.rmtree(args.build_path)
