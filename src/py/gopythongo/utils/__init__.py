@@ -99,3 +99,7 @@ class BuildContext(object):
         self.packs = []
         self.read_version = None
         self.out_version = None
+        self.gopythongo_home = None
+        self.gopythongo_cmd = None
+
+BUILDCTX = BuildContext()

@@ -8,14 +8,14 @@ from gopythongo.utils import run_process, create_script_path, print_info, print_
 
 def add_args(parser):
     gr_pip = parser.add_argument_group("PIP options")
-    gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append",
+    gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
                         help="Any string specified here will be directly appended to all pip command-lines when it is "
                              "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
                              "that you use an equals sign, i.e. --pip-opts='' to avoid 'Unknown "
                              "parameter' errors! http://bugs.python.org/issue9334")
 
     gr_setuppy = parser.add_argument_group("Additional source packages")
-    gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append",
+    gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append", default=[],
                             help="After all pip commands have run, this can run 'python setup.py install' on " +
                                  "additional packages available in any filesystem path. This option can be " +
                                  "used multiple times.")

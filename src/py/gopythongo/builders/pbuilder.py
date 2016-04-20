@@ -4,7 +4,7 @@ import os
 import sys
 import shlex
 
-from gopythongo.utils import print_error, print_info, highlight, run_process, flatten
+from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path
 
 
 def add_args(parser):
@@ -64,10 +64,17 @@ def build(args):
     if args.basetgz:
         create_cmdline += ["--basetgz", args.basetgz]
 
-    if args.mounts:
-        create_cmdline += ["--bindmounts", " ".join(args.mounts)]
-
     if args.build_deps:
         create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
 
-    run_process(*create_cmdline)
+    #run_process(*create_cmdline)
+
+    build_cmdline = [args.pbuilder_executable, "--execute"]
+
+    if args.mounts:
+        build_cmdline += ["--bindmounts", " ".join(args.mounts)]
+
+    if args.basetgz:
+        build_cmdline += ["--basetgz", args.basetgz]
+
+    #run_process(*build_cmdline, "--", create_script_path(args.))

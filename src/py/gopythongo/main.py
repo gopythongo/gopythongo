@@ -7,7 +7,6 @@ import gopythongo.versioners
 import gopythongo.stores
 import gopythongo.assemblers
 import gopythongo.packers
-import colorama
 import atexit
 import signal
 import sys
@@ -48,7 +47,10 @@ def get_parser():
                          help="Select the packer used to pack up the built project")
     gr_plan.add_argument("--store", choices=["docker", "aptly", "none"], default=None, required=True,
                          help="Select the store used to store the packed up project")
-    gr_plan.add_argument("--inner", dest="is_inside", action="store_true", default=False,
+    gr_plan.add_argument("--gopythongo-path", dest="gopythongo_path", default=None,
+                         help="Path to a virtual environment that contains GoPythonGo or a PEX GoPythonGo executable. "
+                              "This will be mounted into the build environment.")
+    gr_plan.add_argument("--inner", dest="is_inner", action="store_true", default=False,
                          help="This parameter signals to GoPythonGo that it is running inside the build environment, "
                               "you will likely never have to use this parameter yourself. It is used by GoPythonGo "
                               "internally.")
@@ -114,7 +116,7 @@ def route():
         init_color(args.no_color)
         validate_args(args)
 
-        if not args.is_inside:
+        if not args.is_inner:
             gopythongo.builders.build(args)
         else:
             gopythongo.versioners.version(args)
