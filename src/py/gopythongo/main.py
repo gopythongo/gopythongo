@@ -9,11 +9,12 @@ import gopythongo.assemblers
 import gopythongo.packers
 import colorama
 import atexit
+import signal
 import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
-from gopythongo.utils import print_error, print_info, init_color
+from gopythongo.utils import print_error, print_warning, print_info, init_color
 
 tempfiles = []
 
@@ -87,6 +88,11 @@ def print_help():
     print("You can also find more information at http://gopythongo.com/.")
 
 
+def _sigint_handler(signal, frame):
+    print_warning("CTRL+BREAK. Exiting.")
+    sys.exit(1)
+
+
 def _cleanup_tempfiles():
     if tempfiles:
         print_info("Cleaning up temporary files...")
@@ -97,6 +103,8 @@ def _cleanup_tempfiles():
 
 def route():
     atexit.register(_cleanup_tempfiles)
+    signal.signal(signal.SIGINT, _sigint_handler)
+
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
         init_color(args.no_color)
