@@ -32,21 +32,22 @@ def add_args(parser):
 
 
 def validate_args(args):
-    return True
+    if not os.path.isabs(args.build_path):
+        print_error("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
+        sys.exit(1)
+
+    for path in args.setuppy_install:
+        if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
+            print_error("Cannot run setup.py in %s, because it does not exist" % highlight(path))
+            sys.exit(1)
 
 
-def execute(args):
-    if args.build_deps:
-        print("*** Installing apt-get dependencies")
-        run_process("/usr/bin/sudo", "/usr/bin/apt-get", *args.build_deps)
-
-    print("*** Creating bundle %s" % args.outfile)
-    print("Initializing virtualenv in %s" % args.build_path)
+def assemble(args):
+    print_info("Initializing virtualenv in %s" % args.build_path)
     run_process(args.virtualenv_binary, args.build_path)
     os.chdir(args.build_path)
 
-    print("")
-    print("Installing pip packages")
+    print_info("Installing pip packages")
     pip_binary = create_script_path(args.build_path, "pip")
 
     run_pip = [pip_binary, "install"]
@@ -57,12 +58,10 @@ def execute(args):
 
     envpy = create_script_path(args.build_path, "python")
     if args.setuppy_install:
-        print("")
-        print("Installing setup.py packages")
+        print_info("Installing setup.py packages")
         for path in args.setuppy_install:
-            if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
-                print("Cannot run setup.py in %s because it does not exist" % path)
-                sys.exit(1)
+            print()
+            print("******** %s ********" % highlight(os.path.join(path, "setup.py")))
             os.chdir(path)
             run_spy = [envpy, "setup.py", "install"]
             run_process(*run_spy)

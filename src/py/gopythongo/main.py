@@ -48,6 +48,10 @@ def get_parser():
                          help="Select the packer used to pack up the built project")
     gr_plan.add_argument("--store", choices=["docker", "aptly", "none"], default=None, required=True,
                          help="Select the store used to store the packed up project")
+    gr_plan.add_argument("--inner", dest="is_inside", action="store_true", default=False,
+                         help="This parameter signals to GoPythonGo that it is running inside the build environment, "
+                              "you will likely never have to use this parameter yourself. It is used by GoPythonGo "
+                              "internally.")
 
     gr_out = parser.add_argument_group("Output options")
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
@@ -109,7 +113,14 @@ def route():
         args = get_parser().parse_args()
         init_color(args.no_color)
         validate_args(args)
-        gopythongo.builders.build(args)
+
+        if not args.is_inside:
+            gopythongo.builders.build(args)
+        else:
+            gopythongo.versioners.version(args)
+            gopythongo.assemblers.assemble(args)
+            gopythongo.packers.pack(args)
+            gopythongo.stores.store(args)
     else:
         print_help()
 

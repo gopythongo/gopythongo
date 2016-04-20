@@ -30,3 +30,7 @@ def add_args(parser):
 
 def validate_args(args):
     return True
+
+
+def version(args):
+    pass

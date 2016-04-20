@@ -7,3 +7,7 @@ def add_args(parser):
 
 def validate_args(args):
     return True
+
+
+def store(args):
+    pass

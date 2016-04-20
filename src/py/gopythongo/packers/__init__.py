@@ -11,3 +11,7 @@ def add_args(parser):
 def validate_args(args):
     for m in [fpm, targz]:
         m.validate_args(args)
+
+
+def pack(args):
+    pass

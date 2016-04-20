@@ -67,4 +67,7 @@ def build(args):
     if args.mounts:
         create_cmdline += ["--bindmounts", " ".join(args.mounts)]
 
+    if args.build_deps:
+        create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
+
     run_process(*create_cmdline)
