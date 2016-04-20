@@ -2,8 +2,9 @@
 
 import os
 import sys
+import shlex
 
-from gopythongo.utils import print_error, print_info, highlight
+from gopythongo.utils import print_error, print_info, highlight, run_process, flatten
 
 
 def add_args(parser):
@@ -40,11 +41,14 @@ def validate_args(args):
                     highlight(args.basetgz))
         sys.exit(1)
 
+    if os.getuid() != 0:
+        print_error("pbuilder requires root privileges. Please run GoPythonGo as root when using pbuilder")
+        sys.exit(1)
+
 
 def build(args):
     print_info("Building with %s" % highlight("pbuilder"))
 
-    # TODO: execute pbuilder create if baseenv does not exist, select temporary baseenv otherwise
     if args.basetgz and os.path.exists(args.basetgz) and not args.pbuilder_force_recreate:
         return
 
@@ -52,8 +56,8 @@ def build(args):
         os.unlink(args.basetgz)
 
     create_cmdline = [args.pbuilder_executable, "--create"]
-    create_cmdline += args.pbuilder_opts
-    create_cmdline += args.pbuilder_create_opts
+    create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_opts)))
+    create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_create_opts)))
     if args.pbuilder_distribution:
         create_cmdline += ["--distribution", args.pbuilder_distribution]
 
@@ -61,6 +65,6 @@ def build(args):
         create_cmdline += ["--basetgz", args.basetgz]
 
     if args.mounts:
-        create_cmdline += ["--bindmounts", '"%s"' % " ".join(args.mounts)]
+        create_cmdline += ["--bindmounts", " ".join(args.mounts)]
 
-    print_info(" ".join(create_cmdline))
+    run_process(*create_cmdline)

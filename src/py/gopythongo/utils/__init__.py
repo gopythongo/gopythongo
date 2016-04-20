@@ -1,7 +1,10 @@
 # -* encoding: utf-8 *-
 
+import collections
 import subprocess
+import shutil
 import time
+import six
 import sys
 import os
 
@@ -18,6 +21,8 @@ error_hl = Fore.LIGHTRED_EX
 error_color = Fore.RED
 highlight_color = Fore.LIGHTWHITE_EX
 color_reset = Fore.RESET
+
+_cwidth, _cheight = shutil.get_terminal_size()
 
 
 def init_color(no_color):
@@ -45,20 +50,30 @@ def create_script_path(virtualenv_path, script_name):
         return os.path.join(virtualenv_path, "bin/", script_name)
 
 
+def flatten(x):
+    result = []
+    for el in x:
+        if isinstance(el, collections.Iterable) and not isinstance(el, six.string_types):
+            result.extend(flatten(el))
+        else:
+            result.append(el)
+    return result
+
+
 def run_process(*args):
-    print("Running %s" % str(args))
+    print_info("Running %s" % str(args))
     process = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr)
     while process.poll() is None:
         time.sleep(1)
 
     if process.returncode != 0:
-        print("%s exited with return code %s" % (str(args), process.returncode))
+        print_error("%s exited with non-zero exit code %s" % (str(args), process.returncode))
         sys.exit(process.returncode)
 
 
-def print_error(*args, **kwargs):
-    print("%s%s%s%s%s" % (error_hl, "***", error_color, " ERROR: ", color_reset), end="")
-    print(*args, **kwargs)
+def print_error(message):
+    err = "%s%s%s%s%s" % (error_hl, "***", error_color, " ERROR: ", color_reset)
+    print("%s%s" % (err, message))
 
 
 def print_warning(*args, **kwargs):
@@ -67,7 +82,7 @@ def print_warning(*args, **kwargs):
 
 
 def print_info(*args, **kwargs):
-    print("%s%s%s" % (info_hl, "* Info: ", color_reset), end="")
+    print("%s%s%s%s%s" % (info_hl, "*", info_color, " Info: ", color_reset), end="")
     print(*args, **kwargs)
 
 
