@@ -78,8 +78,12 @@ class VersionerHelpAction(argparse.Action):
                   "    %s - increment the version string revision\n"
                   "    %s - do nothing to the version string (the default)\n"
                   "\n"
-                  "The action will be performed after reading the version string and before\n"
-                  "creating the new version string.\n"
+                  "This action will be performed before creating the new version string by the\n"
+                  "versioner processing the new version string. For example: The %s versioner,\n"
+                  "when faced with the 'increment-epoch' action, will first find out the highest\n"
+                  "Epoch value in its repository, then increment that Epoch by 1 and then create\n"
+                  "the new version string. For more details, please look at the help pages of the\n"
+                  "individual versioners.\n"
                   "\n"
                   "Best practice\n"
                   "-------------\n"
@@ -97,11 +101,17 @@ class VersionerHelpAction(argparse.Action):
                   "    --read-version='pymodule:myproject:__version__' \\\n"
                   "    --parse-version-format='semver' \\\n"
                   "    --version-action='increment-revision' \\\n"
-                  "    --new-version-format='debian'\n"
+                  "    --new-version-format='aptly:debian'\n"
                   "\n"
-                  "This will read the __version__ attribute from the Python module myproject in\n"
-                  "the current PYTHONPATH. It will parse this value as a SemVer formatted version,\n"
-                  "increment the revision part and output it as a Debian-compatible version string.\n"
+                  "This will:\n"
+                  "\n"
+                  "    * read the __version__ attribute from the Python module myproject in the\n"
+                  "      current PYTHONPATH,\n"
+                  "    * then parse this value as a SemVer formatted version,\n"
+                  "    * then find the highest revision in the current package repository,\n"
+                  "    * then increment the revision by 1 and\n"
+                  "    * finally output the result as a Debian-compatible version string.\n"
+                  "\n"
                   "Storing the created package in an APT repository will ensure that they are\n"
                   "picked up by apt-get update && apt-get upgrade.\n" %
                   (highlight("--read-version"), highlight("--parse-version-format"),
@@ -113,6 +123,7 @@ class VersionerHelpAction(argparse.Action):
                    highlight("Semantic Versioning (http://semver.org/)"),
                    highlight("keep version strings constant for release versions"),
                    highlight("--version-action"), highlight("increment-epoch"),
-                   highlight("increment-patch"), highlight("increment-revision"), highlight("none")))
+                   highlight("increment-patch"), highlight("increment-revision"), highlight("none"),
+                   highlight("aptly")))
 
         parser.exit()
