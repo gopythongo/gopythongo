@@ -50,6 +50,12 @@ class VersionerHelpAction(argparse.Action):
                   "    %s    - identifies the patch version number (4 in '5:2.3.4-1')\n"
                   "    %s - identifies the revision number (1 in '5:2.3.4-1')\n"
                   "\n"
+                  "You can also use the following predefined version formats for both input and\n"
+                  "output:\n"
+                  "\n"
+                  "    %s - reads a Debian version string\n"
+                  "    %s - reads a SemVer version string\n"
+                  "\n"
                   "Please note that while this setup is pretty flexible, it far from delivers\n"
                   "everything you could ever ask for in a version string. Instead it's completely\n"
                   "oriented towards supporting %s. While\n"
@@ -73,12 +79,37 @@ class VersionerHelpAction(argparse.Action):
                   "    %s - do nothing to the version string (the default)\n"
                   "\n"
                   "The action will be performed after reading the version string and before\n"
-                  "creating the new version string.\n" %
+                  "creating the new version string.\n"
+                  "\n"
+                  "Best practice\n"
+                  "-------------\n"
+                  "\n"
+                  "A good start is to read the version from your Python project so you have a\n"
+                  "central point where you change the version. Make sure that your development\n"
+                  "model changes the version string according to SemVer when you make a new\n"
+                  "release. For example when using git flow, you change the version every time\n"
+                  "you create a new release branch.\n"
+                  "\n"
+                  "Then you just have to make sure that your packaging system will recognize the\n"
+                  "automatically incremented new version string as newer than the last one. I like\n"
+                  "to use the following configuration for my development branches:\n"
+                  "\n"
+                  "    --read-version='pymodule:myproject:__version__' \\\n"
+                  "    --parse-version-format='semver' \\\n"
+                  "    --version-action='increment-revision' \\\n"
+                  "    --new-version-format='debian'\n"
+                  "\n"
+                  "This will read the __version__ attribute from the Python module myproject in\n"
+                  "the current PYTHONPATH. It will parse this value as a SemVer formatted version,\n"
+                  "increment the revision part and output it as a Debian-compatible version string.\n"
+                  "Storing the created package in an APT repository will ensure that they are\n"
+                  "picked up by apt-get update && apt-get upgrade.\n" %
                   (highlight("--read-version"), highlight("--parse-version-format"),
                    highlight("--new-version-format"), highlight("--version-action"),
                    highlight("--help-versioner=[%s]" % ", ".join(versioners.keys())),
                    highlight("--parse-version-format"), highlight("--new-version-format"),
                    highlight("%major"), highlight("%minor"), highlight("%patch"), highlight("%revision"),
+                   highlight("debian"), highlight("semver"),
                    highlight("Semantic Versioning (http://semver.org/)"),
                    highlight("keep version strings constant for release versions"),
                    highlight("--version-action"), highlight("increment-epoch"),

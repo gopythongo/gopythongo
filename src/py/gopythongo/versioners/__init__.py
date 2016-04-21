@@ -25,7 +25,8 @@ def add_args(parser):
                             help="Specify a format for the version string to be used for the output package. See "
                                  "--help-versioner for details.")
     gp_version.add_argument("--version-action", dest="version_action",
-                            choices=["increment-epoch", "increment-revision", "none"], default="none",
+                            choices=["increment-epoch", "increment-patch", "increment-revision", "none"],
+                            default="none",
                             help="Choose what to do to the version determined via --read-version to change the "
                                  "version for the output package before it is formatted according to "
                                  "--new-version-format.")
