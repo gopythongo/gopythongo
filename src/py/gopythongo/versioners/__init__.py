@@ -31,19 +31,47 @@ def add_args(parser):
                                  "version for the output package before it is formatted according to "
                                  "--new-version-format.")
 
+    for v in versioners.values():
+        v.add_args(parser)
+
 
 def validate_args(args):
     if args.read_version:
         if ":" in args.read_version:
-            if args.read_version.split(":")[0] not in versioners.keys():
+            if args.read_version.split(":")[0] in versioners.keys():
+                if not hasattr(versioners[args.read_version.split(":")[0]], "read"):
+                    print_error("%s is not a valid versioner for reading versions. Valid readers are %s" %
+                                (highlight(args.read_version.split(":")[0]),
+                                 highlight(", ".join(
+                                     [x for x in versioners.keys() if hasattr(versioners[x], "read")]
+                                 ))))
+                    sys.exit(1)
+            else:
                 print_error("%s is not a valid versioner for reading versions. Valid readers are %s" %
-                            (highlight(args.read_version.split(":")[0]), highlight(", ".join(versioners.keys()))))
+                            (highlight(args.read_version.split(":")[0]), highlight(", ".join(
+                                [x for x in versioners.keys() if hasattr(versioners[x], "read")]
+                            ))))
                 sys.exit(1)
+
         else:
             print_error("%s needs a parameter in the form of '[versioner]:[parameters]'. See %s for more information." %
                         (highlight("--read-version"), highlight("--help-versioner")))
             sys.exit(1)
 
+    if ":" in args.new_version:
+        if args.new_version.split(":")[0] not in versioners.keys():
+            print_error("%s is not a valid versioner for creating version numbers. Valid versioners are %s" %
+                        (highlight(args.new_version.split(":"[0])), highlight(", ".join(versioners.keys()))))
+            sys.exit(1)
+    else:
+        print_error("%s needs a parameter in the form of '[versioner]:[parameters]'. See %s for more information." %
+                    (highlight("--read-version"), highlight("--help-versioner")))
+        sys.exit(1)
+
+    for v in versioners.values():
+        v.validate_args(args)
+
 
 def version(args):
-    pass
+    reader = versioners[args.read_version.split(":")[0]]
+

@@ -1,5 +1,10 @@
 # -* encoding: utf-8 *-
 
+import sys
+import os
+
+from gopythongo.utils import highlight, print_error
+from gopythongo.utils.buildcontext import the_context
 
 _aptly_shared_args_added = False
 
@@ -18,3 +23,13 @@ def add_shared_args(parser):
                                           "accessible from the builder environment to be useful.)")
 
     _aptly_shared_args_added = True
+
+
+def validate_shared_args(args):
+    if not os.path.exists(args.aptly_executable) or not os.access(args.aptly_executable, os.X_OK):
+        print_error("aptly not found in path or not executable (%s). You can specify\n"
+                    "an alternative path using %s" % (args.aptly_executable,
+                                                      highlight("--use-aptly")))
+        sys.exit(1)
+
+
