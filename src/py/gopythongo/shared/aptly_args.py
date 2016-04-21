@@ -27,7 +27,7 @@ def add_shared_args(parser):
 
 def validate_shared_args(args):
     if not os.path.exists(args.aptly_executable) or not os.access(args.aptly_executable, os.X_OK):
-        print_error("aptly not found in path or not executable (%s). You can specify\n"
+        print_error("aptly not found in path or not executable (%s). You can specify "
                     "an alternative path using %s" % (args.aptly_executable,
                                                       highlight("--use-aptly")))
         sys.exit(1)
