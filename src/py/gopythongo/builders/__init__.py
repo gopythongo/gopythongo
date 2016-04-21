@@ -1,10 +1,13 @@
 # -* encoding: utf-8 *-
 
-import os
+import gopythongo.main
+import subprocess
 import sys
+import os
 
 from gopythongo.builders import docker, pbuilder
-from gopythongo.utils import print_error, print_info, highlight, create_script_path, BUILDCTX
+from gopythongo.utils import print_error, print_info, highlight, create_script_path, run_process, print_warning
+from gopythongo.utils.buildcontext import the_context
 
 modules = {
     "pbuilder": pbuilder,
@@ -27,9 +30,55 @@ def add_args(parser):
     return parser
 
 
-def test_gopythongo(path):
-    # TODO: test gpg --version output for virtualenv or PEX
+class NoMountableGoPythonGo(Exception):
     pass
+
+
+def _test_gopythongo_version(cmd):
+    try:
+        output = subprocess.check_output(cmd).decode("utf-8").strip()
+        if output == gopythongo.__version__:
+            return True
+        if len(output) >= 10 and output[:10] == gopythongo.__version__[:10]:
+            print_error("%s is GoPthonGo, but a different version (%s vs. %s)" %
+                        (highlight(cmd[0]), highlight(output[11:]), highlight(gopythongo.__version__[11:])))
+            raise NoMountableGoPythonGo("Mixed GoPythonGo versions")
+    except subprocess.CalledProcessError as e:
+        print_error("Error when trying to find out GoPythonGo version of nested executable")
+        print_error(e.message)
+        raise NoMountableGoPythonGo("Error when trying to get GoPythonGo version")
+
+    raise NoMountableGoPythonGo("Found something, but it's not GoPythonGo? (%s)" % output)
+
+
+def test_gopythongo(path):
+    """
+    :return: (str, list) -- A tuple containing the base path of the virtualenv/executable and a list containing
+                            the executable and a list of command-line parameters necessary to execute GoPythonGo,
+                            which can be passed to subprocess.Popen
+    """
+    # TODO: test gpg --version output for virtualenv or PEX
+    if os.path.isfile(path):
+        if os.access(path, os.X_OK):
+            # path might be a PEX executable
+            print_info("We found what is presumably a PEX executable in %s" % highlight(path))
+            try:
+                if _test_gopythongo_version([path, "--version"]):
+                    return os.path.dirname(path), [path]
+            except NoMountableGoPythonGo as e:
+                print_error(e)
+                sys.exit(1)
+
+    elif os.path.isdir(path):
+        if os.access(create_script_path(path, "python"), os.X_OK):
+            print_info("We found what is presumably a virtualenv in %s" % highlight(path))
+            try:
+                if _test_gopythongo_version([create_script_path(path, "python"), "-m", "gopythongo.main", "--version"]):
+                    return path, [create_script_path(path, "python"), "-m", "gopythongo.main"]
+            except NoMountableGoPythonGo as e:
+                print_error(e)
+                sys.exit(1)
+    raise NoMountableGoPythonGo("Can't find GoPythonGo as a virtualenv or PEX executable in %s" % path)
 
 
 def validate_args(args):
@@ -48,26 +97,29 @@ def validate_args(args):
             print_error("Folder to be mounted does not exist:\n%s" % highlight(mount))
             sys.exit(1)
 
-    # TODO: Set BUILDCTX _home and _cmd
     gpg_path_found = False
     if os.getenv("VIRTUAL_ENV"):
-        print_info("Propagating GoPythonGo to build environment from $VIRTUAL_ENV %s" %
-                   (highlight(os.getenv("VIRTUAL_ENV"))))
-        args.mounts.append(os.getenv("VIRTUAL_ENV"))
-        BUILDCTX.gopythongo_path = os.getenv("VIRTUAL_ENV")
-        gpg_path_found = True
-    else:
+        try:
+            the_context.gopythongo_path, the_context.gopythongo_cmd = test_gopythongo(os.getenv("VIRTUAL_ENV"))
+        except NoMountableGoPythonGo as e:
+            print_warning("$VIRTUAL_ENV is set, but does not point to a virtual environment with GoPythonGo?")
+        else:
+            print_info("Propagating GoPythonGo to build environment from $VIRTUAL_ENV %s" %
+                       (highlight(os.getenv("VIRTUAL_ENV"))))
+            gpg_path_found = True
+            args.mounts.append(the_context.gopythongo_path)
+
+    if not gpg_path_found:
         test_path = os.path.dirname(os.path.dirname(sys.executable))
 
-        if not os.path.exists(create_script_path(test_path, "python")):
-            print_error("Detected path %s does not contain a python executable." %
-                        highlight(create_script_path(test_path, "python")))
-            sys.exit(1)
-
-        print_info("Propagating GoPythonGo to build environment from detected path %s" % (highlight(test_path)))
-        args.mounts.append(test_path)
-        BUILDCTX.gopythongo_path = test_path
-        gpg_path_found = True
+        try:
+            the_context.gopythongo_path, the_context.gopythongo_cmd = test_gopythongo(test_path)
+        except NoMountableGoPythonGo as e:
+            pass
+        else:
+            print_info("Propagating GoPythonGo to build environment from detected path %s" % (highlight(test_path)))
+            args.mounts.append(the_context.gopythongo_path)
+            gpg_path_found = True
 
     if not gpg_path_found:
         print_error("Can't detect GoPythonGo path. You should run GoPythonGo from a virtualenv.")

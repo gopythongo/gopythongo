@@ -62,13 +62,11 @@ def flatten(x):
 
 def run_process(*args):
     print_info("Running %s" % str(args))
-    process = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr)
-    while process.poll() is None:
-        time.sleep(1)
+    ret = subprocess.call(args, stdout=sys.stdout, stderr=sys.stderr)
 
-    if process.returncode != 0:
-        print_error("%s exited with non-zero exit code %s" % (str(args), process.returncode))
-        sys.exit(process.returncode)
+    if ret != 0:
+        print_error("%s exited with non-zero exit code %s" % (str(args), ret))
+        sys.exit(ret)
 
 
 def print_error(message):
@@ -92,14 +90,3 @@ def success(message):
 
 def highlight(message):
     return "%s%s%s" % (highlight_color, message, color_reset)
-
-
-class BuildContext(object):
-    def __init__(self):
-        self.packs = []
-        self.read_version = None
-        self.out_version = None
-        self.gopythongo_home = None
-        self.gopythongo_cmd = None
-
-BUILDCTX = BuildContext()
