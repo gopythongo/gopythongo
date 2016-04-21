@@ -21,7 +21,7 @@ def add_args(parser):
                                  "details.")
     gp_version.add_argument("--parse-version-format", dest="parse_version", default=None,
                             help="Parse the version string read by --read-version in a specific way.")
-    gp_version.add_argument("--new-version-format", dest="new_version", required=True,
+    gp_version.add_argument("--new-version", dest="new_version", required=True,
                             help="Specify a format for the version string to be used for the output package. See "
                                  "--help-versioner for details.")
     gp_version.add_argument("--version-action", dest="version_action",
@@ -29,7 +29,7 @@ def add_args(parser):
                             default="none",
                             help="Choose what to do to the version determined via --read-version to change the "
                                  "version for the output package before it is formatted according to "
-                                 "--new-version-format.")
+                                 "--new-version.")
 
     for v in versioners.values():
         v.add_args(parser)

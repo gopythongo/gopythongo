@@ -33,8 +33,7 @@ class VersionerHelpAction(argparse.Action):
                   "\n"
                   "You specify how to read a version using %s and split it into its\n"
                   "parts using %s. The target version is then specified using\n"
-                  "%s, which can be optionally modified by setting\n"
-                  "%s.\n"
+                  "%s, which can be optionally modified by setting %s.\n"
                   "\n"
                   "If you want more information on the available versioners and their supported\n"
                   "methods, you want to use %s.\n"
@@ -42,8 +41,7 @@ class VersionerHelpAction(argparse.Action):
                   "Version format strings\n"
                   "----------------------\n"
                   "\n"
-                  "%s and %s support the following\n"
-                  "placeholders:\n"
+                  "%s and %s support the following placeholders:\n"
                   "\n"
                   "    %s    - identifies the major version number (2 in '5:2.3.4-1')\n"
                   "    %s    - identifies the minor version number (3 in '5:2.3.4-1')\n"
@@ -101,7 +99,7 @@ class VersionerHelpAction(argparse.Action):
                   "    --read-version='pymodule:myproject:__version__' \\\n"
                   "    --parse-version-format='semver' \\\n"
                   "    --version-action='increment-revision' \\\n"
-                  "    --new-version-format='aptly:debian'\n"
+                  "    --new-version='aptly:debian'\n"
                   "\n"
                   "This will:\n"
                   "\n"
@@ -115,9 +113,9 @@ class VersionerHelpAction(argparse.Action):
                   "Storing the created package in an APT repository will ensure that they are\n"
                   "picked up by apt-get update && apt-get upgrade.\n" %
                   (highlight("--read-version"), highlight("--parse-version-format"),
-                   highlight("--new-version-format"), highlight("--version-action"),
+                   highlight("--new-version"), highlight("--version-action"),
                    highlight("--help-versioner=[%s]" % ", ".join(versioners.keys())),
-                   highlight("--parse-version-format"), highlight("--new-version-format"),
+                   highlight("--parse-version-format"), highlight("--new-version"),
                    highlight("%major"), highlight("%minor"), highlight("%patch"), highlight("%revision"),
                    highlight("debian"), highlight("semver"),
                    highlight("Semantic Versioning (http://semver.org/)"),
