@@ -1,6 +1,9 @@
 # -* encoding: utf-8 *-
 
-from gopythongo.versioners import aptly, pymodule
+import sys
+
+from gopythongo.versioners import aptly, pymodule, help
+from gopythongo.utils import highlight, print_error
 
 
 versioners = {
@@ -11,14 +14,14 @@ versioners = {
 
 def add_args(parser):
     gp_version = parser.add_argument_group("Version determination")
-    gp_version.add_argument("--help-versioner", choices=versioners.keys(),
-                            help="Show help for a versioner.")
-    gp_version.add_argument("--read-version", dest="read_version",
+    gp_version.add_argument("--help-versioner", choices=versioners.keys(), default=None,
+                            action=help.VersionerHelpAction)
+    gp_version.add_argument("--read-version", dest="read_version", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
                                  "details.")
-    gp_version.add_argument("--parse-version-format", dest="parse_version",
+    gp_version.add_argument("--parse-version-format", dest="parse_version", default=None,
                             help="Parse the version string read by --read-version in a specific way.")
-    gp_version.add_argument("--new-version-format", dest="new_version",
+    gp_version.add_argument("--new-version-format", dest="new_version", required=True,
                             help="Specify a format for the version string to be used for the output package. See "
                                  "--help-versioner for details.")
     gp_version.add_argument("--version-action", dest="version_action",
@@ -29,7 +32,16 @@ def add_args(parser):
 
 
 def validate_args(args):
-    return True
+    if args.read_version:
+        if ":" in args.read_version:
+            if args.read_version.split(":")[0] not in versioners.keys():
+                print_error("%s is not a valid versioner for reading versions. Valid readers are %s" %
+                            (highlight(args.read_version.split(":")[0]), highlight(", ".join(versioners.keys()))))
+                sys.exit(1)
+        else:
+            print_error("%s needs a parameter in the form of '[versioner]:[parameters]'. See %s for more information." %
+                        (highlight("--read-version"), highlight("--help-versioner")))
+            sys.exit(1)
 
 
 def version(args):
