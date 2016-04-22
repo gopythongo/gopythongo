@@ -11,8 +11,7 @@ import re
 
 class InvalidDebianVersionString(Exception):
     def __init__(self, msg, *args):
-        if msg:
-            message = "%s\nPlease see https://www.debian.org/doc/debian-policy/ch-controlfields.html for details." % msg
+        message = "%s\nPlease see https://www.debian.org/doc/debian-policy/ch-controlfields.html for details." % msg
         self.args = ([message] + list(args)) if msg else args
 
 
@@ -94,8 +93,8 @@ def split_version_parts(version_str, version_char_re="[A-Za-z\+\.~]+"):
     For example: "a67bhgs89" has 4 groups -> ["a", "67", "bhgs", "89"]
     :param version_str: the string to separate
     :type version_str: str
-    :param version_re: a regular expression of valid characters in this version string as these can change (see DPM)
-    :type version_re: str
+    :param version_char_re: a regular expression of valid characters in this version string as these can change (see DPM)
+    :type version_char_re: str
     :return: a list of str
     :rtype: list
     """
@@ -221,4 +220,3 @@ class DebianVersion(object):
 
     def as_tuple(self):
         return self.epoch, self.version, self.revision
-

@@ -1,30 +1,28 @@
 # -* encoding: utf-8 *-
 
-# Type stub for gopythongo.debian so we're Python2 compatible
+# Type stub for gopythongo.utils.debversion so we're Python2 compatible
 from typing import Tuple, List
 
 
-def debian_substr_compare(a: str, b: str) -> int:
-    pass
+def debian_substr_compare(a: str, b: str) -> int: ...
 
 
-def split_version_parts(version_str: str, version_re: str) -> List[str]:
-    pass
+def split_version_parts(version_str: str, version_re: str) -> List[str]: ...
+
+
+def debian_versionpart_compare(mine: str, theirs: str) -> int: ...
 
 
 class DebianVersion(object):
-    def __init__(self, epoch: str, version: str, revision: str):
-        pass
+    def __init__(self, epoch: str, version: str, revision: str) -> None: ...
 
     @staticmethod
-    def fromstring(version_str: str) -> DebianVersion:
-        pass
+    def fromstring(version_str: str) -> 'DebianVersion': ...
 
-    def as_tuple(self) -> Tuple[str, str, str]:
-        pass
+    def as_tuple(self) -> Tuple[str, str, str]: ...
 
-    def __lt__(self, other: DebianVersion) -> bool:
-        pass
+    def __lt__(self, other: 'DebianVersion') -> bool: ...
 
-    def __eq__(self, other: DebianVersion) -> bool:
-        pass
+    def __eq__(self, other: 'DebianVersion') -> bool: ...
+
+    def tostring(self) -> str: ...
