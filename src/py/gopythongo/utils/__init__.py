@@ -3,7 +3,6 @@
 import collections
 import subprocess
 import shutil
-import time
 import six
 import sys
 import os
@@ -74,14 +73,14 @@ def print_error(message):
     print("%s%s" % (err, message))
 
 
-def print_warning(*args, **kwargs):
-    print("%s%s%s%s%s" % (warning_hl, "***", warning_color, " WARNING: ", color_reset), end="")
-    print(*args, **kwargs)
+def print_warning(message):
+    warn = "%s%s%s%s%s" % (warning_hl, "***", warning_color, " WARNING: ", color_reset)
+    print("%s%s" % (warn, message))
 
 
-def print_info(*args, **kwargs):
-    print("%s%s%s%s%s" % (info_hl, "*", info_color, " Info: ", color_reset), end="")
-    print(*args, **kwargs)
+def print_info(message):
+    info = "%s%s%s%s%s" % (info_hl, "*", info_color, " Info: ", color_reset)
+    print("%s%s" % (info, message))
 
 
 def success(message):
