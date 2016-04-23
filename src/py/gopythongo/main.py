@@ -118,7 +118,7 @@ def route():
         validate_args(args)
 
         if not args.is_inner:
-            # STEP 1: Start the build, which will execute gopythongo.main --inner
+            # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2
             gopythongo.versioners.version(args)
             gopythongo.builders.build(args)
 

@@ -20,6 +20,7 @@ _requirements = [
     'sphinx-rtd-theme==0.1.9',
     'colorama==0.3.7',
     'six==1.10.0',
+    'semantic_version==2.5.0',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
