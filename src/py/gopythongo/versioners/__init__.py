@@ -74,4 +74,4 @@ def validate_args(args):
 
 def version(args):
     reader = versioners[args.read_version.split(":")[0]]
-
+    version = versioners[reader].read(args)
