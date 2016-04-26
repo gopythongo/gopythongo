@@ -21,10 +21,10 @@ tempfiles = []
 def get_parser():
     parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "
-                                        "virtualenv is ready to be deployed to a server. "
+                                        "virtualenv is packaged and ready to be deployed to a server. "
                                         "This tool is designed to be used with pbuilder or docker so it can build a "
                                         "virtual environment in the path where it will be deployed. "
-                                        "Parameters that start with '--' (eg. --mode) can "
+                                        "Parameters that start with '--' (eg. --builder) can "
                                         "also be set in a config file (e.g. .gopythongo) by using .ini or .yaml-style "
                                         "syntax (e.g. mode=value). If a parameter is specified in more than one place, "
                                         "then command-line values override config file values which override defaults. "
@@ -34,18 +34,26 @@ def get_parser():
                             config_arg_help_message="Use this path instead of the default (.gopythongo)",
                             default_config_files=[".gopythongo"])
 
+    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
+        m.add_args(parser)
+
     gr_plan = parser.add_argument_group("Execution plan")
     gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
                          help="Choose the ecosystem to build from. (Default and only option right now: Python)")
-    gr_plan.add_argument("--builder", dest="builder", choices=["docker", "pbuilder"], default=None, required=True,
+    gr_plan.add_argument("--builder", dest="builder", choices=gopythongo.builders.builders.keys(), default=None,
+                         required=True,
                          help="Select the builder used to build the project")
+
+    # right now we _always_ run the virtualenv assembler (argparse will always *append* to the default list)
+    # because gopythongo does not support non-python ecosystems.
     gr_plan.add_argument("--assembler", dest="assembler",
-                         choices=["django", "pip"], action="append",
+                         choices=gopythongo.assemblers.assemblers.keys(), action="append", default=["virtualenv"],
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
                               "compile, pull all necessary source code and libraries.")
-    gr_plan.add_argument("--packer", choices=["fpm", "targz"], default=None, required=True,
+
+    gr_plan.add_argument("--packer", choices=gopythongo.packers.packers.keys(), default=None, required=True,
                          help="Select the packer used to pack up the built project")
-    gr_plan.add_argument("--store", choices=["docker", "aptly", "none"], default=None, required=True,
+    gr_plan.add_argument("--store", choices=gopythongo.stores.stores.keys(), default=None, required=True,
                          help="Select the store used to store the packed up project")
     gr_plan.add_argument("--gopythongo-path", dest="gopythongo_path", default=None,
                          help="Path to a virtual environment that contains GoPythonGo or a PEX GoPythonGo executable. "
@@ -61,9 +69,6 @@ def get_parser():
     gr_out.add_argument("-V", "--version", action="version", version=gopythongo.__version__)
     gr_out.add_argument("--no-color", dest="no_color", action="store_true", default=False,
                         help="Do not use ANSI color sequences in output")
-
-    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
-        m.add_args(parser)
 
     return parser
 

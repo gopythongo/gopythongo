@@ -5,7 +5,7 @@ import sys
 
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.versioners import aptly, pymodule, static, help, parsers
-from gopythongo.utils import highlight, print_error, print_info
+from gopythongo.utils import highlight, print_error, print_info, plugins
 
 versioners = {
     "aptly": aptly,
@@ -23,38 +23,15 @@ version_parsers = {
 def add_args(parser):
     global versioners, version_parsers
 
-    # load external modules
-    for entry_point in pkg_resources.iter_entry_points("gopythongo.versioners"):
-        module = entry_point.load()
-        if hasattr(module, "__versioner_name__"):
-            if hasattr(module, "add_args") and hasattr(module, "validate_args") and \
-                    hasattr(module, "print_help") and hasattr(module, "validate_param") and \
-                    (hasattr(module, "read") or hasattr(module, "create")):
-                versioners[module.__versioner_name__] = module
-            else:
-                print_error("A versioner plug-in must have at least either read() or create() implementations, "
-                            "add_args(), validate_args(), validate_param() and print_help(). %s (%s) is faulty." %
-                            (highlight(module.__versioner_name__), highlight(module.__name__)))
-                sys.exit(1)
-        else:
-            print_error("A versioner plug-in must have a __versioner_name__ attribute. %s seems to have none." %
-                        highlight(module.__name__))
-            sys.exit(1)
-
-    for entry_point in pkg_resources.iter_entry_points("gopythongo.versionparsers"):
-        module = entry_point.load()
-        if hasattr(module, "__versionparser_name__"):
-            if hasattr(module, "add_args") and hasattr(module, "validate_args") and \
-                    hasattr(module, "print_help") and hasattr(module, "parse"):
-                version_parsers[module.__versionparser_name__] = module
-            else:
-                print_error("A versionparser plug-in must have implementations for add_args(), validate_args(), "
-                            "print_help() and parse(). %s (%s) is faulty." %
-                            (highlight(module.__versionparser_name__), highlight(module.__name__)))
-        else:
-            print_error("A versionparser plug-in must have a __versionparser_name__ attribute. %s seems to have none." %
-                        highlight(module.__name__))
-            sys.exit(1)
+    try:
+        plugins.load_plugins("gopythongo.versioners", versioners, "versioner_name",
+                             ["add_args", "validate_args", "print_help", "validate_param",
+                              ["read", "create"]])
+        plugins.load_plugins("gopythongo.versionparsers", version_parsers, "versionparser_name",
+                             ["add_args", "validate_args", "print_help", "parse"])
+    except ImportError as e:
+        print_error(e.message)
+        sys.exit(1)
 
     gp_version = parser.add_argument_group("Version determination")
     gp_version.add_argument("--help-versioner", choices=versioners.keys(), default=None,
@@ -64,7 +41,7 @@ def add_args(parser):
     gp_version.add_argument("--read-version", dest="read_version", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
                                  "details.")
-    gp_version.add_argument("--version-parser", dest="version_parser", default="semver",
+    gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
                             help="Parse the version string read by --read-version with this parser. See "
                                  "--help-versionparser for details.")
     gp_version.add_argument("--new-version", dest="new_version", required=True,
@@ -90,6 +67,11 @@ def validate_args(args):
 
     for vp in version_parsers.values():
         vp.validate_args(args)
+
+    if args.version_parser not in version_parsers:
+        print_error("%s is not a valid version parser. Valid options are: %s" %
+                    (highlight(args.version_parser), ", ".join(version_parsers.keys())))
+        sys.exit(1)
 
     if args.read_version:
         if ":" in args.read_version:
@@ -125,13 +107,9 @@ def validate_args(args):
         sys.exit(1)
 
 
-def parse(version_str):
-    pass
-
-
 def version(args):
     reader = versioners[args.read_version.split(":")[0]]
     version_str = versioners[reader].read(args)
     print_info("Read version using versioner %s: %s" % (highlight(reader), highlight(version_str)))
 
-    the_context.read_version = parse(version_str)
+    the_context.read_version = version_parsers[args.version_parser].parse(version_str)

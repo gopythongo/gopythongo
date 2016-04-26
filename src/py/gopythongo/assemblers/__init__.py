@@ -5,6 +5,10 @@ import sys
 
 from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight
 
+assemblers = {
+    ""
+}
+
 
 def add_args(parser):
     gr_pip = parser.add_argument_group("PIP options")

@@ -6,16 +6,25 @@ import sys
 import os
 
 from gopythongo.builders import docker, pbuilder
-from gopythongo.utils import print_error, print_info, highlight, create_script_path, run_process, print_warning
+from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins
 from gopythongo.utils.buildcontext import the_context
 
-modules = {
+builders = {
     "pbuilder": pbuilder,
     "docker": docker,
 }
 
 
 def add_args(parser):
+    global builders
+
+    try:
+        plugins.load_plugins("gopythongo.builders", builders, "builder_name",
+                             ["add_args", "validate_args", "build"])
+    except ImportError as e:
+        print_error(e.message)
+        sys.exit(1)
+
     gr_bundle = parser.add_argument_group("Bundle settings")
     gr_bundle.add_argument("--use-virtualenv", dest="virtualenv_binary", default="/usr/bin/virtualenv",
                            help="Set an alternative virtualenv binary to use inside the builder container")
@@ -24,8 +33,8 @@ def add_args(parser):
                                 "the builders all paths will be mounted in place, i.e. in the same location where they "
                                 "exist on the host system.")
 
-    for m in modules.values():
-        m.add_args(parser)
+    for b in builders.values():
+        b.add_args(parser)
 
     return parser
 
@@ -57,7 +66,6 @@ def test_gopythongo(path):
                              the executable and a list of command-line parameters necessary to execute GoPythonGo,
                              which can be passed to subprocess.Popen
     """
-    # TODO: test gpg --version output for virtualenv or PEX
     if os.path.isfile(path):
         if os.access(path, os.X_OK):
             # path might be a PEX executable
@@ -83,8 +91,8 @@ def test_gopythongo(path):
 
 def validate_args(args):
     if args.builder:
-        if args.builder in modules.keys():
-            modules[args.builder].validate_args(args)
+        if args.builder in builders.keys():
+            builders[args.builder].validate_args(args)
 
     if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
         print_error("virtualenv not found in path or not executable (%s).\n"
@@ -127,4 +135,4 @@ def validate_args(args):
 
 
 def build(args):
-    modules[args.builder].build(args)
+    builders[args.builder].build(args)

@@ -5,7 +5,7 @@ import sys
 from importlib import import_module
 from gopythongo.utils import print_error
 
-__versioner_name__ = "pymodule"
+versioner_name = "pymodule"
 
 
 def import_string(dotted_path):
