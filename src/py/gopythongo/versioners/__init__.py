@@ -80,10 +80,16 @@ def add_args(parser):
     for v in versioners.values():
         v.add_args(parser)
 
+    for vp in version_parsers.values():
+        vp.add_args(parser)
+
 
 def validate_args(args):
     for v in versioners.values():
         v.validate_args(args)
+
+    for vp in version_parsers.values():
+        vp.validate_args(args)
 
     if args.read_version:
         if ":" in args.read_version:
