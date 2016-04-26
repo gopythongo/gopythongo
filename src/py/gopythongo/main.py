@@ -126,7 +126,6 @@ def route():
             gopythongo.stores.store(args)
         else:
             # STEP 2: ... which will land here and execute inside the build environment
-            gopythongo.versioners.version(args)
             gopythongo.assemblers.assemble(args)
             gopythongo.packers.pack(args)
 

@@ -53,9 +53,9 @@ def _test_gopythongo_version(cmd):
 
 def test_gopythongo(path):
     """
-    :return: (str, list) -- A tuple containing the base path of the virtualenv/executable and a list containing
-                            the executable and a list of command-line parameters necessary to execute GoPythonGo,
-                            which can be passed to subprocess.Popen
+    :returns: (str, list) -- A tuple containing the base path of the virtualenv/executable and a list containing
+                             the executable and a list of command-line parameters necessary to execute GoPythonGo,
+                             which can be passed to subprocess.Popen
     """
     # TODO: test gpg --version output for virtualenv or PEX
     if os.path.isfile(path):
