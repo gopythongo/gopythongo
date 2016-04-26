@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 
 
-versioner_name = "static"
+versioner_name = u"static"
 
 
 def add_args(parser):

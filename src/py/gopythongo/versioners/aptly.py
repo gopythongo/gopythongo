@@ -3,7 +3,7 @@
 import gopythongo.shared.aptly_args
 
 
-versioner_name = "aptly"
+versioner_name = u"aptly"
 
 
 def add_args(parser):

@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 
-versionparser_name = "semver"
+versionparser_name = u"semver"
 
 
 def add_args(parser):

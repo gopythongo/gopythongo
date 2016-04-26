@@ -4,9 +4,10 @@
 import os
 import sys
 import shutil
-import gopythongo.main
 
 from gopythongo.utils import template, print_error, print_info, highlight
+
+packer_name = u"fpm"
 
 
 def add_args(parser):

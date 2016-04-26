@@ -6,6 +6,9 @@ import os
 from gopythongo import utils
 from gopythongo.utils import print_error, highlight
 
+assembler_name = "django"
+
+
 def add_parser(subparsers):
     parser = subparsers.add_parser(name="assemble",
                                    description="",

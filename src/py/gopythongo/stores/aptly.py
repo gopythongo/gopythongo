@@ -3,6 +3,8 @@
 
 import gopythongo.shared.aptly_args
 
+store_name = u"aptly"
+
 
 def add_args(parser):
     gopythongo.shared.aptly_args.add_shared_args(parser)

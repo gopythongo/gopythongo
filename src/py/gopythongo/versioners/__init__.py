@@ -8,15 +8,15 @@ from gopythongo.versioners import aptly, pymodule, static, help, parsers
 from gopythongo.utils import highlight, print_error, print_info, plugins
 
 versioners = {
-    "aptly": aptly,
-    "pymodule": pymodule,
-    "static": static,
+    u"aptly": aptly,
+    u"pymodule": pymodule,
+    u"static": static,
 }
 
 version_parsers = {
-    "stringformat": parsers.stringparser,
-    "semver": parsers.semverparser,
-    "debian": parsers.debianparser,
+    u"stringformat": parsers.stringparser,
+    u"semver": parsers.semverparser,
+    u"debian": parsers.debianparser,
 }
 
 

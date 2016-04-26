@@ -7,6 +7,8 @@ import tarfile
 
 from gopythongo.utils import print_info, print_error, highlight
 
+packer_name = u"targz"
+
 
 def add_args(parser):
     pass

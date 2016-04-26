@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 
-versionparser_name = "debian"
+versionparser_name = u"debian"
 
 
 def add_args(parser):

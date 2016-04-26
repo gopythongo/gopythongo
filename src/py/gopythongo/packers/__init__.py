@@ -6,8 +6,8 @@ from gopythongo.utils import print_error, plugins
 from gopythongo.packers import fpm, targz
 
 packers = {
-    "fpm": fpm,
-    "targz": targz,
+    u"fpm": fpm,
+    u"targz": targz,
 }
 
 

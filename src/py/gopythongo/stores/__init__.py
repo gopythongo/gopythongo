@@ -6,8 +6,8 @@ from gopythongo.utils import print_error, plugins
 from gopythongo.stores import aptly, docker
 
 stores = {
-    "aptly": aptly,
-    "docker": docker,
+    u"aptly": aptly,
+    u"docker": docker,
 }
 
 

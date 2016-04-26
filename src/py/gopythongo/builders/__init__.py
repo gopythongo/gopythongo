@@ -10,8 +10,8 @@ from gopythongo.utils import print_error, print_info, highlight, create_script_p
 from gopythongo.utils.buildcontext import the_context
 
 builders = {
-    "pbuilder": pbuilder,
-    "docker": docker,
+    u"pbuilder": pbuilder,
+    u"docker": docker,
 }
 
 

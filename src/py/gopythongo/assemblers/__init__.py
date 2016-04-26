@@ -3,14 +3,24 @@
 import os
 import sys
 
-from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight
+from gopythongo.assemblers import django
+from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins
 
 assemblers = {
-    ""
+    u"django": django,
 }
 
 
 def add_args(parser):
+    global assemblers
+
+    try:
+        plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_name",
+                             ["add_args", "validate_args", "assemble"])
+    except ImportError as e:
+        print_error(e.message)
+        sys.exit(1)
+
     gr_pip = parser.add_argument_group("PIP options")
     gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
                         help="Any string specified here will be directly appended to all pip command-lines when it is "

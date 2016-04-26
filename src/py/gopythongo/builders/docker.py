@@ -4,6 +4,8 @@ import gopythongo.shared.docker_args
 
 from gopythongo.utils import print_info, highlight
 
+builder_name = u"docker"
+
 
 def add_args(parser):
     gopythongo.shared.docker_args.add_shared_args(parser)

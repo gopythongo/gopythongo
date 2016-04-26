@@ -7,6 +7,8 @@ import shlex
 from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path
 from gopythongo.utils.buildcontext import the_context
 
+builder_name = u"pbuilder"
+
 
 def add_args(parser):
     gr_pbuilder = parser.add_argument_group("Pbuilder options")
