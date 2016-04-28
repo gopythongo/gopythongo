@@ -170,7 +170,7 @@ class DebianVersion(object):
         if self.revision:
             if not re.match("[A-Za-z0-9\+\.~]+", self.revision):
                 raise InvalidDebianVersionString("Revision error: %s does not match %s. %s" %
-                                                 (self.revision, "[A-Za-z0-9\+\.~]+"), details)
+                                                 (self.revision, "[A-Za-z0-9\+\.~]+", details))
         if not re.match(self.version_re, self.version):
             raise InvalidDebianVersionString("Version error: %s does not match %s. %s" %
                                              (self.version, self.version_re, details))
