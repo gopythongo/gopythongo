@@ -3,7 +3,8 @@
 import sys
 
 from gopythongo.utils import print_error, plugins
-from gopythongo.packers import fpm, targz
+
+from . import fpm, targz
 
 packers = {
     u"fpm": fpm,
@@ -17,7 +18,7 @@ def add_args(parser):
     try:
         plugins.load_plugins("gopythongo.packers", packers, "packer_name", ["add_args", "validate_args", "pack"])
     except ImportError as e:
-        print_error(e.message)
+        print_error(str(e))
         sys.exit(1)
 
     for m in packers.values():

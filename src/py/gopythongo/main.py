@@ -66,7 +66,7 @@ def get_parser():
     gr_out = parser.add_argument_group("Output options")
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
                         help="more output")
-    gr_out.add_argument("-V", "--version", action="version", version=gopythongo.__version__)
+    gr_out.add_argument("-V", "--version", action="version", version=gopythongo.program_version)
     gr_out.add_argument("--no-color", dest="no_color", action="store_true", default=False,
                         help="Do not use ANSI color sequences in output")
 

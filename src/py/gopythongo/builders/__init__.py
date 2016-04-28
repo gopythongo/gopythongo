@@ -5,9 +5,11 @@ import subprocess
 import sys
 import os
 
-from gopythongo.builders import docker, pbuilder
 from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins
 from gopythongo.utils.buildcontext import the_context
+
+from . import docker, pbuilder
+
 
 builders = {
     u"pbuilder": pbuilder,
@@ -22,7 +24,7 @@ def add_args(parser):
         plugins.load_plugins("gopythongo.builders", builders, "builder_name",
                              ["add_args", "validate_args", "build"])
     except ImportError as e:
-        print_error(e.message)
+        print_error(str(e))
         sys.exit(1)
 
     gr_bundle = parser.add_argument_group("Bundle settings")
@@ -46,15 +48,15 @@ class NoMountableGoPythonGo(Exception):
 def _test_gopythongo_version(cmd):
     try:
         output = subprocess.check_output(cmd).decode("utf-8").strip()
-        if output == gopythongo.__version__:
+        if output == gopythongo.program_version:
             return True
-        if len(output) >= 10 and output[:10] == gopythongo.__version__[:10]:
+        if len(output) >= 10 and output[:10] == gopythongo.program_version[:10]:
             print_error("%s is GoPthonGo, but a different version (%s vs. %s)" %
-                        (highlight(cmd[0]), highlight(output[11:]), highlight(gopythongo.__version__[11:])))
+                        (highlight(cmd[0]), highlight(output[11:]), highlight(gopythongo.program_version[11:])))
             raise NoMountableGoPythonGo("Mixed GoPythonGo versions")
     except subprocess.CalledProcessError as e:
         print_error("Error when trying to find out GoPythonGo version of nested executable")
-        print_error(e.message)
+        print_error(str(e))
         raise NoMountableGoPythonGo("Error when trying to get GoPythonGo version")
 
     raise NoMountableGoPythonGo("Found something, but it's not GoPythonGo? (%s)" % output)

@@ -27,7 +27,7 @@ def validate_args(args):
             DebianVersion.fromstring(args.aptly_fallback_version)
         except InvalidDebianVersionString as e:
             print_error("The fallback version string you specified via %s is not a valid Debian version string. (%s)" %
-                        (highlight("--fallback-version"), e.message))
+                        (highlight("--fallback-version"), str(e)))
             sys.exit(1)
 
 

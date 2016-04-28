@@ -3,8 +3,10 @@
 import os
 import sys
 
-from gopythongo.assemblers import django
 from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins
+
+from . import django
+
 
 assemblers = {
     u"django": django,
@@ -18,7 +20,7 @@ def add_args(parser):
         plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_name",
                              ["add_args", "validate_args", "assemble"])
     except ImportError as e:
-        print_error(e.message)
+        print_error(str(e))
         sys.exit(1)
 
     gr_pip = parser.add_argument_group("PIP options")

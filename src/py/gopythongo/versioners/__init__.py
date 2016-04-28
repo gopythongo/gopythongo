@@ -1,11 +1,13 @@
 # -* encoding: utf-8 *-
 
-import pkg_resources
 import sys
 
+from . import parsers
+
 from gopythongo.utils.buildcontext import the_context
-from gopythongo.versioners import aptly, pymodule, static, help, parsers
+from gopythongo.versioners import aptly, pymodule, static, help
 from gopythongo.utils import highlight, print_error, print_info, plugins
+
 
 versioners = {
     u"aptly": aptly,
@@ -14,7 +16,7 @@ versioners = {
 }
 
 version_parsers = {
-    u"stringformat": parsers.stringparser,
+    u"regex": parsers.regexparser,
     u"semver": parsers.semverparser,
     u"debian": parsers.debianparser,
 }
@@ -30,7 +32,7 @@ def add_args(parser):
         plugins.load_plugins("gopythongo.versionparsers", version_parsers, "versionparser_name",
                              ["add_args", "validate_args", "print_help", "parse"])
     except ImportError as e:
-        print_error(e.message)
+        print_error(str(e))
         sys.exit(1)
 
     gp_version = parser.add_argument_group("Version determination")

@@ -165,11 +165,12 @@ class DebianVersion(object):
 
         if self.epoch:
             if not re.match("[0-9]+", self.epoch):
-                raise InvalidDebianVersionString("Epoch error: %s does not match %s. %s" % (self.epoch, "[0-9]+",))
+                raise InvalidDebianVersionString("Epoch error: %s does not match %s. %s" %
+                                                 (self.epoch, "[0-9]+", details))
         if self.revision:
             if not re.match("[A-Za-z0-9\+\.~]+", self.revision):
-                raise InvalidDebianVersionString("Revision error: %s does not match %s" %
-                                                 (self.revision, "[A-Za-z0-9\+\.~]+"),)
+                raise InvalidDebianVersionString("Revision error: %s does not match %s. %s" %
+                                                 (self.revision, "[A-Za-z0-9\+\.~]+"), details)
         if not re.match(self.version_re, self.version):
             raise InvalidDebianVersionString("Version error: %s does not match %s. %s" %
                                              (self.version, self.version_re, details))
