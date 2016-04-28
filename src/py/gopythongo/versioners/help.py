@@ -23,20 +23,16 @@ class VersionerHelpAction(argparse.Action):
             print("Versioners\n"
                   "==========\n"
                   "\n"
-                  "Versioners are responsible for two actions:\n"
+                  "Versioners are responsible for reading a version string from a source. What the\n"
+                  "source is, depends on the versioner.\n"
                   "\n"
-                  "    1. They read a version string from a source. What the source is, depends on\n"
-                  "       the versioner.\n"
-                  "    2. They process the version string, changing it when configured to do so\n"
-                  "       and then setting the resulting version as the output version for a\n"
-                  "       GoPythonGo packer.\n"
-                  "\n"
-                  "You specify how to read a version using %s and split it into its\n"
-                  "parts using %s. The target version is then specified using\n"
-                  "%s, which can be optionally modified by setting %s.\n"
+                  "You specify how to read a version using %s and split it into its parts using\n"
+                  "%s. The target version is then specified using %s,\n"
+                  "which can be optionally modified by setting %s.\n"
                   "\n"
                   "If you want more information on the available versioners and their supported\n"
                   "methods, you want to use %s.\n"
+                  "You can find out more about version parsers whic"
                   "\n"
                   "Version format strings\n"
                   "----------------------\n"
@@ -112,7 +108,7 @@ class VersionerHelpAction(argparse.Action):
                   "\n"
                   "Storing the created package in an APT repository will ensure that they are\n"
                   "picked up by apt-get update && apt-get upgrade.\n" %
-                  (highlight("--read-version"), highlight("--parse-version-format"),
+                  (highlight("--read-version"), highlight("--version-parser"),
                    highlight("--new-version"), highlight("--version-action"),
                    highlight("--help-versioner=[%s]" % ", ".join(versioners.keys())),
                    highlight("--parse-version-format"), highlight("--new-version"),
