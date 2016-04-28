@@ -17,7 +17,7 @@ def validate_args(args):
     pass
 
 
-def parse(version_str):
+def parse(version_str, args):
     try:
         dv = DebianVersion.fromstring(version_str)
     except InvalidDebianVersionString as e:
@@ -25,3 +25,7 @@ def parse(version_str):
         sys.exit(1)
 
     return VersionContainer(dv, versionparser_name)
+
+
+def print_help():
+    pass

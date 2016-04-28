@@ -21,14 +21,18 @@ def add_args(parser):
     pass
 
 
-def validate_args(parser):
+def validate_args(args):
     pass
 
 
-def parse(version_str):
+def parse(version_str, args):
     try:
         sv = SemVerVersion.parse(version_str)
     except ValueError as e:
         print_error("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e)))
 
     return VersionContainer(sv, versionparser_name)
+
+
+def print_help():
+    pass

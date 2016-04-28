@@ -46,15 +46,15 @@ def add_args(parser):
     gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
                             help="Parse the version string read by --read-version with this parser. See "
                                  "--help-versionparser for details.")
-    gp_version.add_argument("--new-version", dest="new_version", required=True,
-                            help="Specify a format for the version string to be used for the output package. See "
-                                 "--help-versioner for details.")
+    gp_version.add_argument("--new-version", dest="version_creator", required=True,
+                            help="Specify the version format into which the version should be converted (can be the "
+                                 "same) before applying the selected version action to create the final version string "
+                                 "to be used for the output package. See --help-versionparser for details.")
     gp_version.add_argument("--version-action", dest="version_action",
                             choices=["increment-epoch", "increment-patch", "increment-revision", "none"],
                             default="none",
-                            help="Choose what to do to the version determined via --read-version to change the "
-                                 "version for the output package before it is formatted according to "
-                                 "--new-version.")
+                            help="Choose what to do to the version for the output package after it is "
+                                 "formatted/converted according to --new-version.")
 
     for v in versioners.values():
         v.add_args(parser)
@@ -92,20 +92,9 @@ def validate_args(args):
                         (highlight("--read-version"), highlight("--help-versioner")))
             sys.exit(1)
 
-    if ":" in args.new_version:
-        create_versioner = args.new_version.split(":")[0]
-        if create_versioner not in versioners.keys() or not \
-                hasattr(versioners[create_versioner], "create"):
-            print_error("%s is not a valid versioner for creating version numbers. Valid versioners are %s" %
-                        (highlight(create_versioner), highlight(", ".join(
-                            [x for x in versioners.keys() if hasattr(versioners[x], "create")]
-                        ))))
-            sys.exit(1)
-
-        versioners[create_versioner].validate_param(args.new_version[len(create_versioner) + 1:])
-    else:
-        print_error("%s needs a parameter in the form of '[versioner]:[parameters]'. See %s for more information." %
-                    (highlight("--read-version"), highlight("--help-versioner")))
+    if args.version_creator not in version_parsers:
+        print_error("%s is not a valid version formatter/parser for creating version numbers. Valid options are %s" %
+                    (highlight(args.version_creator), ", ".join(version_parsers.keys())))
         sys.exit(1)
 
 

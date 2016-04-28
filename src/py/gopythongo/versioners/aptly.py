@@ -39,9 +39,5 @@ def read(readspec, parsespec):
     pass
 
 
-def create(createspec, action):
-    pass
-
-
 def print_help():
     pass
