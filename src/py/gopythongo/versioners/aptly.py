@@ -1,7 +1,10 @@
 # -* encoding: utf-8 *-
 
+import sys
 import gopythongo.shared.aptly_args
 
+from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
+from gopythongo.utils import highlight, print_error
 
 versioner_name = u"aptly"
 
@@ -18,6 +21,14 @@ def add_args(parser):
 
 def validate_args(args):
     gopythongo.shared.aptly_args.validate_shared_args(args)
+
+    if args.aptly_fallback_version:
+        try:
+            DebianVersion.fromstring(args.aptly_fallback_version)
+        except InvalidDebianVersionString as e:
+            print_error("The fallback version string you specified via %s is not a valid Debian version string. (%s)" %
+                        (highlight("--fallback-version"), e.message))
+            sys.exit(1)
 
 
 def validate_param(param):
