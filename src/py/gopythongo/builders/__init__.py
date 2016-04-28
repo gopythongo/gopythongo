@@ -46,7 +46,7 @@ class NoMountableGoPythonGo(Exception):
 
 def _test_gopythongo_version(cmd):
     try:
-        output = subprocess.check_output(cmd).decode("utf-8").strip()
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
         if output == gopythongo.program_version:
             return True
         if len(output) >= 10 and output[:10] == gopythongo.program_version[:10]:

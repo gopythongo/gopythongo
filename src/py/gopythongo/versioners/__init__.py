@@ -98,8 +98,11 @@ def validate_args(args):
 
 
 def version(args):
-    reader = versioners[args.read_version.split(":")[0]]
-    version_str = versioners[reader].read(args)
-    print_info("Read version using versioner %s: %s" % (highlight(reader), highlight(version_str)))
+    reader_name = args.read_version.split(":")[0]
+    param = args.read_version[len(reader_name) + 1:]
 
-    the_context.read_version = version_parsers[args.version_parser].parse(version_str)
+    reader = versioners[reader_name]
+    version_str = reader.read(param)
+    print_info("Read version using versioner %s: %s" % (highlight(reader_name), highlight(version_str)))
+
+    the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)

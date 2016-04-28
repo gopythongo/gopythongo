@@ -26,7 +26,7 @@ def add_args(parser):
 
 
 def validate_args(args):
-    for s in stores:
+    for s in stores.values():
         s.validate_args(args)
 
 
