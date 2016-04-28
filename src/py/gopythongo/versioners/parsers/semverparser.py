@@ -3,7 +3,7 @@
 import six
 
 from semantic_version import Version as SemVerBase
-
+from gopythongo.utils import highlight, print_error
 
 versionparser_name = u"semver"
 
@@ -25,4 +25,7 @@ def validate_args(parser):
 
 
 def parse(version_str):
-    pass
+    try:
+        sv = SemVerVersion.parse(version_str)
+    except ValueError as e:
+        print_error("%s is not a valid SemVer version string" % highlight(version_str))

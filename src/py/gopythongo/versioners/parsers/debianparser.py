@@ -7,7 +7,7 @@ def add_args(parser):
     pass
 
 
-def validate_args(parser):
+def validate_args(args):
     pass
 
 

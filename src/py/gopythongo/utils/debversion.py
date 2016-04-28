@@ -174,8 +174,8 @@ class DebianVersion(object):
             raise InvalidDebianVersionString("Version error: %s does not match %s. %s" %
                                              (self.version, self.version_re, details))
 
-    @staticmethod
-    def fromstring(version_str):
+    @classmethod
+    def fromstring(cls, version_str):
         epoch, version, revision = (None, None, None)
         if ":" in version_str:
             epoch = version_str.split(":")[0]
@@ -184,7 +184,7 @@ class DebianVersion(object):
             revision = version_str.rsplit("-")[1]
             version_str = version_str.rsplit("-")[0]
         version = version_str
-        return DebianVersion(epoch, version, revision)
+        return cls(epoch, version, revision)
 
     def __repr__(self):
         return "DebianVersion<Epoch:%s, Version:%s, Revision:%s, Validation Regex:%s, Split Regex: %s>" % (
