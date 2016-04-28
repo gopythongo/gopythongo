@@ -4,8 +4,7 @@ import os
 import sys
 
 from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins
-
-from . import django
+from gopythongo.assemblers import django
 
 
 assemblers = {

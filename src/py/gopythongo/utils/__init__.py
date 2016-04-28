@@ -2,7 +2,6 @@
 
 import collections
 import subprocess
-import shutil
 import six
 import sys
 import os
@@ -23,7 +22,12 @@ error_color = Fore.RED
 highlight_color = Fore.LIGHTWHITE_EX
 color_reset = Fore.RESET
 
-_cwidth, _cheight = shutil.get_terminal_size()
+if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
+    from backports.shutil_get_terminal_size import get_terminal_size
+    _cwidth, _cheight = get_terminal_size()
+else:
+    import shutil
+    _cwidth, _cheight = shutil.get_terminal_size()
 
 
 def init_color(no_color):

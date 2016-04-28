@@ -1,7 +1,5 @@
 # -* encoding: utf-8 *-
 
-from . import debianparser, help, regexparser, semverparser
-
 
 class UnknownParserName(Exception):
     pass

@@ -2,11 +2,10 @@
 
 import sys
 
-from . import parsers
-
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.versioners import aptly, pymodule, static, help
 from gopythongo.utils import highlight, print_error, print_info, plugins
+from gopythongo.versioners.parsers import regexparser, semverparser, debianparser
 
 
 versioners = {
@@ -16,9 +15,9 @@ versioners = {
 }
 
 version_parsers = {
-    u"regex": parsers.regexparser,
-    u"semver": parsers.semverparser,
-    u"debian": parsers.debianparser,
+    u"regex": regexparser,
+    u"semver": semverparser,
+    u"debian": debianparser,
 }
 
 

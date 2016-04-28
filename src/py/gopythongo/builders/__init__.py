@@ -7,8 +7,7 @@ import os
 
 from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins
 from gopythongo.utils.buildcontext import the_context
-
-from . import docker, pbuilder
+from gopythongo.builders import docker, pbuilder
 
 
 builders = {
