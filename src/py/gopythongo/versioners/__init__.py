@@ -3,9 +3,9 @@
 import sys
 
 from gopythongo.utils.buildcontext import the_context
-from gopythongo.versioners import aptly, pymodule, static, help
+from gopythongo.versioners import aptly, pymodule, static, help as versioner_help
 from gopythongo.utils import highlight, print_error, print_info, plugins
-from gopythongo.versioners.parsers import regexparser, semverparser, debianparser
+from gopythongo.versioners.parsers import regexparser, semverparser, debianparser, help as parser_help
 
 
 versioners = {
@@ -36,9 +36,9 @@ def add_args(parser):
 
     gp_version = parser.add_argument_group("Version determination")
     gp_version.add_argument("--help-versioner", choices=versioners.keys(), default=None,
-                            action=help.VersionerHelpAction)
+                            action=versioner_help.VersionerHelpAction)
     gp_version.add_argument("--help-versionparser", choices=version_parsers.keys(), default=None,
-                            action=parsers.help.VersionParserHelpAction)
+                            action=parser_help.VersionParserHelpAction)
     gp_version.add_argument("--read-version", dest="read_version", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
                                  "details.")

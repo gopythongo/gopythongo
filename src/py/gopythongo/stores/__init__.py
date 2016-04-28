@@ -21,7 +21,7 @@ def add_args(parser):
         print_error(str(e))
         sys.exit(1)
 
-    for s in stores:
+    for s in stores.values():
         s.add_args(parser)
 
 
