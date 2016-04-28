@@ -19,4 +19,9 @@ class VersionParserHelpAction(argparse.Action):
             versioners[values].print_help()
         else:
             print("Version parsers\n"
-                  "===============\n")
+                  "===============\n"
+                  "\n"
+                  "Version Parsers take a version string read by a Versioner in one format and\n"
+                  "convert it into a transformable object. The Version Parser then applies any\n"
+                  "action selected on the command-line to the version information. Finally, the\n"
+                  "version information is then converted (if possible) into the target format.\n")
