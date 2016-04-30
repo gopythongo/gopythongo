@@ -11,7 +11,7 @@ class VersionerHelpAction(argparse.Action):
                  dest,
                  default=None,
                  choices=None,
-                 help="Show help for GoPythonGo versioners."):
+                 help="Show help for GoPythonGo Versioners."):
         super(VersionerHelpAction, self).__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                                                   choices=choices, help=help)
 
@@ -24,26 +24,25 @@ class VersionerHelpAction(argparse.Action):
                   "===========\n"
                   "\n"
                   "Versioners are responsible for reading a version string from a source. What the\n"
-                  "source is, depends on the versioner.\n"
+                  "source is, depends on the Versioner.\n"
                   "\n"
                   "You specify how to read a version using %s and split it into its\n"
                   "parts using %s. The target version is then specified using\n"
                   "%s. The target version can then be optionally modified by setting\n"
                   "%s.\n"
                   "\n"
-                  "If you want more information on the available versioners and their supported\n"
+                  "If you want more information on the available Versioners and their supported\n"
                   "methods, you want to use %s.\n"
-                  "You can find out more about version parsers by using %s.\n"
+                  "You can find out more about Version Parsers by using %s.\n"
                   "\n"
                   "The GoPythonGo versioning system is all oriented around %s\n"
                   "%s. SemVer is very limited in some ways due to a lack of\n"
                   "support for hotfixes, sortable branch versions and unfixable standard\n"
                   "violations (at least in SemVer 2.0.0). However, IT IS the easiest to support\n"
-                  "lowest common denominator. GoPythonGo makes it easy to use more expressive\n"
-                  "versioning systems by supporting the Debian versioning system and making it\n"
-                  "easy to plug-in your own version parsers with just a few lines of code. In\n"
-                  "addition, case, most versioning systems are incompatible (e.g. SemVer 2.0.0\n"
-                  "and PEP-440) and GoPythonGo does its best to convert between them.\n"
+                  "lowest common denominator. GoPythonGo also supports more expressive versioning\n"
+                  "systems like Debian system and makes it easy to plug-in your own Version\n"
+                  "Parsers with just a few lines of code. Please also read the output of\n"
+                  "%s.\n"
                   "\n"
                   "Version process\n"
                   "---------------\n"
@@ -67,12 +66,12 @@ class VersionerHelpAction(argparse.Action):
                   "    %s - increment the version string revision\n"
                   "    %s - do nothing to the version string (the default)\n"
                   "\n"
-                  "This action will be performed by the versioner selected for creating the result\n"
+                  "This action will be performed by the Versioner selected for creating the result\n"
                   "version string which will be used by the packer and store subsystems. For\n"
-                  "example: The %s versioner, when faced with the 'increment-epoch' action, will\n"
+                  "example: The %s Versioner, when faced with the 'increment-epoch' action, will\n"
                   "first find out the highest Epoch value the target store repository, then\n"
                   "increment that Epoch by 1 and then create the new version string. For more\n"
-                  "details, please look at the help pages of the individual versioners.\n"
+                  "details, please look at the help pages of the individual Versioners.\n"
                   "\n"
                   "Best practice\n"
                   "-------------\n"
@@ -89,7 +88,7 @@ class VersionerHelpAction(argparse.Action):
                   "\n"
                   "    --read-version='pymodule:myproject.version' \\\n"
                   "    --parse-version-format='semver' \\\n"
-                  "    --new-version='aptly:debian' \\\n"
+                  "    --new-version='aptly' \\\n"
                   "    --version-action='increment-revision'\n"
                   "\n"
                   "This will:\n"
@@ -100,12 +99,16 @@ class VersionerHelpAction(argparse.Action):
                   "    * then find the highest revision of that version in the current package\n"
                   "      repository,\n"
                   "    * then increment the version revision by 1 and\n"
-                  "    * finally output the result as a Debian-compatible version string.\n" %
+                  "    * finally output the result as a Debian-compatible version string.\n"
+                  "\n"
+                  "You can find information about writing and plugging your own Versioners into\n"
+                  "GoPythonGo on http://gopythongo.com/.\n" %
                   (highlight("--read-version"), highlight("--version-parser"),
                    highlight("--new-version"), highlight("--version-action"),
                    highlight("--help-versioner=[%s]" % ", ".join(versioners.keys())),
                    highlight("--help-versionparsers"),
                    highlight("Semantic Versioning"), highlight("http://semver.org/)"),
+                   highlight("--help-versionparsers"),
                    highlight("keep version strings constant for release versions"),
                    highlight("--version-action"), highlight("increment-epoch"),
                    highlight("increment-patch"), highlight("increment-revision"), highlight("none"),

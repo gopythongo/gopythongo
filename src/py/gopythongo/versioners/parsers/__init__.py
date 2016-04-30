@@ -18,7 +18,10 @@ class VersionContainer(object):
         if parsername == self.parsed_by:
             return self
 
-        return version_parsers[self.parsed_by].convert_to(self.version, parsername)
+        if version_parsers[parsername].can_losslessly_convert_from(self.parsed_by):
+            return version_parsers[parsername].convert_from(self.version, self.parsed_by)
+        else:
+            return version_parsers[self.parsed_by].convert_to(self.version, parsername)
 
     def perform_action(self, action):
         from gopythongo.versioners import version_parsers
