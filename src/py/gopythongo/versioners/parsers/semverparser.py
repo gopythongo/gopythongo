@@ -34,5 +34,35 @@ def parse(version_str, args):
     return VersionContainer(sv, versionparser_name)
 
 
+def can_convert_from(parsername):
+    """
+    :returns: (bool, bool) -- a tuple saying "do I know how to convert?" and "can I do so losslessly?"
+                              GoPythonGo will prefer lossless conversation and if all else is equal use the
+                              target Version Parser
+    """
+    if parsername == versionparser_name:
+        return True, True  # we can convert and we can do so losslessly
+    return False, False
+
+
+def can_convert_to(parsername):
+    """
+    :returns: (bool, bool) -- a tuple saying "do I know how to convert?" and "can I do so losslessly?"
+                              GoPythonGo will prefer lossless conversation and if all else is equal use the
+                              target Version Parser
+    """
+    if parsername == versionparser_name:
+        return True, True  # we can convert and we can do so losslessly
+    return False, False
+
+
+def convert_from(version):
+    return version
+
+
+def convert_to(version, parsername):
+    return version
+
+
 def print_help():
     pass
