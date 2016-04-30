@@ -95,3 +95,8 @@ def success(message):
 
 def highlight(message):
     return "%s%s%s" % (highlight_color, message, color_reset)
+
+
+class GoPythonGoEnableSuper(object):
+    def __init__(self, *args, **kwargs):
+        pass

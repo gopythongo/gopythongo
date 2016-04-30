@@ -29,7 +29,8 @@ def add_args(parser):
                              ["add_args", "validate_args", "print_help", "validate_param",
                               ["read", "create"]])
         plugins.load_plugins("gopythongo.versionparsers", version_parsers, "versionparser_name",
-                             ["add_args", "validate_args", "print_help", "parse"])
+                             ["add_args", "validate_args", "print_help", "can_convert_from", "can_convert_to",
+                              "convert_from", "convert_to", "parse"])
     except ImportError as e:
         print_error(str(e))
         sys.exit(1)

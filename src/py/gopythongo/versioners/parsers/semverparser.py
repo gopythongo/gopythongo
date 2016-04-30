@@ -4,9 +4,7 @@ import six
 
 from semantic_version import Version as SemVerBase
 from gopythongo.utils import highlight, print_error
-from gopythongo.versioners.parsers import VersionContainer
-
-versionparser_name = u"semver"
+from gopythongo.versioners.parsers import VersionContainer, UnconvertableVersion, BaseVersionParser
 
 
 class SemVerVersion(SemVerBase):
@@ -17,52 +15,33 @@ class SemVerVersion(SemVerBase):
         return six.u(self)
 
 
-def add_args(parser):
-    pass
+class SemVerVersionParser(BaseVersionParser):
+    def __init__(self, *args, **kwargs):
+        super(SemVerVersionParser, self).__init__(*args, **kwargs)
+
+    @property
+    def versionparser_name(self):
+        return u"semver"
+
+    def add_args(self, parser):
+        gr_semver = parser.add_argument_group("SemVer Versioner")
+        gr_semver.add_argument("--semver-allow-partial", dest="semver_partial", action="store_true", default=False,
+                               help="Allow the parsing of incomplete version strings, which still partially comply "
+                                    "with SemVer (e.g. '2.0')")
+        gr_semver.add_argument("--semver-coerce", dest="semver_coerce", action="store_true", default=False,
+                               help="Try really hard to make the input version into something resembling SemVer. Use "
+                                    "this with caution.")
+
+    def parse(self, version_str, args):
+        try:
+            sv = SemVerVersion.parse(version_str, partial=args.semver_partial, coerce=args.semver_coerce)
+        except ValueError as e:
+            print_error("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e)))
+
+        return VersionContainer(sv, self.versionparser_name)
+
+    def print_help(self):
+        pass
 
 
-def validate_args(args):
-    pass
-
-
-def parse(version_str, args):
-    try:
-        sv = SemVerVersion.parse(version_str)
-    except ValueError as e:
-        print_error("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e)))
-
-    return VersionContainer(sv, versionparser_name)
-
-
-def can_convert_from(parsername):
-    """
-    :returns: (bool, bool) -- a tuple saying "do I know how to convert?" and "can I do so losslessly?"
-                              GoPythonGo will prefer lossless conversation and if all else is equal use the
-                              target Version Parser
-    """
-    if parsername == versionparser_name:
-        return True, True  # we can convert and we can do so losslessly
-    return False, False
-
-
-def can_convert_to(parsername):
-    """
-    :returns: (bool, bool) -- a tuple saying "do I know how to convert?" and "can I do so losslessly?"
-                              GoPythonGo will prefer lossless conversation and if all else is equal use the
-                              target Version Parser
-    """
-    if parsername == versionparser_name:
-        return True, True  # we can convert and we can do so losslessly
-    return False, False
-
-
-def convert_from(version):
-    return version
-
-
-def convert_to(version, parsername):
-    return version
-
-
-def print_help():
-    pass
+versionparser_class = SemVerVersionParser
