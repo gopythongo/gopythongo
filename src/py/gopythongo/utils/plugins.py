@@ -4,41 +4,52 @@ import six
 import pkg_resources
 
 
-def load_plugins(entrypoint, registry, registry_name_attribute_name, requirements):
+def load_plugins(entrypoint, registry, plugin_class_attribute, plugin_baseclass, plugin_name_property,
+                 initargs=None):
     """
-    Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it.
-    ``registry_name_attribute_name`` is a string which names an attribute of each module that contains the
-    "registration name" of that module.``registry`` is a ``dict`` in which a reference to each module will be saved
-    using the value of the attribute named by ``registry_name_attribute_name`` as the key.
+    Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it. It then
+    looks at the attribute ``plugin_class_attribute`` of the module, which is set to the plugin class. It instantiates
+    an instance of the plugin class by calling it's constructor, passing the optional ``initargs``. It then reads the
+    ``plugin_name_property`` of the instance which is a string that contains the plugin id, i.e. the "registration
+    name" of that module.``registry`` is a ``dict``-like in which a reference to each module will be saved
+    using the value of the attribute named by ``plugin_name_property`` as the key.
 
-    ``requirements`` is a list of strings identifying attributes that each module *must* have to be valid. Not having
-    all attributes named in ``requirements`` (boolean "and") will lead to ``load_plugins`` raising ``ImportError``.
-    If any item in ``requirements`` is a ``list`` then a module will only need to have *at least one* of the attributes
-    named in the sublist (boolean "or").
+    :param entrypoint: the name of the setuptools plugin entry point
+    :type entrypoint: str
+    :param registry: a dict-like that serves as a registry for the plugins. Each plug-in class is set using
+                     ``plugin_name_attribute``
+    :type registry: dict
+    :param plugin_class_attribute: the attribute on the plugin module that identifies the plugin class
+    :type plugin_class_attribute: str
+    :param plugin_baseclass: the class that the plugins are supposed to inherit from
+    :type plugin_baseclass: type
+    :param plugin_name_property: the property on an instance of ``plugin_class_atrribute`` that will yield the plugin id
+    :type plugin_name_property: str
+    :param initargs: parameters that will be passed to the constructor of ``plugin_class_attribute`` when
+                     ``load_plugins`` instantiates it
+    :type initargs: list
     """
+
+    if initargs is None:
+        initargs = []
+
     # load external modules
     for ep in pkg_resources.iter_entry_points(entrypoint):
         module = ep.load()
-        if hasattr(module, registry_name_attribute_name):
-            if isinstance(getattr(module, registry_name_attribute_name), six.text_type):
-                module_id = getattr(module, registry_name_attribute_name)
-            else:
-                raise ImportError("Plug-in module %s has an attribute %s, but it's not a unicode string." %
-                                  (module.__name__, registry_name_attribute_name))
+        if not hasattr(module, plugin_class_attribute):
+            raise ImportError("Plugin modules for entry point %s must all have an attribute called %s, but %s has "
+                              "none." % (entrypoint, plugin_class_attribute, ep.module_name))
 
-            for req in requirements:
-                if isinstance(req, list):
-                    has_any = False
-                    for subreq in req:
-                        if hasattr(module, subreq):
-                            has_any = True
-                            break
-                    if not has_any:
-                        raise ImportError("Plug-in module %s for entry point %s must have at least one of '%s'. It has "
-                                          "none." % (module.__name__, entrypoint, ", ".join(req)))
-                else:
-                    if not hasattr(module, req):
-                        raise ImportError("Plug-in module %s for entry point %s must have an attribute called '%s'. "
-                                          "It doesn't." % (module.__name__, entrypoint, req))
+        if not issubclass(plugin_baseclass, getattr(module, plugin_class_attribute)):
+            raise ImportError("The plugin class for module %s in plugin entry point %s does not inherit from %s." %
+                              (ep.module_name, entrypoint, plugin_baseclass.__name__))
 
-            registry[module_id] = module
+        plugin_instance = getattr(module, plugin_class_attribute)(*initargs)
+
+        if isinstance(getattr(plugin_instance, plugin_name_property), six.text_type):
+            module_id = getattr(plugin_instance, plugin_name_property)
+        else:
+            raise ImportError("Plugin class in %s has an attribute %s, but it does not return unicode string." %
+                              (ep.module_name, plugin_name_property))
+
+        registry[module_id] = module
