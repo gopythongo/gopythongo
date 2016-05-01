@@ -62,6 +62,12 @@ class BaseVersioner(GoPythonGoEnableSuper):
     def read(self, readspec):
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement read()")
 
+    def can_execute_action(self, action):
+        pass
+
+    def execute_action(self, version, action):
+        pass
+
 
 def add_args(parser):
     global versioners, version_parsers
