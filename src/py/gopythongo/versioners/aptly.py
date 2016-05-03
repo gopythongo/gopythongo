@@ -1,14 +1,15 @@
 # -* encoding: utf-8 *-
 
 import sys
-import gopythongo.shared.aptly_args
+
+import gopythongo.shared.aptly_args as _aptly_args
+import gopythongo.versioners as _versioners
 
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.utils import highlight, print_error
-from gopythongo.versioners.base import BaseVersioner
 
 
-class AptlyVersioner(BaseVersioner):
+class AptlyVersioner(_versioners.BaseVersioner):
     def __init__(self, *args, **kwargs):
         super(AptlyVersioner, self).__init__(*args, **kwargs)
 
@@ -33,7 +34,7 @@ class AptlyVersioner(BaseVersioner):
         pass
 
     def add_args(self, parser):
-        gopythongo.shared.aptly_args.add_shared_args(parser)
+        _aptly_args.add_shared_args(parser)
 
         gr_aptly = parser.add_argument_group("Aptly Versioner")
         gr_aptly.add_argument("--fallback-version", dest="aptly_fallback_version", default=None,
@@ -42,7 +43,7 @@ class AptlyVersioner(BaseVersioner):
                                    "fresh repositories.")
 
     def validate_args(self, args):
-        gopythongo.shared.aptly_args.validate_shared_args(args)
+        _aptly_args.validate_shared_args(args)
 
         if args.aptly_fallback_version:
             try:

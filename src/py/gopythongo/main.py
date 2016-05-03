@@ -1,19 +1,22 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
 
-import gopythongo.main
-import gopythongo.builders
-import gopythongo.versioners
-import gopythongo.stores
-import gopythongo.assemblers
-import gopythongo.packers
 import atexit
 import signal
 import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
+
+import gopythongo.main
+import gopythongo.builders as builders
+import gopythongo.versioners as versioners
+import gopythongo.stores as stores
+import gopythongo.assemblers as assemblers
+import gopythongo.packers as packers
+
 from gopythongo.utils import print_error, print_warning, print_info, init_color
+
 
 tempfiles = []
 
@@ -117,6 +120,9 @@ def route():
     atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
 
+    for s in [versioners, builders, assemblers, packers, stores]:
+        s.init_subsystem()
+
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
         init_color(args.no_color)
@@ -124,15 +130,15 @@ def route():
 
         if not args.is_inner:
             # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2
-            gopythongo.versioners.version(args)
-            gopythongo.builders.build(args)
+            versioners.version(args)
+            builders.build(args)
 
             # STEP 3: After the 2nd gopythongo process is finished, we end up here
-            gopythongo.stores.store(args)
+            stores.store(args)
         else:
             # STEP 2: ... which will land here and execute inside the build environment
-            gopythongo.assemblers.assemble(args)
-            gopythongo.packers.pack(args)
+            assemblers.assemble(args)
+            packers.pack(args)
 
     else:
         print_help()

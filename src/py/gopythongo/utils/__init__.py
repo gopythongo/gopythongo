@@ -100,3 +100,28 @@ def highlight(message):
 class GoPythonGoEnableSuper(object):
     def __init__(self, *args, **kwargs):
         pass
+
+
+class CommandLinePlugin(GoPythonGoEnableSuper):
+    def __init__(self, *args, **kwargs):
+        super(CommandLinePlugin, self).__init__(*args, **kwargs)
+
+    def add_args(self, parser):
+        """
+        Add command-line arguments to configure this plugin inside GoPythonGo. Do NOT add *required* arguments
+        to the command-line parser.
+
+        :param parser: An ArgumentParser instance that you can call ``add_argument_group`` etc. on
+        :type parser: argparse.ArgumentParser
+        """
+        pass
+
+    def validate_args(self, args):
+        """
+        Validate the arguments added by ``add_args``. Feel free to call ``sys.exit(1)`` from here if any argument
+        is invalid. Please use ``gopythongo.utils.print_error`` to output a meaningful error message to the user before
+        exiting.
+
+        :param args: The parsed command-line arguments as provided by argparse
+        """
+        pass

@@ -2,17 +2,25 @@
 
 
 import gopythongo.shared.aptly_args
-
-store_name = u"aptly"
-
-
-def add_args(parser):
-    gopythongo.shared.aptly_args.add_shared_args(parser)
+from gopythongo.stores import BaseStore
 
 
-def validate_args(args):
-    return True
+class AptlyStore(BaseStore):
+    def __init__(self, *args, **kwargs):
+        super(AptlyStore, self).__init__(*args, **kwargs)
+
+    @property
+    def store_name(self):
+        return u"aptly"
+
+    def add_args(self, parser):
+        gopythongo.shared.aptly_args.add_shared_args(parser)
+
+    def validate_args(self, args):
+        return True
+
+    def store(self, args):
+        pass
 
 
-def store(args):
-    pass
+store_class = AptlyStore

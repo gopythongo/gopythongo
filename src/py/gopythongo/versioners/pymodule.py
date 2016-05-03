@@ -2,7 +2,8 @@
 import six
 import sys
 
-from gopythongo.versioners.base import BaseVersioner
+import gopythongo.versioners as _versioners
+
 from importlib import import_module
 from gopythongo.utils import print_error, highlight
 
@@ -30,7 +31,7 @@ def import_string(dotted_path):
         six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
 
 
-class PymoduleVersioner(BaseVersioner):
+class PymoduleVersioner(_versioners.BaseVersioner):
     def __init__(self, *args, **kwargs):
         super(PymoduleVersioner, self).__init__(*args, **kwargs)
 

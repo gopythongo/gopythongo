@@ -3,17 +3,25 @@
 import gopythongo.shared.docker_args
 
 from gopythongo.utils import print_info, highlight
-
-builder_name = u"docker"
-
-
-def add_args(parser):
-    gopythongo.shared.docker_args.add_shared_args(parser)
+from gopythongo.builders import BaseBuilder
 
 
-def validate_args(args):
-    gopythongo.shared.docker_args.validate_shared_args(args)
+class DockerBuilder(BaseBuilder):
+    def __init__(self, *args, **kwargs):
+        super(DockerBuilder, self).__init__(*args, **kwargs)
+
+    @property
+    def builder_name(self):
+        return u"docker"
+
+    def add_args(self, parser):
+        gopythongo.shared.docker_args.add_shared_args(parser)
+
+    def validate_args(self, args):
+        gopythongo.shared.docker_args.validate_shared_args(args)
+
+    def build(self, args):
+        print_info("Building with %s" % highlight("docker"))
 
 
-def build(args):
-    print_info("Building with %s" % highlight("docker"))
+builder_class = DockerBuilder

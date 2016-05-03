@@ -3,24 +3,41 @@
 import os
 import sys
 
-from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins
-from gopythongo.assemblers import django
+from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins, \
+    CommandLinePlugin
+
+assemblers = None
 
 
-assemblers = {
-    u"django": django,
-}
+def init_subsystem():
+    global assemblers
+
+    from gopythongo.assemblers import django
+    assemblers = {
+        u"django": django.assembler_class(),
+    }
+
+    try:
+        plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_class", BaseAssembler, "assembler_name")
+    except ImportError as e:
+        print_error(str(e))
+        sys.exit(1)
+
+
+class BaseAssembler(CommandLinePlugin):
+    def __init__(self, *args, **kwargs):
+        super(BaseAssembler, self).__init__(*args, **kwargs)
+
+    @property
+    def assembler_name(self):
+        raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
+
+    def assemble(self, args):
+        pass
 
 
 def add_args(parser):
     global assemblers
-
-    try:
-        plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_name",
-                             ["add_args", "validate_args", "assemble"])
-    except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
 
     gr_pip = parser.add_argument_group("PIP options")
     gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],

@@ -1,10 +1,11 @@
 # -* encoding: utf-8 *-
-from gopythongo.versioners.base import BaseVersioner
+
+import gopythongo.versioners as _versioners
 
 
-class StaticVersioner(BaseVersioner):
+class StaticVersioner(_versioners.BaseVersioner):
     def __init__(self, *args, **kwargs):
-        super(BaseVersioner, self).__init__(*args, **kwargs)
+        super(StaticVersioner, self).__init__(*args, **kwargs)
 
     @property
     def versioner_name(self):

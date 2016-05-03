@@ -5,26 +5,44 @@ import subprocess
 import sys
 import os
 
-from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins
+from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins, \
+                             GoPythonGoEnableSuper, CommandLinePlugin
 from gopythongo.utils.buildcontext import the_context
-from gopythongo.builders import docker, pbuilder
 
 
-builders = {
-    u"pbuilder": pbuilder,
-    u"docker": docker,
-}
+builders = None
+
+
+def init_subsystem():
+    global builders
+
+    from gopythongo.builders import docker, pbuilder
+    builders = {
+        u"pbuilder": pbuilder.builder_class(),
+        u"docker": docker.builder_class(),
+    }
+
+    try:
+        plugins.load_plugins("gopythongo.builders", builders, "builder_class", BaseBuilder, "builder_name")
+    except ImportError as e:
+        print_error(str(e))
+        sys.exit(1)
+
+
+class BaseBuilder(CommandLinePlugin):
+    def __init__(self, *args, **kwargs):
+        super(BaseBuilder, self).__init__(*args, **kwargs)
+
+    @property
+    def builder_name(self):
+        raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
+
+    def build(self, args):
+        pass
 
 
 def add_args(parser):
     global builders
-
-    try:
-        plugins.load_plugins("gopythongo.builders", builders, "builder_name",
-                             ["add_args", "validate_args", "build"])
-    except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
 
     gr_bundle = parser.add_argument_group("Bundle settings")
     gr_bundle.add_argument("--use-virtualenv", dest="virtualenv_binary", default="/usr/bin/virtualenv",
