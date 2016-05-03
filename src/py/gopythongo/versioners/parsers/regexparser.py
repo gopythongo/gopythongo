@@ -17,8 +17,8 @@ class RegexVersionParser(GoPythonGoEnableSuper):
         gr_regex.add_argument("--version-regex", dest="version_regex", default=None,
                               help="Select the regular expression used to parse the version string read by the version "
                                    "reader. It must contain named groups for 'major', 'minor' and 'patch' and can "
-                                   "optionally contain named groups for 'prerelease' and 'metadata' mapping to the fields "
-                                   "as described by semver.org. Example: "
+                                   "optionally contain named groups for 'prerelease' and 'metadata' mapping to the "
+                                   "fields as described by semver.org. Example: "
                                    "(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<patch>[0-9]+)")
 
     @property
