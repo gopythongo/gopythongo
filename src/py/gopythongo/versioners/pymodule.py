@@ -2,7 +2,7 @@
 import six
 import sys
 
-from gopythongo.versioners import BaseVersioner
+from gopythongo.versioners.base import BaseVersioner
 from importlib import import_module
 from gopythongo.utils import print_error, highlight
 
@@ -38,6 +38,27 @@ class PymoduleVersioner(BaseVersioner):
     def versioner_name(self):
         return u"pymodule"
 
+    @property
+    def can_read(self):
+        return True
+
+    @property
+    def can_create(self):
+        return False
+
+    def can_execute_action(self, action):
+        return False
+
+    def print_help(self):
+        print("The pymodule versioner reads version strings from Python modules which must be\n"
+              "on PYTHONPATH. It accepts one parameter with is a dotted string identifying the\n"
+              "fully qualified module name of a Python module and an attribute to read or\n"
+              "function to call, which must be a unicode string (i.e. str on Py3k and unicode\n"
+              "on Py2).\n"
+              "\n"
+              "Examples: --versioner='pymodule' --pymodule-read='gopythongo.version'\n"
+              "          --versioner='pymodule' --pymodule-read='a.deeper.module.get_version'\n")
+
     def add_args(self, parser):
         gr_pymod = parser.add_argument_group("Pymodule Versioner")
         gr_pymod.add_argument("--pymodule-read", dest="pymodule_read", default=None,
@@ -55,21 +76,11 @@ class PymoduleVersioner(BaseVersioner):
             print_error("%s requires %s" % (highlight("--versioner=pymodule"), highlight("--pymodule-read")))
             sys.exit(1)
 
-    def read(self, readspec):
-        attr = import_string(readspec)
+    def read(self, args):
+        attr = import_string(args.pymodule_read)
         if callable(attr):
             return attr()
         return attr
-
-    def print_help(self):
-        print("The pymodule versioner reads version strings from Python modules which must be\n"
-              "on PYTHONPATH. It accepts one parameter with is a dotted string identifying the\n"
-              "fully qualified module name of a Python module and an attribute to read or\n"
-              "function to call, which must be a unicode string (i.e. str on Py3k and unicode\n"
-              "on Py2).\n"
-              "\n"
-              "Examples: --versioner='pymodule' --pymodule-read='gopythongo.version'\n"
-              "          --versioner='pymodule' --pymodule-read='a.deeper.module.get_version'\n")
 
 
 versioner_class = PymoduleVersioner

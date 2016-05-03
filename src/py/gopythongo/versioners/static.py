@@ -1,20 +1,34 @@
 # -* encoding: utf-8 *-
+from gopythongo.versioners.base import BaseVersioner
 
 
-versioner_name = u"static"
+class StaticVersioner(BaseVersioner):
+    def __init__(self, *args, **kwargs):
+        super(BaseVersioner, self).__init__(*args, **kwargs)
+
+    @property
+    def versioner_name(self):
+        return u"static"
+
+    @property
+    def can_read(self):
+        return False
+
+    @property
+    def can_create(self):
+        return True
+
+    def print_help(self):
+        pass
+
+    def add_args(self, parser):
+        pass
+
+    def validate_args(self, args):
+        pass
+
+    def create(self, args):
+        pass
 
 
-def add_args(parser):
-    pass
-
-
-def validate_args(args):
-    pass
-
-
-def create(createspec, action):
-    pass
-
-
-def print_help():
-    pass
+versioner_class = StaticVersioner

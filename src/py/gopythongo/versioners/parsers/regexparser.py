@@ -4,7 +4,7 @@ import sys
 import re
 
 from gopythongo.versioners.parsers.semverparser import SemVerVersion
-from gopythongo.versioners.parsers import VersionContainer, UnconvertableVersion
+from gopythongo.versioners.parsers.base import VersionContainer, UnconvertableVersion
 from gopythongo.utils import print_error, highlight, GoPythonGoEnableSuper
 
 

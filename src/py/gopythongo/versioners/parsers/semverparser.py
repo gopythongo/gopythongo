@@ -4,7 +4,7 @@ import six
 
 from semantic_version import Version as SemVerBase
 from gopythongo.utils import highlight, print_error
-from gopythongo.versioners.parsers import VersionContainer, UnconvertableVersion, BaseVersionParser
+from gopythongo.versioners.parsers.base import VersionContainer, UnconvertableVersion, BaseVersionParser
 
 
 class SemVerVersion(SemVerBase):

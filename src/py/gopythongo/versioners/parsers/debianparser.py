@@ -4,7 +4,7 @@ import sys
 
 from gopythongo.utils import print_error, highlight
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers.base import VersionContainer, BaseVersionParser
 
 
 class DebianVersionParser(BaseVersionParser):
