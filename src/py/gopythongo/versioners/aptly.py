@@ -39,8 +39,8 @@ class AptlyVersioner(_versioners.BaseVersioner):
         gr_aptly = parser.add_argument_group("Aptly Versioner")
         gr_aptly.add_argument("--fallback-version", dest="aptly_fallback_version", default=None,
                               help="If the APT repository does not yet contain a package with the name specified by "
-                                   "--package-name, the Aptly versioner can return a fallback value. This is useful for "
-                                   "fresh repositories.")
+                                   "--package-name, the Aptly versioner can return a fallback value. This is useful "
+                                   "for fresh repositories.")
 
     def validate_args(self, args):
         _aptly_args.validate_shared_args(args)
@@ -49,8 +49,8 @@ class AptlyVersioner(_versioners.BaseVersioner):
             try:
                 DebianVersion.fromstring(args.aptly_fallback_version)
             except InvalidDebianVersionString as e:
-                print_error("The fallback version string you specified via %s is not a valid Debian version string. (%s)" %
-                            (highlight("--fallback-version"), str(e)))
+                print_error("The fallback version string you specified via %s is not a valid Debian version string. "
+                            "(%s)" % (highlight("--fallback-version"), str(e)))
                 sys.exit(1)
 
     def read(self, args):
