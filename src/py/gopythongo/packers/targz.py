@@ -4,8 +4,8 @@ import os
 import sys
 import shutil
 import tarfile
-from gopythongo.packers import BasePacker
 
+from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, print_error, highlight
 
 

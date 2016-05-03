@@ -4,8 +4,8 @@
 import os
 import sys
 import shutil
-from gopythongo.packers import BasePacker
 
+from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_error, print_info, highlight
 
 
