@@ -87,7 +87,7 @@ def validate_args(args):
         print_error("You must select a store using --store.")
         sys.exit(1)
 
-    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
+    for m in [builders, versioners, assemblers, packers, stores]:
         m.validate_args(args)
 
 
