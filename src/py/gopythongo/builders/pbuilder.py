@@ -22,8 +22,8 @@ class PbuilderBuilder(BaseBuilder):
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable.")
         gr_pbuilder.add_argument("--basetgz", dest="basetgz", default=None,
-                                 help="Cache and reuse the pbuilder base environment. gopythongo will call pbuilder create "
-                                      "on this file if it doesn't exist.")
+                                 help="Cache and reuse the pbuilder base environment. gopythongo will call pbuilder "
+                                      "create on this file if it doesn't exist.")
         gr_pbuilder.add_argument("--distribution", dest="pbuilder_distribution", default=None,
                                  help="Use this distribution for creating the pbuilder environment using debootstrap.")
         gr_pbuilder.add_argument("--pbuilder-force-recreate", dest="pbuilder_force_recreate", action="store_true",
@@ -32,7 +32,8 @@ class PbuilderBuilder(BaseBuilder):
                                  help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
                                       "libs for databases so that Python C extensions compile correctly.")
         gr_pbuilder.add_argument("--pbuilder-opts", dest="pbuilder_opts", action="append", default=[],
-                                 help="Options which will be put into every pbuilder command-line executed by gopythongo.")
+                                 help="Options which will be put into every pbuilder command-line executed by "
+                                      "GoPythonGo.")
         gr_pbuilder.add_argument("--pbuilder-create-opts", dest="pbuilder_create_opts", action="append", default=[],
                                  help="Options which will be appended to the pbuilder --create command-line.")
         gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", action="append", default=[],
@@ -76,6 +77,8 @@ class PbuilderBuilder(BaseBuilder):
             create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
 
         #run_process(*create_cmdline)
+        print("***")
+        print(str(create_cmdline))
 
         build_cmdline = [args.pbuilder_executable, "--execute"]
 
