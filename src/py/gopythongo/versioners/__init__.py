@@ -120,19 +120,19 @@ def add_args(parser):
                             action=parser_help.VersionParserHelpAction)
     gp_version.add_argument("--input-versioner", dest="input_versioner", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
-                                 "details. Most versioners have specific additional command-line parameters.")
+                                 "details. Most versioners have specific additional command-line parameters")
     gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
                             help="Parse the version string read by --versioner with this parser. See "
-                                 "--help-versionparser for details.")
+                                 "--help-versionparser for details")
     gp_version.add_argument("--output-versioner", dest="output_versioner", required=True,
                             help="Specify the version format into which the version should be converted (can be the "
                                  "same) before applying the selected version action to create the final version string "
-                                 "to be used for the output package. See --help-versionparser for details.")
+                                 "to be used for the output package. See --help-versionparser for details")
     gp_version.add_argument("--version-action", dest="version_action",
                             choices=["increment-epoch", "increment-patch", "increment-revision", "none"],
                             default="none",
                             help="Choose what to do to the version for the output package after it is "
-                                 "formatted/converted according to --new-version.")
+                                 "formatted/converted according to --new-version")
 
     for v in versioners.values():
         v.add_args(parser)

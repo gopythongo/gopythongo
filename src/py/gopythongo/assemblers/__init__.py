@@ -50,17 +50,17 @@ def add_args(parser):
     gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append", default=[],
                             help="After all pip commands have run, this can run 'python setup.py install' on " +
                                  "additional packages available in any filesystem path. This option can be " +
-                                 "used multiple times.")
+                                 "used multiple times")
 
     pos_args = parser.add_argument_group("Python ecosystem arguments (positional)")
     pos_args.add_argument("build_path",
                           help="set the location where the virtual environment will be built, this " +
                                "is IMPORTANT as it is also the location where the virtualenv must " +
                                "ALWAYS reside (i.e. the install directory. Virtualenvs are NOT relocatable" +
-                               "by default! All path parameters are relative to this path.")
+                               "by default! All path parameters are relative to this path")
     pos_args.add_argument("packages", metavar="package<=>version", nargs="+",
                           help="a list of package/version specifiers. Remember to quote your " +
-                               "strings as in \"Django>=1.6,<1.7\"")
+                               "strings as in \"Django>=1.9,<1.10\"")
 
 
 def validate_args(args):

@@ -14,8 +14,9 @@ import gopythongo.versioners as versioners
 import gopythongo.stores as stores
 import gopythongo.assemblers as assemblers
 import gopythongo.packers as packers
+import gopythongo.utils as utils
 
-from gopythongo.utils import print_error, print_warning, print_info, init_color
+from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
 
 
 tempfiles = []
@@ -52,7 +53,7 @@ def get_parser():
     gr_plan.add_argument("--assembler", dest="assembler",
                          choices=gopythongo.assemblers.assemblers.keys(), action="append", default=["virtualenv"],
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
-                              "compile, pull all necessary source code and libraries.")
+                              "compile, pull all necessary source code and libraries")
 
     gr_plan.add_argument("--packer", choices=gopythongo.packers.packers.keys(), default=None, required=True,
                          help="Select the packer used to pack up the built project")
@@ -60,11 +61,21 @@ def get_parser():
                          help="Select the store used to store the packed up project")
     gr_plan.add_argument("--gopythongo-path", dest="gopythongo_path", default=None,
                          help="Path to a virtual environment that contains GoPythonGo or a PEX GoPythonGo executable. "
-                              "This will be mounted into the build environment.")
+                              "This will be mounted into the build environment")
     gr_plan.add_argument("--inner", dest="is_inner", action="store_true", default=False,
                          help="This parameter signals to GoPythonGo that it is running inside the build environment, "
                               "you will likely never have to use this parameter yourself. It is used by GoPythonGo "
-                              "internally.")
+                              "internally")
+    gr_plan.add_argument("--debug-noexec", dest="debug_noexec", action="store_true", default=False,
+                         help="Setting this will prevent GoPythonGo from executing any commands. The command-line "
+                              "will instead be printed to stdout for debugging purposes")
+    gr_plan.add_argument("--eatmydata", dest="eatmydata", action="store_true", default=False,
+                         help="Setting this will make GoPythonGo run each command through 'eatmydata', which will "
+                              "prevent fsync calls during the build. This can significantly speed up subprocesses like "
+                              "dpkg, but it can eat your data. As you typically abandon failed builds, this should "
+                              "be fairly save to set")
+    gr_plan.add_argument("--eatmydata-path", dest="eatmydata_executable", default="/usr/bin/eatmydata",
+                         help="Specify an alternative eatmydata executable (only used if you set --eatmydata)")
 
     gr_out = parser.add_argument_group("Output options")
     gr_out.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
@@ -86,6 +97,11 @@ def validate_args(args):
     if not args.store:
         print_error("You must select a store using --store.")
         sys.exit(1)
+
+    if args.eatmydata:
+        if not os.path.exists(args.eatmydata_executable) or not os.access(args.eatmydata_executable, os.X_OK):
+            print_error("%s is set, but %s is not an executable" %
+                        (highlight("--eatmydata"), highlight(args.eatmydata_executable)))
 
     for m in [builders, versioners, assemblers, packers, stores]:
         m.validate_args(args)
@@ -126,7 +142,13 @@ def route():
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
         init_color(args.no_color)
+
         validate_args(args)
+
+        if args.eatmydata:
+            utils.prepend_exec = [args.eatmydata_executable]
+
+        utils.debug_donotexecute = args.debug_noexec
 
         if not args.is_inner:
             # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2

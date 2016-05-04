@@ -22,6 +22,9 @@ error_color = Fore.RED
 highlight_color = Fore.LIGHTWHITE_EX
 color_reset = Fore.RESET
 
+debug_donotexecute = False
+prepend_exec = None
+
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
     from backports.shutil_get_terminal_size import get_terminal_size
     _cwidth, _cheight = get_terminal_size()
@@ -66,12 +69,17 @@ def flatten(x):
 
 
 def run_process(*args):
-    print_info("Running %s" % str(args))
-    ret = subprocess.call(args, stdout=sys.stdout, stderr=sys.stderr)
+    if prepend_exec:
+        args = prepend_exec + list(args)
 
-    if ret != 0:
-        print_error("%s exited with non-zero exit code %s" % (str(args), ret))
-        sys.exit(ret)
+    print_info("Running %s" % str(args))
+    if not debug_donotexecute:
+
+        ret = subprocess.call(args, stdout=sys.stdout, stderr=sys.stderr)
+
+        if ret != 0:
+            print_error("%s exited with non-zero exit code %s" % (str(args), ret))
+            sys.exit(ret)
 
 
 def print_error(message):

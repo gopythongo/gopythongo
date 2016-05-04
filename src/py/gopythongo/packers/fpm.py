@@ -23,20 +23,20 @@ class FPMPacker(BasePacker):
                             help="Execute FPM (can be used multiple times). You must pass a filename to this "
                                  "parameter, which specifies a file containing the command-line parameters for "
                                  "invoking FPM. FPM will be invoked with the CWD set to the build folder inside the "
-                                 "selected builder. You can use template processing here.")
+                                 "selected builder. You can use template processing here")
         gr_deb.add_argument("--package-name", dest="package_name",
-                            help="The canonical package name to set using 'fpm -n'.")
+                            help="The canonical package name to set using 'fpm -n'")
 
         gr_fpm = parser.add_argument_group("FPM related options and common packaging options")
         gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
                             help="The full path to the fpm executable to use")
         gr_fpm.add_argument("--fpm-format", dest="fpm_format", choices=["deb"], default="deb",
-                            help="Output package format. Only .deb is supported for now.")
+                            help="Output package format. Only 'deb' is supported for now")
         gr_fpm.add_argument("--file-map", dest="file_map", action="append", default=[],
                             help="Install a file in any location on the target system. The format of its parameter is "
                                  "the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
                                  "You can specify this argument multiple times. See "
-                                 "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information.")
+                                 "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information")
         gr_fpm.add_argument("--fpm-opts", dest="fpm_opts", action="append",
                             help="Any string specified here will be directly appended to the FPM command-line when it "
                                  "is invoked, allowing you to specify arbitrary extra command-line parameters. Make "
