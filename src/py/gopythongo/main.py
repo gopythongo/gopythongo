@@ -100,8 +100,10 @@ def validate_args(args):
 
     if args.eatmydata:
         if not os.path.exists(args.eatmydata_executable) or not os.access(args.eatmydata_executable, os.X_OK):
-            print_error("%s is set, but %s is not an executable" %
-                        (highlight("--eatmydata"), highlight(args.eatmydata_executable)))
+            print_warning("%s is set, but %s is not an executable" %
+                          (highlight("--eatmydata"), highlight(args.eatmydata_executable)))
+            print_warning("Make sure that eatmydata is available *inside* your build environment as well, if you want "
+                          "to use it to speed up the build process inside the environment.")
 
     for m in [builders, versioners, assemblers, packers, stores]:
         m.validate_args(args)
@@ -145,7 +147,8 @@ def route():
 
         validate_args(args)
 
-        if args.eatmydata:
+        if args.eatmydata and os.path.exists(args.eatmydata_executable) and \
+                os.access(args.eatmydata_executable, os.X_OK):
             utils.prepend_exec = [args.eatmydata_executable]
 
         utils.debug_donotexecute = args.debug_noexec
