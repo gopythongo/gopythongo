@@ -15,7 +15,7 @@ version_parsers = None
 def init_subsystem():
     global versioners, version_parsers
     from gopythongo.versioners import aptly, pymodule, bumpversion, static
-    from gopythongo.versioners.parsers import regexparser, semverparser, debianparser
+    from gopythongo.versioners.parsers import regexparser, semverparser, debianparser, pep440parser
 
     versioners = {
         u"aptly": aptly.versioner_class(),
@@ -28,6 +28,7 @@ def init_subsystem():
         u"regex": regexparser.versionparser_class(),
         u"semver": semverparser.versionparser_class(),
         u"debian": debianparser.versionparser_class(),
+        u"pep440": pep440parser.versionparser_class(),
     }
 
     try:

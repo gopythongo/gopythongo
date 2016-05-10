@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import sys
 
 import six
 
@@ -37,6 +38,7 @@ class SemVerVersionParser(BaseVersionParser):
             sv = SemVerVersion.parse(version_str, partial=args.semver_partial, coerce=args.semver_coerce)
         except ValueError as e:
             print_error("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e)))
+            sys.exit(1)
 
         return VersionContainer(sv, self.versionparser_name)
 

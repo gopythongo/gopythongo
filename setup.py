@@ -21,6 +21,7 @@ _requirements = [
     'colorama==0.3.7',
     'six==1.10.0',
     'semantic_version==2.5.0',
+    'packaging==16.6',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
@@ -35,6 +36,11 @@ setup(
     packages=_packages,
     package_dir={
         '': _package_root,
+    },
+    entry_points = {
+        "console_scripts": [
+            "gopythongo = gopythongo.main:route"
+        ]
     },
     install_requires=_requirements,
 )
