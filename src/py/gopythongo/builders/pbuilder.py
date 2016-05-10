@@ -113,6 +113,8 @@ class PbuilderBuilder(BaseBuilder):
             mounts += " ".join(args.mounts)
 
         if the_context.mounts:
+            if mounts:
+                mounts += " "
             mounts += " ".join(the_context.mounts)
 
         if mounts:
