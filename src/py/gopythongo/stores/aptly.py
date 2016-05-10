@@ -17,7 +17,7 @@ class AptlyStore(BaseStore):
         _aptly_args.add_shared_args(parser)
 
     def validate_args(self, args):
-        return True
+        _aptly_args.validate_shared_args(args)
 
     def store(self, args):
         pass

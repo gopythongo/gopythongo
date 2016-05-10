@@ -4,7 +4,6 @@ import sys
 import os
 
 from gopythongo.utils import highlight, print_error
-from gopythongo.utils.buildcontext import the_context
 
 _aptly_shared_args_added = False
 
