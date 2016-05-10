@@ -26,6 +26,7 @@ This project consists of two parts:
     :caption: The process
 
     process/intro
+    process/execution_plan
     process/build_process
     process/configuration
     process/virtualenvs
@@ -37,7 +38,18 @@ This project consists of two parts:
     :caption: The toolkit
 
     toolkit/intro
-
+    toolkit/versioners
+    toolkit/versionparsers
+    toolkit/builders
+    toolkit/mounts
+    toolkit/assemblers
+    toolkit/packers
+    toolkit/stores
+    toolkit/plugins/intro
+    toolkit/plugins/versioners
+    toolkit/plugins/versionparsers
+    toolkit/comparison
+    
 
 Indices and tables
 ==================

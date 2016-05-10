@@ -1,4 +1,4 @@
-.. comparison::
+.. _comparison:
 
 Comparing GoPythonGo to similar solutions
 =========================================

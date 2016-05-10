@@ -1,5 +1,7 @@
-Versioners
-==========
+.. _versioners:
+
+Versioners: Determining a package version
+=========================================
 
 
 Aptly

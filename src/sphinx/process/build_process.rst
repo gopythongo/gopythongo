@@ -26,9 +26,9 @@ then execute further steps:
   them in a virtual environment inside the chroot and packaging that virtual environment as a package then
   moving that package into, for example, an apt package repository. Alternatively a Docker container might be
   provisioned with the application and uploaded to a Docker registry.
-* An application build might trigger an automatic deployment build job which uses `Fabric <>`_ or similar toolkits
-  like `mcollective` or `salt` to trigger application servers to download and install the updated packages or
-  containers as well as execute a blue/green deployment strategy.
+* An application build might trigger an automatic deployment build job which uses `Fabric <http://www.fabfile.org/>`_ 
+  or similar toolkits like `mcollective` or `salt` to trigger application servers to download and install the updated 
+  packages or containers as well as execute a blue/green deployment strategy.
 
 
 Vocabulary

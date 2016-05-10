@@ -1,5 +1,7 @@
-Packers
-=======
+.. packersÖÖ
+
+Packers: Packaging Virtualenvs
+==============================
 
 Currently GoPythonGo comes with three supported packaging subsystems:
 

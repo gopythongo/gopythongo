@@ -1,3 +1,5 @@
+.. _mounts:
+
 Making file system resources available in the build environment
 ===============================================================
 
