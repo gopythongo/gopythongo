@@ -20,10 +20,11 @@ class FPMPacker(BasePacker):
     def add_args(self, parser):
         gr_deb = parser.add_argument_group("Debian .deb settings")
         gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
+                            default=[],
                             help="Execute FPM (can be used multiple times). You must pass a filename to this "
                                  "parameter, which specifies a file containing the command-line parameters for "
-                                 "invoking FPM. FPM will be invoked with the CWD set to the build folder inside the "
-                                 "selected builder. You can use template processing here")
+                                 "invoking FPM (one per line). FPM will be invoked with the CWD set to the build "
+                                 "folder inside the selected builder. You can use template processing here")
         gr_deb.add_argument("--package-name", dest="package_name",
                             help="The canonical package name to set using 'fpm -n'")
 

@@ -20,9 +20,6 @@ class DjangoAssembler(BaseAssembler):
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
                                help="run 'django-admin.py collectstatic' inside the bundle")
-        gr_django.add_argument("--static-out", dest="static_outfile",
-                               help="collect static files in STATIC_OUTFILE instead of inside the " +
-                                    "bundle. Must be used with '--collect-static'.")
         gr_django.add_argument("--static-relative-paths", dest="static_relative",
                                default=False, action="store_true",
                                help="write relative paths to the resulting static content .tar.gz archive")

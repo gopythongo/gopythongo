@@ -42,6 +42,12 @@ def add_args(parser):
     for m in packers.values():
         m.add_args(parser)
 
+    gr_packers = parser.add_argument_group("Packer shared options")
+    gr_packers.add_argument("--copy-out", dest="copy_out", default=None,
+                            help="The destination path inside the build environment, where the resulting packages will "
+                                 "be copied. This will usually be the path of a bindmount, created with --mount in the "
+                                 "build folder of your build server, for example.")
+
 
 def validate_args(args):
     if args.packer in packers.keys():
