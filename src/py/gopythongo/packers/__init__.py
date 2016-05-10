@@ -39,16 +39,14 @@ class BasePacker(CommandLinePlugin):
 
 
 def add_args(parser):
-    global packers
-
     for m in packers.values():
         m.add_args(parser)
 
 
 def validate_args(args):
-    for m in packers.values():
-        m.validate_args(args)
+    if args.packer in packers.keys():
+        packers[args.packer].validate_args(args)
 
 
 def pack(args):
-    pass
+    packers[args.packer].pack(args)

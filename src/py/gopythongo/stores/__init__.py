@@ -48,9 +48,9 @@ def add_args(parser):
 
 
 def validate_args(args):
-    for s in stores.values():
-        s.validate_args(args)
+    if args.store in stores.keys():
+        stores[args.store].validate_args(args)
 
 
 def store(args):
-    pass
+    stores[args.store].store(args)

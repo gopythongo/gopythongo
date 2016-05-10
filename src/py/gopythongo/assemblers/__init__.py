@@ -58,7 +58,7 @@ def add_args(parser):
                                "is IMPORTANT as it is also the location where the virtualenv must " +
                                "ALWAYS reside (i.e. the install directory. Virtualenvs are NOT relocatable" +
                                "by default! All path parameters are relative to this path")
-    pos_args.add_argument("packages", metavar="package<=>version", nargs="+",
+    pos_args.add_argument("packages", metavar="package<=>version", nargs="*",
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.9,<1.10\"")
 
