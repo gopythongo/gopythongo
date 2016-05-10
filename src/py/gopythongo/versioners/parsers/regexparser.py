@@ -71,5 +71,26 @@ class RegexVersionParser(GoPythonGoEnableSuper):
 
         return VersionContainer(SemVerVersion.parse(semver), self.versionparser_name)
 
+    def print_help(self):
+        print("%s\n"
+              "=================================\n"
+              "\n"
+              "The %s Version Parser tries to make it easy to convert arbitrary version\n"
+              "strings into SemVer-compatible versions. It does this by requiring an\n"
+              "additional command-line parameter --version-regex which takes a regular\n"
+              "expression as its argument. That regular expression must contain named groups\n"
+              "with the following names: %s, %s, %s and optionally %s and\n"
+              "%s. A full regular expression parsing a valid SemVer-compatible string\n"
+              "would therefor be:\n"
+              "\n"
+              "    '(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<patch>[0-9]+)' +\n"
+              "    '-(?P<prerelease>.*?)\+(?P<metadata>.*)'\n"
+              "\n"
+              "You should use this parser to make it easy to read arbitrary version strings\n"
+              "that don't fit any of the other supported formats.\n" %
+              (highlight("Regular Expression Version Parser"), highlight("regex"),
+               highlight("major"), highlight("minor"), highlight("patch"),
+               highlight("prerelease"), highlight("metadata")))
+
 
 versionparser_class = RegexVersionParser

@@ -22,13 +22,27 @@ class DebianVersionParser(BaseVersionParser):
         try:
             dv = DebianVersion.fromstring(version_str)
         except InvalidDebianVersionString as e:
-            print_error("%s is not a valid Debian version string. (%s)" % (highlight(version_str), str(e)))
+            print_error("%s is not a valid Debian version string: %s" % (highlight(version_str), str(e)))
             sys.exit(1)
 
         return VersionContainer(dv, self.versionparser_name)
 
     def print_help(self):
-        pass
+        print("%s\n"
+              "=====================\n"
+              "\n"
+              "The %s version parser works with version strings in the format specified by\n"
+              "the Debian Policy Manual in \n"
+              "\n"
+              "    https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version\n"
+              "\n"
+              "It's the right choice if you specify your version strings in a format that is\n"
+              "incompatible with PEP-440 or SemVer, since it's much more permissive. Most\n"
+              "other version string formats can be easily transformed into Debian version\n"
+              "strings.\n"
+              "\n"
+              "The Debian Version Parser does not require any additional configuration.\n" %
+              (highlight("Debian Version Parser"), highlight("debian")))
 
 
 versionparser_class = DebianVersionParser

@@ -43,7 +43,19 @@ class SemVerVersionParser(BaseVersionParser):
         return VersionContainer(sv, self.versionparser_name)
 
     def print_help(self):
-        pass
+        print("%s\n"
+              "=====================\n"
+              "\n"
+              "The %s parser parses SemVer version strings as defined by\n"
+              "http://semver.org/. It does not require any additional command-line parameters,\n"
+              "but it can parse *partial* SemVer strings that don't fully conform to the SemVer\n"
+              "specification or even try and transform arbitrary strings. You can enable those\n"
+              "features with the following command-line flags:\n"
+              "\n"
+              "    --semver-allow-partial    Enables partial string parsing, like '1.0'\n"
+              "    --semver-coerce           Tries to convert anything you throw at it, like\n"
+              "                              '1.0.whatever' to varied levels of success.\n" %
+              (highlight("SemVer Version Parser"), highlight("semver")))
 
 
 versionparser_class = SemVerVersionParser
