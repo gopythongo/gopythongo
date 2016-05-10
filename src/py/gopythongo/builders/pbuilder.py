@@ -108,8 +108,15 @@ class PbuilderBuilder(BaseBuilder):
         else:
             build_cmdline = [args.pbuilder_executable, "--execute"]
 
+        mounts = ""
         if args.mounts:
-            build_cmdline += ["--bindmounts", " ".join(args.mounts)]
+            mounts += " ".join(args.mounts)
+
+        if the_context.mounts:
+            mounts += " ".join(the_context.mounts)
+
+        if mounts:
+            build_cmdline += ["--bindmounts", mounts]
 
         if args.basetgz:
             build_cmdline += ["--basetgz", args.basetgz]

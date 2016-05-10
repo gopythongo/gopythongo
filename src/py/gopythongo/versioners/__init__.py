@@ -14,12 +14,13 @@ version_parsers = None
 
 def init_subsystem():
     global versioners, version_parsers
-    from gopythongo.versioners import aptly, pymodule, static
+    from gopythongo.versioners import aptly, pymodule, bumpversion, static
     from gopythongo.versioners.parsers import regexparser, semverparser, debianparser
 
     versioners = {
         u"aptly": aptly.versioner_class(),
         u"pymodule": pymodule.versioner_class(),
+        u"bumpversion": bumpversion.versioner_class(),
         u"static": static.versioner_class(),
     }
 

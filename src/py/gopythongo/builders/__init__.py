@@ -134,7 +134,7 @@ def validate_args(args):
             print_info("Propagating GoPythonGo to build environment from $VIRTUAL_ENV %s" %
                        (highlight(os.getenv("VIRTUAL_ENV"))))
             gpg_path_found = True
-            args.mounts.append(the_context.gopythongo_path)
+            the_context.mounts.add(the_context.gopythongo_path)
 
     if not gpg_path_found:
         test_path = os.path.dirname(os.path.dirname(sys.executable))
@@ -145,7 +145,7 @@ def validate_args(args):
             pass
         else:
             print_info("Propagating GoPythonGo to build environment from detected path %s" % (highlight(test_path)))
-            args.mounts.append(the_context.gopythongo_path)
+            the_context.mounts.add(the_context.gopythongo_path)
             gpg_path_found = True
 
     if not gpg_path_found:
