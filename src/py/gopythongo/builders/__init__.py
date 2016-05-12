@@ -55,8 +55,6 @@ def add_args(parser):
     for b in builders.values():
         b.add_args(parser)
 
-    return parser
-
 
 class NoMountableGoPythonGo(Exception):
     pass

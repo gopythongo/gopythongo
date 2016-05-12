@@ -8,7 +8,6 @@ import os
 
 from configargparse import ArgParser as ArgumentParser
 
-import gopythongo.main
 import gopythongo.builders as builders
 import gopythongo.versioners as versioners
 import gopythongo.stores as stores
@@ -29,16 +28,16 @@ def get_parser():
                                         "This tool is designed to be used with pbuilder or docker so it can build a "
                                         "virtual environment in the path where it will be deployed. "
                                         "Parameters that start with '--' (eg. --builder) can "
-                                        "also be set in a config file (e.g. .gopythongo) by using .ini or .yaml-style "
-                                        "syntax (e.g. mode=value). If a parameter is specified in more than one place, "
-                                        "then command-line values override config file values which override defaults. "
-                                        "More information at http://gopythongo.com/.",
+                                        "also be set in a config file (e.g. .gopythongo/config) by using .ini or "
+                                        ".yaml-style syntax (e.g. mode=value). If a parameter is specified in more "
+                                        "than one place, then command-line values override config file values which "
+                                        "override defaults. More information at http://gopythongo.com/.",
                             prog="gopythongo.main",
                             args_for_setting_config_path=["-c", "--config"],
-                            config_arg_help_message="Use this path instead of the default (.gopythongo)",
-                            default_config_files=[".gopythongo"])
+                            config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
+                            default_config_files=[".gopythongo/config"])
 
-    for m in [gopythongo.builders, gopythongo.versioners, gopythongo.assemblers, gopythongo.packers, gopythongo.stores]:
+    for m in [builders, versioners, assemblers, packers, stores]:
         m.add_args(parser)
 
     gr_plan = parser.add_argument_group("Execution plan")
@@ -110,15 +109,19 @@ def validate_args(args):
 
 
 def print_help():
-    print("Usage: python -m gopythongo.main [--help] -c [configfile]")
-    print("")
-    print("While the command-line interface provides a useful reference and can be")
-    print("used for testing and development, you really want to put all build")
-    print("instructions into a .gopythongo rc file inside your project.")
-    print("")
-    print("    --help        Run \"python -m gopythongo.main --help\" to get more help.")
-    print("")
-    print("You can also find more information at http://gopythongo.com/.")
+    print("Usage: python -m gopythongo.main (--help|--init [folder]|-c [configfile])\n"
+          "\n"
+          "While the command-line interface provides a useful reference and can be\n"
+          "used for testing and development, you really want to put all build\n"
+          "instructions into a .gopythongo folder inside your project. The default\n"
+          "config file name is .gopythongo/config.\n"
+          "\n"
+          "    --help           Run \"python -m gopythongo.main --help\" to get more help\n"
+          "    --init [folder]  Run \"python -m gopythongo.main --init\" to create a basic\n"
+          "                     configuration in a folder (Default: .gopythongo/)\n"
+          "    -c [configfile]  Run GoPythonGo as configured\n"
+          "\n"
+          "You can also find more information at http://gopythongo.com/.\n")
 
 
 def _sigint_handler(signal, frame):

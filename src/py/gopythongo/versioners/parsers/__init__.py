@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 
-from gopythongo.utils import CommandLinePlugin
+from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper
 
 
 class UnknownParserName(Exception):
@@ -11,8 +11,9 @@ class UnconvertableVersion(Exception):
     pass
 
 
-class VersionContainer(object):
-    def __init__(self, version, parsed_by):
+class VersionContainer(GoPythonGoEnableSuper):
+    def __init__(self, version, parsed_by, *args, **kwargs):
+        super(VersionContainer, self).__init__(version, parsed_by, *args, **kwargs)
         self.version = version
         self.parsed_by = parsed_by
 

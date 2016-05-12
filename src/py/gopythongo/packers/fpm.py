@@ -20,11 +20,12 @@ class FPMPacker(BasePacker):
     def add_args(self, parser):
         gr_deb = parser.add_argument_group("Debian .deb settings")
         gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
-                            default=[],
+                            default=[], const=".gopythongo/fpm_opts", nargs="?",
                             help="Execute FPM (can be used multiple times). You must pass a filename to this "
                                  "parameter, which specifies a file containing the command-line parameters for "
                                  "invoking FPM (one per line). FPM will be invoked with the CWD set to the build "
-                                 "folder inside the selected builder. You can use template processing here")
+                                 "folder inside the selected builder. You can use template processing here. "
+                                 "Default opts file: .gopythongo/fpm_opts")
         gr_deb.add_argument("--package-name", dest="package_name",
                             help="The canonical package name to set using 'fpm -n'")
 
@@ -41,7 +42,7 @@ class FPMPacker(BasePacker):
         gr_fpm.add_argument("--fpm-opts", dest="fpm_opts", action="append",
                             help="Any string specified here will be directly appended to the FPM command-line when it "
                                  "is invoked, allowing you to specify arbitrary extra command-line parameters. Make "
-                                 "sure that you use an equals sign, i.e. --pip-opt='' to avoid 'Unknown parameter' "
+                                 "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
                                  "errors! http://bugs.python.org/issue9334")
 
     def validate_args(self, args):
@@ -153,8 +154,8 @@ class FPMPacker(BasePacker):
         _create_deb(args.outfile, _args.build_path)
 
     def pack(self, args):
-        validate_args(args)
-        _build_deb(args)
+        self.validate_args(args)
+        self._build_deb(args)
 
         print_info("Cleaning up")
         shutil.rmtree(args.build_path)

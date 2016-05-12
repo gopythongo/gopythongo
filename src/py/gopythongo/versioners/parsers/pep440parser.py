@@ -3,7 +3,7 @@ import sys
 
 from gopythongo.utils import print_error, highlight
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
-from packaging.version import Version, parse, InvalidVersion
+from packaging.version import parse, InvalidVersion
 
 
 class PEP440VersionParser(BaseVersionParser):
