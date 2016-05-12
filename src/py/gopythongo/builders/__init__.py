@@ -1,12 +1,13 @@
 # -* encoding: utf-8 *-
 
-import gopythongo.main
 import subprocess
 import sys
 import os
 
+import gopythongo
+
 from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins, \
-                             GoPythonGoEnableSuper, CommandLinePlugin
+                             CommandLinePlugin
 from gopythongo.utils.buildcontext import the_context
 
 

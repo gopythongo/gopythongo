@@ -1,5 +1,7 @@
 # =* encoding: utf-8 *-
 
+from typing import Set
+
 
 class BuildContext(object):
     """
@@ -12,14 +14,14 @@ class BuildContext(object):
         >>> the_context.mounts.add("path/to/my/stuff")  # makes your stuff available to your code during the build
     """
     def __init__(self):
-        self.packs = []
-        self.read_version = None
-        self.out_version = None
-        self.gopythongo_path = None
-        self.gopythongo_cmd = None
-        self.mounts = set()
+        self.packs = []  # type: List[str]
+        self.read_version = None  # type: VersionContainer
+        self.out_version = None  # type: VersionContainer
+        self.gopythongo_path = None  # type: str
+        self.gopythongo_cmd = None  # type: List[str]
+        self.mounts = set()  # type: Set
 
 
-the_context = BuildContext()
+the_context = BuildContext()  # type: BuildContext
 
 __all__ = [the_context, ]
