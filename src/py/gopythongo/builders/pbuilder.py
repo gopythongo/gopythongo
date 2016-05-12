@@ -5,7 +5,7 @@ import sys
 import shlex
 
 from gopythongo.builders import BaseBuilder
-from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path
+from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path, print_debug
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -78,30 +78,32 @@ class PbuilderBuilder(BaseBuilder):
     def build(self, args):
         print_info("Building with %s" % highlight("pbuilder"))
 
+        do_create = True
         if args.basetgz and os.path.exists(args.basetgz) and not args.pbuilder_force_recreate:
-            return
+            do_create = False
 
         if args.basetgz and os.path.exists(args.basetgz) and args.pbuilder_force_recreate:
             os.unlink(args.basetgz)
 
-        create_cmdline = [args.pbuilder_executable, "--create"]
-        create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_opts)))
-        create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_create_opts)))
-        if args.pbuilder_distribution:
-            create_cmdline += ["--distribution", args.pbuilder_distribution]
+        if do_create:
+            create_cmdline = [args.pbuilder_executable, "--create"]
+            create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_opts)))
+            create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_create_opts)))
+            if args.pbuilder_distribution:
+                create_cmdline += ["--distribution", args.pbuilder_distribution]
 
-        if args.basetgz:
-            create_cmdline += ["--basetgz", args.basetgz]
+            if args.basetgz:
+                create_cmdline += ["--basetgz", args.basetgz]
 
-        if args.pbuilder_install_defaults:
-            args.build_deps += ["python", "python-pip", "python-dev", "python-virtualenv"]
-            if args.eatmydata:
-                args.build_deps += ["eatmydata"]
+            if args.pbuilder_install_defaults:
+                args.build_deps += ["python", "python-pip", "python-dev", "python-virtualenv"]
+                if args.eatmydata:
+                    args.build_deps += ["eatmydata"]
 
-        if args.build_deps:
-            create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
+            if args.build_deps:
+                create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
 
-        run_process(*create_cmdline)
+            run_process(*create_cmdline)
 
         if args.pbuilder_debug_login:
             build_cmdline = [args.pbuilder_executable, "--login"]
@@ -123,7 +125,11 @@ class PbuilderBuilder(BaseBuilder):
         if args.basetgz:
             build_cmdline += ["--basetgz", args.basetgz]
 
-        if not args.pbuilder_debug_login:
+        if args.pbuilder_debug_login:
+            debug_cmdline = build_cmdline + ["--"] + the_context.gopythongo_cmd + ["--inner"] + sys.argv[1:]
+            debug_cmdline = [x if x != "--login" else "--execute" for x in debug_cmdline]
+            print_debug("Without --login, GoPythonGo would run: %s" % " ".join(debug_cmdline))
+        else:
             build_cmdline += ["--"] + the_context.gopythongo_cmd + ["--inner"] + sys.argv[1:]
 
         run_process(*build_cmdline)
