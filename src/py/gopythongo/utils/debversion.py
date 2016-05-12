@@ -124,11 +124,11 @@ def debian_versionpart_compare(mine, theirs):
 
 class DebianVersion(object):
     def __init__(self, epoch, version, revision):
-        self.epoch = epoch
-        self.version = version
-        self.revision = revision
-        self.version_re = None
-        self.version_char_re = None
+        self.epoch = epoch  # type: str
+        self.version = version  # type: str
+        self.revision = revision  # type: str
+        self.version_re = None  # type: str
+        self.version_char_re = None  # type: str
 
         if self.epoch is not None:
             try:

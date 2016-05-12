@@ -3,13 +3,13 @@
 import sys
 
 import gopythongo.shared.aptly_args as _aptly_args
-import gopythongo.versioners as _versioners
 
+from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.utils import highlight, print_error
 
 
-class AptlyVersioner(_versioners.BaseVersioner):
+class AptlyVersioner(BaseVersioner):
     def __init__(self, *args, **kwargs):
         super(AptlyVersioner, self).__init__(*args, **kwargs)
 
@@ -61,7 +61,7 @@ class AptlyVersioner(_versioners.BaseVersioner):
 
     @property
     def operates_on(self):
-        return u"debian"
+        return [u"debian"]
 
     def execute_action(self, version, action):
         pass
