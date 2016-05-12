@@ -19,6 +19,6 @@ def process_to_tempfile(filepath, context):
     outf.write(tpl.render(context))
     outf.close()
 
-    import gopythongoo
+    import gopythongo
     gopythongo.main.tempfiles.append(outf)
     return ofname

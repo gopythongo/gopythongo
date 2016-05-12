@@ -7,6 +7,7 @@ import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
+from typing import List
 
 import gopythongo
 import gopythongo.builders as builders
@@ -19,7 +20,7 @@ import gopythongo.utils as utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
 
 
-tempfiles = []
+tempfiles = []  # type: List[str]
 
 
 def get_parser():
@@ -156,6 +157,7 @@ def route():
             utils.prepend_exec = [args.eatmydata_executable]
 
         utils.debug_donotexecute = args.debug_noexec
+        utils.enable_debug_output = args.verbose
 
         if not args.is_inner:
             # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2

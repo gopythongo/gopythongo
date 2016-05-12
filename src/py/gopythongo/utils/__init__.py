@@ -13,6 +13,8 @@ from . import buildcontext, debversion, plugins, template
 
 
 success_color = Fore.LIGHTGREEN_EX
+debug_hl = Fore.LIGHTMAGENTA_EX
+debug_color = Fore.MAGENTA
 info_hl = Fore.LIGHTCYAN_EX
 info_color = Fore.LIGHTBLUE_EX
 warning_hl = Fore.LIGHTYELLOW_EX
@@ -24,6 +26,7 @@ color_reset = Fore.RESET
 
 debug_donotexecute = False
 prepend_exec = None
+enable_debug_output = False
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
     from backports.shutil_get_terminal_size import get_terminal_size
@@ -72,7 +75,7 @@ def run_process(*args):
     if prepend_exec:
         args = prepend_exec + list(args)
 
-    print_info("Running %s" % str(args))
+    print_debug("Running %s" % str(args))
     if not debug_donotexecute:
 
         ret = subprocess.call(args, stdout=sys.stdout, stderr=sys.stderr)
@@ -95,6 +98,12 @@ def print_warning(message):
 def print_info(message):
     info = "%s%s%s%s%s" % (info_hl, "*", info_color, " Info: ", color_reset)
     print("%s%s" % (info, message))
+
+
+def print_debug(message):
+    if enable_debug_output:
+        debug = "%s%s%s%s%s" % (debug_hl, "*", debug_color, " Debug: ", color_reset)
+        print("%s%s" % (debug, message))
 
 
 def success(message):

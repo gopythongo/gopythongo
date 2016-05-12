@@ -15,19 +15,13 @@ def load_plugins(entrypoint, registry, plugin_class_attribute, plugin_baseclass,
     using the value of the attribute named by ``plugin_name_property`` as the key.
 
     :param entrypoint: the name of the setuptools plugin entry point
-    :type entrypoint: str
     :param registry: a dict-like that serves as a registry for the plugins. Each plug-in class is set using
                      ``plugin_name_attribute``
-    :type registry: dict
     :param plugin_class_attribute: the attribute on the plugin module that identifies the plugin class
-    :type plugin_class_attribute: str
     :param plugin_baseclass: the class that the plugins are supposed to inherit from
-    :type plugin_baseclass: type
     :param plugin_name_property: the property on an instance of ``plugin_class_atrribute`` that will yield the plugin id
-    :type plugin_name_property: str
     :param initargs: parameters that will be passed to the constructor of ``plugin_class_attribute`` when
                      ``load_plugins`` instantiates it
-    :type initargs: list
     """
 
     if initargs is None:
