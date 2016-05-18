@@ -42,9 +42,12 @@ def add_args(parser):
     gr_pip = parser.add_argument_group("PIP options")
     gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
                         help="Any string specified here will be directly appended to all pip command-lines when it is "
-                             "invoked, allowing you to specify arbitrary extra command-line parameters. Make sure "
-                             "that you use an equals sign, i.e. --pip-opts='' to avoid 'Unknown "
-                             "parameter' errors! http://bugs.python.org/issue9334")
+                             "invoked, allowing you to specify arbitrary extra command-line parameters, like "
+                             "--extra-index. Make sure that you use an equals sign, i.e. --pip-opts='' to avoid "
+                             "'Unknown parameter' errors! http://bugs.python.org/issue9334")
+    gr_pip.add_argument("--upgrade-pip", dest="upgrade_pip", action="store_true", default=False,
+                        help="If specified, GoPythonGo will update pip and virtualenv inside the build environment "
+                             "to the newest available version before installing packages")
 
     gr_setuppy = parser.add_argument_group("Additional source packages")
     gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append", default=[],
@@ -62,6 +65,9 @@ def add_args(parser):
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.9,<1.10\"")
 
+    for assembler in assemblers.values():
+        assembler.add_args(parser)
+
 
 def validate_args(args):
     if not os.path.isabs(args.build_path):
@@ -73,20 +79,28 @@ def validate_args(args):
             print_error("Cannot run setup.py in %s, because it does not exist" % highlight(path))
             sys.exit(1)
 
+    if args.assembler:
+        if args.assembler in assemblers.keys():
+            assemblers[args.assembler].validate_args(args)
+
 
 def assemble(args):
+    pip_binary = create_script_path(args.build_path, "pip")
+    run_pip = [pip_binary, "install"]
+    if args.pip_opts:
+        run_pip += args.pip_opts
+
+    if args.upgrade_pip:
+        print_info("Making sure that pip and virtualenv are up to date")
+        run_process(run_pip, "--upgrade", "pip", "virtualenv")
+
     print_info("Initializing virtualenv in %s" % args.build_path)
     run_process(args.virtualenv_binary, args.build_path)
     os.chdir(args.build_path)
 
     print_info("Installing pip packages")
-    pip_binary = create_script_path(args.build_path, "pip")
-
-    run_pip = [pip_binary, "install"]
-    if args.pip_opts:
-        run_pip += args.pip_opts
-    run_pip += args.packages
-    run_process(*run_pip)
+    if args.packages:
+        run_process(*run_pip, args.packages)
 
     envpy = create_script_path(args.build_path, "python")
     if args.setuppy_install:
