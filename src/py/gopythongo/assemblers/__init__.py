@@ -100,7 +100,7 @@ def assemble(args):
 
     print_info("Installing pip packages")
     if args.packages:
-        run_process(*run_pip, args.packages)
+        run_process(*run_pip + args.packages)
 
     envpy = create_script_path(args.build_path, "python")
     if args.setuppy_install:
