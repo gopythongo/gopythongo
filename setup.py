@@ -41,6 +41,7 @@ setup(
             "gopythongo = gopythongo.main:route"
         ]
     },
+    install_requires=_requirements,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -50,5 +51,9 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: POSIX",
     ],
-    install_requires=_requirements,
+    author="Jonas Maurus (@jdelic)",
+    author_email="jonas@gopythongo.com",
+    maintainer="GoPythonGo.com",
+    maintainer_email="info@gopythongo.com",
+    description="Build shippable virtualenvs",
 )
