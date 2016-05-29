@@ -6,7 +6,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, print_error
+from gopythongo.utils import highlight, print_error, run_process
 
 
 class AptlyVersioner(BaseVersioner):
@@ -41,6 +41,9 @@ class AptlyVersioner(BaseVersioner):
                               help="If the APT repository does not yet contain a package with the name specified by "
                                    "--package-name, the Aptly versioner can return a fallback value. This is useful "
                                    "for fresh repositories.")
+        gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default=[],
+                              help="Specify additional command-line parameters which will be appened to every "
+                                   "invocation of aptly by the Aptly Versioner.")
 
     def validate_args(self, args):
         _aptly_args.validate_shared_args(args)
@@ -53,8 +56,20 @@ class AptlyVersioner(BaseVersioner):
                             "(%s)" % (highlight("--fallback-version"), str(e)))
                 sys.exit(1)
 
+        if not args.package_name:
+            print_error("To use the Aptly Versioner, you must specify --package-name.")
+
     def read(self, args):
-        pass
+        cmd = _aptly_args.get_aptly_cmdline(args)
+
+        if args.aptly_versioner_opts:
+            cmd += args.aptly_versioner_opts
+
+        cmd += ["package", "search", "-format=\"{{.Version}}\"", args.package_name]
+
+        output = run_process(cmd)
+
+
 
     def create(self, args):
         pass

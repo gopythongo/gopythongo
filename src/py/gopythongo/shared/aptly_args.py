@@ -32,3 +32,10 @@ def validate_shared_args(args):
         sys.exit(1)
 
 
+def get_aptly_cmdline(args):
+    cmdline = [args.aptly_executable]
+
+    if args.aptly_config:
+        cmdline += ["-config", args.aptly_config]
+
+    return cmdline
