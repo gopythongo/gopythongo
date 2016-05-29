@@ -2,7 +2,6 @@
 
 import collections
 import subprocess
-import six
 import sys
 import os
 
@@ -64,25 +63,33 @@ def create_script_path(virtualenv_path, script_name):
 def flatten(x):
     result = []
     for el in x:
-        if isinstance(el, collections.Iterable) and not isinstance(el, six.string_types):
+        if isinstance(el, collections.Iterable) and not isinstance(el, str):
             result.extend(flatten(el))
         else:
             result.append(el)
     return result
 
 
-def run_process(*args):
+def run_process(*args, raise_nonzero_exitcode=False):
     if prepend_exec:
         args = prepend_exec + list(args)
 
     print_debug("Running %s" % str(args))
     if not debug_donotexecute:
 
-        ret = subprocess.call(args, stdout=sys.stdout, stderr=sys.stderr)
+        exitcode = 0
+        try:
+            output = subprocess.call(args, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            if raise_nonzero_exitcode:
+                raise
+            exitcode = e.returncode
 
-        if ret != 0:
-            print_error("%s exited with non-zero exit code %s" % (str(args), ret))
-            sys.exit(ret)
+        if exitcode != 0:
+            print_error("%s exited with non-zero exit code %s" % (str(args), exitcode))
+            sys.exit(exitcode)
+
+        return output.strip().decode("utf-8")
 
 
 def print_error(message):

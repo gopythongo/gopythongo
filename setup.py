@@ -19,7 +19,6 @@ _requirements = [
     'Sphinx==1.3.1',
     'sphinx-rtd-theme==0.1.9',
     'colorama==0.3.7',
-    'six==1.10.0',
     'semantic_version==2.5.0',
     'packaging==16.6',
 ]
@@ -42,5 +41,14 @@ setup(
             "gopythongo = gopythongo.main:route"
         ]
     },
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "Environment :: Console",
+        "Programming Language :: Python :: 3 :: Only",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: POSIX",
+    ],
     install_requires=_requirements,
 )

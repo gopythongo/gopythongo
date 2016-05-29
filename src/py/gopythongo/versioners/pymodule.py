@@ -1,5 +1,4 @@
 # -* encoding: utf-8 *-
-import six
 import sys
 
 import gopythongo.versioners as _versioners
@@ -17,18 +16,18 @@ def import_string(dotted_path):
     """
     try:
         module_path, class_name = dotted_path.rsplit('.', 1)
-    except ValueError:
+    except ValueError as e:
         msg = "%s doesn't look like a module path" % dotted_path
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+        raise ImportError(msg) from e
 
     module = import_module(module_path)
 
     try:
         return getattr(module, class_name)
-    except AttributeError:
+    except AttributeError as e:
         msg = 'Module "%s" does not define a "%s" attribute/class' % (
             module_path, class_name)
-        six.reraise(ImportError, ImportError(msg), sys.exc_info()[2])
+        raise ImportError(msg) from e
 
 
 class PymoduleVersioner(_versioners.BaseVersioner):

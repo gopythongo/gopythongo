@@ -1,6 +1,5 @@
 # -* encoding: utf-8 *-
 
-import six
 import pkg_resources
 
 
@@ -40,7 +39,7 @@ def load_plugins(entrypoint, registry, plugin_class_attribute, plugin_baseclass,
 
         plugin_instance = getattr(module, plugin_class_attribute)(*initargs)
 
-        if isinstance(getattr(plugin_instance, plugin_name_property), six.text_type):
+        if isinstance(getattr(plugin_instance, plugin_name_property), str):
             module_id = getattr(plugin_instance, plugin_name_property)
         else:
             raise ImportError("Plugin class in %s has an attribute %s, but it does not return unicode string." %

@@ -6,7 +6,6 @@ https://www.debian.org/doc/debian-policy/ch-controlfields.html. Partially based 
 https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debVersioningSystem::DoCmpVersion)
 """
 
-import six
 import re
 
 
@@ -200,7 +199,7 @@ class DebianVersion(object):
         )
 
     def tostring(self):
-        return six.u(self)
+        return str(self)
 
     def __lt__(self, other):
         # special case: zero Epoch is the same as no Epoch

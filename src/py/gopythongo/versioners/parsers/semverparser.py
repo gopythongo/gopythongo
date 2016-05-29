@@ -1,8 +1,6 @@
 # -* encoding: utf-8 *-
 import sys
 
-import six
-
 from semantic_version import Version as SemVerBase
 from gopythongo.utils import highlight, print_error
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
@@ -13,7 +11,7 @@ class SemVerVersion(SemVerBase):
         super(SemVerVersion, self).__init__(*args)
 
     def tostring(self):
-        return six.u(self)
+        return str(self)
 
 
 class SemVerVersionParser(BaseVersionParser):
