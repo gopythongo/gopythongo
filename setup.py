@@ -9,7 +9,7 @@ from setuptools import find_packages
 _package_root = "src/py"
 _root_package = 'gopythongo'
 
-import time
+import time  # noqa
 _version = "1.0.dev%s" % int(time.time())
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
