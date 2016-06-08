@@ -121,7 +121,8 @@ def print_help():
           "    --help           Run \"python -m gopythongo.main --help\" to get more help\n"
           "    --init [folder]  Run \"python -m gopythongo.main --init\" to create a basic\n"
           "                     configuration in a folder (Default: .gopythongo/)\n"
-          "    -c [configfile]  Run GoPythonGo as configured\n"
+          "    -c [configfile]  Run GoPythonGo as configured by 'configfile'.\n"
+          "                     (Default: .gopythongo/config)\n"
           "\n"
           "You can also find more information at http://gopythongo.com/.\n")
 
