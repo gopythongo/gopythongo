@@ -4,10 +4,12 @@ import argparse
 import os
 import sys
 
+from typing import Dict
+
 from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins, \
     CommandLinePlugin
 
-assemblers = None
+assemblers = {}  # type: Dict[str, 'BaseAssembler']
 
 
 def init_subsystem() -> None:

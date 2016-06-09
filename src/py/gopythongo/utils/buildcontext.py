@@ -1,7 +1,7 @@
 # =* encoding: utf-8 *-
 
 from typing import Set
-
+from gopythongo.versioners.parsers import VersionContainer
 
 class BuildContext(object):
     """
@@ -24,4 +24,4 @@ class BuildContext(object):
 
 the_context = BuildContext()  # type: BuildContext
 
-__all__ = [the_context, ]
+__all__ = ["the_context", ]

@@ -17,7 +17,7 @@ class DockerStore(BaseStore):
         gopythongo.shared.docker_args.add_shared_args(parser)
 
     def validate_args(self, args: argparse.Namespace) -> None:
-        return True
+        pass
 
     def store(self, args: argparse.Namespace) -> None:
         pass

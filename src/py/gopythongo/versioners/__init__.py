@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import sys
-from typing import List, Dict, TypeVar
+from typing import List, Dict, TypeVar, Type
 
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils import highlight, print_error, print_info, plugins, CommandLinePlugin
@@ -9,12 +9,8 @@ from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser
 from gopythongo.versioners import help as versioner_help
 
 
-BaseVersioner_t = TypeVar("BaseVersioner_t", 'BaseVersioner', covariant=True)
-BaseVersionParser_t = TypeVar("BaseVersionParser_t", BaseVersionParser, covariant=True)
-
-
-versioners = None  # type: Dict[str, BaseVersioner_t]
-version_parsers = None  # type: Dict[str, BaseVersionParser_t]
+versioners = {}  # type: Dict[str, 'BaseVersioner']
+version_parsers = {}  # type: Dict[str, BaseVersionParser]
 
 
 def init_subsystem() -> None:
@@ -108,7 +104,7 @@ class BaseVersioner(CommandLinePlugin):
         """
         Execute an action on a version.
 
-        :param version: A VersionContainter instance read by this or another Versioner
+        :param version: A VersionContainer instance read by this or another Versioner
         :type version: gopythongo.versioners.parsers.VersionContainer
         :param action: The action to be taken as set up though command-line parameters or otherwise
         :type action: str

@@ -2,9 +2,11 @@
 import argparse
 import sys
 
+from typing import Dict
+
 from gopythongo.utils import print_error, plugins, CommandLinePlugin
 
-packers = None
+packers = {}  # type: Dict[str, 'BasePacker']
 
 
 def init_subsystem() -> None:

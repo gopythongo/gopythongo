@@ -4,11 +4,11 @@ import sys
 import re
 
 from gopythongo.versioners.parsers.semverparser import SemVerVersion
-from gopythongo.versioners.parsers import VersionContainer
-from gopythongo.utils import print_error, highlight, GoPythonGoEnableSuper
+from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.utils import print_error, highlight
 
 
-class RegexVersionParser(GoPythonGoEnableSuper):
+class RegexVersionParser(BaseVersionParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import os
 from typing import Dict, Any
 
 import tempfile
@@ -13,7 +14,8 @@ def process_to_tempfile(filepath: str, context: Dict[str, Any]) -> str:
 
     :return: the full path of the temporary file containing the result
     """
-    outf, ofname = tempfile.mkstemp()
+    outfd, ofname = tempfile.mkstemp()
+    outf = open(outfd, mode="w")
     with open(filepath) as inf:
         tplstr = inf.read()
     tpl = jinja2.Template(tplstr)
@@ -21,5 +23,5 @@ def process_to_tempfile(filepath: str, context: Dict[str, Any]) -> str:
     outf.close()
 
     import gopythongo.main
-    gopythongo.main.tempfiles.append(outf)
+    gopythongo.main.tempfiles.append(ofname)
     return ofname

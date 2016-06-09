@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 import argparse
-from typing import List, Iterable
+from typing import List, Iterable, Union, Any, Sequence
 
 import collections
 import subprocess
@@ -26,7 +26,7 @@ highlight_color = Fore.LIGHTWHITE_EX  # type: str
 color_reset = Fore.RESET  # type: str
 
 debug_donotexecute = False  # type: bool
-prepend_exec = None  # type: Union[str, None]
+prepend_exec = None  # type: List[str]
 enable_debug_output = False  # type: bool
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
@@ -62,7 +62,7 @@ def create_script_path(virtualenv_path: str, script_name: str) -> str:
         return os.path.join(virtualenv_path, "bin/", script_name)
 
 
-def flatten(x: List) -> List:
+def flatten(x: Iterable[Any]) -> List[Any]:
     result = []
     for el in x:
         if isinstance(el, collections.Iterable) and not isinstance(el, str):
@@ -119,7 +119,7 @@ def success(message: str) -> None:
     print("%s%s%s" % (success_color, message, color_reset))
 
 
-def highlight(message: str) -> None:
+def highlight(message: str) -> str:
     return "%s%s%s" % (highlight_color, message, color_reset)
 
 

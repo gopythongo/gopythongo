@@ -4,6 +4,7 @@ import sys
 import os
 
 from gopythongo.utils import highlight, print_error
+from typing import List
 
 _aptly_shared_args_added = False  # type: bool
 
@@ -32,7 +33,7 @@ def validate_shared_args(args: argparse.Namespace) -> None:
         sys.exit(1)
 
 
-def get_aptly_cmdline(args: argparse.Namespace) -> str:
+def get_aptly_cmdline(args: argparse.Namespace) -> List[str]:
     cmdline = [args.aptly_executable]
 
     if args.aptly_config:

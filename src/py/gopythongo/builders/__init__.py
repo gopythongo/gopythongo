@@ -2,7 +2,7 @@
 import argparse
 import subprocess
 import sys
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import os
 
@@ -13,7 +13,7 @@ from gopythongo.utils import print_error, print_info, highlight, create_script_p
 from gopythongo.utils.buildcontext import the_context
 
 
-builders = None
+builders = {}  # type: Dict[str, 'BaseBuilder']
 
 
 def init_subsystem() -> None:
@@ -94,7 +94,7 @@ def test_gopythongo(path: str) -> Tuple[str, List[str]]:
                 if _test_gopythongo_version([path, "--version"]):
                     return os.path.dirname(path), [path]
             except NoMountableGoPythonGo as e:
-                print_error(e)
+                print_error(str(e))
                 sys.exit(1)
 
     elif os.path.isdir(path):
@@ -104,12 +104,12 @@ def test_gopythongo(path: str) -> Tuple[str, List[str]]:
                 if _test_gopythongo_version([create_script_path(path, "python"), "-m", "gopythongo.main", "--version"]):
                     return path, [create_script_path(path, "python"), "-m", "gopythongo.main"]
             except NoMountableGoPythonGo as e:
-                print_error(e)
+                print_error(str(e))
                 sys.exit(1)
     raise NoMountableGoPythonGo("Can't find GoPythonGo as a virtualenv or PEX executable in %s" % path)
 
 
-def validate_args(args: argparse.ArgumentParser) -> None:
+def validate_args(args: argparse.Namespace) -> None:
     if args.builder:
         if args.builder in builders.keys():
             builders[args.builder].validate_args(args)
@@ -154,5 +154,5 @@ def validate_args(args: argparse.ArgumentParser) -> None:
         sys.exit(1)
 
 
-def build(args: argparse.ArgumentParser) -> None:
+def build(args: argparse.Namespace) -> None:
     builders[args.builder].build(args)

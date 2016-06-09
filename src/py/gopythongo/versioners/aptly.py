@@ -61,7 +61,7 @@ class AptlyVersioner(BaseVersioner):
         if not args.package_name:
             print_error("To use the Aptly Versioner, you must specify --package-name.")
 
-    def read(self, args: argparse.ArgumentParser) -> str:
+    def read(self, args: argparse.Namespace) -> str:
         cmd = _aptly_args.get_aptly_cmdline(args)
 
         if args.aptly_versioner_opts:
@@ -71,7 +71,7 @@ class AptlyVersioner(BaseVersioner):
 
         output = run_process(cmd)
 
-    def create(self, args: argparse.ArgumentParser) -> str:
+    def create(self, args: argparse.Namespace) -> str:
         pass
 
     @property

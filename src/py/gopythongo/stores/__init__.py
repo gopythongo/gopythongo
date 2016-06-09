@@ -2,9 +2,11 @@
 import argparse
 import sys
 
+from typing import Dict
+
 from gopythongo.utils import print_error, plugins, CommandLinePlugin
 
-stores = None
+stores = {}  # type: Dict[str, 'BaseStore']
 
 
 def init_subsystem() -> None:
