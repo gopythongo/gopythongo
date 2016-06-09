@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import argparse
 
 import os
 import sys
@@ -11,19 +12,19 @@ from gopythongo.utils import print_info, print_error, highlight
 
 class TarGzPacker(BasePacker):
     def __init__(self, *args, **kwargs):
-        super(TarGzPacker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
-    def packer_name(self):
+    def packer_name(self) -> str:
         return u"targz"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass
 
-    def validate_args(self, parser):
+    def validate_args(self, args: argparse.Namespace) -> None:
         pass
 
-    def _create_targzip(self, outfile, basepath, make_paths_relative=False):
+    def _create_targzip(self, outfile: str, basepath: str, make_paths_relative: bool=False) -> None:
         """
         creates a .tar.gz of everything below basepath, making sure all
         stored paths are relative
@@ -50,7 +51,7 @@ class TarGzPacker(BasePacker):
         tf.close()
         f.close()
 
-    def _build_tar(self):
+    def _build_tar(self) -> None:
         global _args
         if _args.collect_static:
             _collect_static()
@@ -70,7 +71,7 @@ class TarGzPacker(BasePacker):
         print_info("Creating bundle tarball of %s in %s" % (highlight(_args.build_path), highlight(_args.outfile),))
         _create_targzip(_args.outfile, _args.build_path, _args.bundle_relative)
 
-    def pack(self, args):
+    def pack(self, args: argparse.Namespace):
         pass
 
 

@@ -1,5 +1,5 @@
-#!/usr/bin/python -u
 # -* encoding: utf-8 *-
+import argparse
 
 import os
 import sys
@@ -10,14 +10,14 @@ from gopythongo.utils import template, print_error, print_info, highlight
 
 
 class FPMPacker(BasePacker):
-    def __init__(self, *args, **kwargs):
-        super(FPMPacker, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def packer_name(self):
+    def packer_name(self) -> str:
         return u"fpm"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_deb = parser.add_argument_group("Debian .deb settings")
         gr_deb.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
                             default=[], const=".gopythongo/fpm_opts", nargs="?",
@@ -45,7 +45,7 @@ class FPMPacker(BasePacker):
                                  "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
                                  "errors! http://bugs.python.org/issue9334")
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace):
         if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
             print_error("fpm not found in path or not executable (%s).\n"
                         "You can specify an alternative executable using %s" %

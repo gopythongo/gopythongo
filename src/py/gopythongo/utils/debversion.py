@@ -5,6 +5,7 @@ tools to parse and compare Debian version strings as per
 https://www.debian.org/doc/debian-policy/ch-controlfields.html. Partially based on
 https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debVersioningSystem::DoCmpVersion)
 """
+from typing import List, TypeVar, Generic, Callable, Tuple, Union, Any
 
 import re
 
@@ -15,7 +16,7 @@ class InvalidDebianVersionString(Exception):
         self.args = ([message] + list(args)) if msg else args
 
 
-def debian_substr_compare(a, b):
+def debian_substr_compare(a: str, b: str) -> int:
     """
     Compares two strings using Debian Policy Manual rules. This is complicated because standard Python str comparison
     works like this:
@@ -39,7 +40,7 @@ def debian_substr_compare(a, b):
     # '^' is our special character representing an "empty part" as '^' is not allowed in Debian version strings
     sortorder = "~^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-.:"
 
-    def order(c):
+    def order(c: str) -> int:
         if c in sortorder:
             return sortorder.index(c)
         else:
@@ -47,7 +48,7 @@ def debian_substr_compare(a, b):
                 a, b, c
             ))
 
-    def select_char(version_str, ix):
+    def select_char(version_str: str, ix: int) -> str:
         if ix >= len(version_str):
             return '^'
         else:
@@ -87,7 +88,7 @@ def debian_substr_compare(a, b):
     return 0
 
 
-def split_version_parts(version_str, version_char_re="[A-Za-z\+\.~]+"):
+def split_version_parts(version_str: str, version_char_re: str="[A-Za-z\+\.~]+") -> List[str]:
     """
     Splits ``version_str`` into groups of digits and characters to perform Debian-style version comparison.
     For example: "a67bhgs89" has 4 groups -> ["a", "67", "bhgs", "89"]
@@ -105,7 +106,7 @@ def split_version_parts(version_str, version_char_re="[A-Za-z\+\.~]+"):
         return [""]
 
 
-def debian_versionpart_compare(mine, theirs):
+def debian_versionpart_compare(mine: List[str], theirs: List[str]):
     maxlen = len(mine) if len(mine) > len(theirs) else len(theirs)
     for g_ix in range(0, maxlen):
         res = debian_substr_compare(mine[g_ix] if g_ix < len(mine) else "",
@@ -122,7 +123,7 @@ def debian_versionpart_compare(mine, theirs):
 
 
 class DebianVersion(object):
-    def __init__(self, epoch, version, revision):
+    def __init__(self, epoch: str, version: str, revision: str) -> None:
         self.epoch = epoch  # type: str
         self.version = version  # type: str
         self.revision = revision  # type: str
@@ -175,7 +176,7 @@ class DebianVersion(object):
                                              (self.version, self.version_re, details))
 
     @classmethod
-    def fromstring(cls, version_str):
+    def fromstring(cls: type, version_str: str) -> 'DebianVersion':
         epoch, version, revision = (None, None, None)
         if ":" in version_str:
             epoch = version_str.split(":")[0]
@@ -186,22 +187,22 @@ class DebianVersion(object):
         version = version_str
         return cls(epoch, version, revision)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "DebianVersion<Epoch:%s, Version:%s, Revision:%s, Validation Regex:%s, Split Regex: %s>" % (
             self.epoch, self.version, self.revision, self.version_re, self.version_char_re
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "%s%s%s" % (
             ("%s:" % self.epoch) if self.epoch else "",
             self.version if self.version else "",
             ("-%s" % self.revision) if self.revision else "",
         )
 
-    def tostring(self):
+    def tostring(self) -> str:
         return str(self)
 
-    def __lt__(self, other):
+    def __lt__(self, other: 'DebianVersion') -> bool:
         # special case: zero Epoch is the same as no Epoch
         if self.epoch is not None and other.epoch is not None and \
            int(self.epoch) != int(other.epoch) and int(self.epoch) != 0 and int(other.epoch) != 0:
@@ -216,8 +217,8 @@ class DebianVersion(object):
         else:
             return res < 0
 
-    def __eq__(self, other):
+    def __eq__(self, other: Union['DebianVersion', Any, None]) -> bool:
         return repr(self) == repr(other)
 
-    def as_tuple(self):
+    def as_tuple(self) -> Tuple[str, str, str]:
         return self.epoch, self.version, self.revision

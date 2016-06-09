@@ -1,39 +1,41 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import sys
+from typing import List
 
 import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.utils import highlight, print_error, run_process
+from gopythongo.versioners.parsers import VersionContainer
 
 
 class AptlyVersioner(BaseVersioner):
     def __init__(self, *args, **kwargs):
-        super(AptlyVersioner, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @property
-    def versioner_name(self):
+    def versioner_name(self) -> str:
         return u"aptly"
 
     @property
-    def can_read(self):
+    def can_read(self) -> bool:
         return True
 
     @property
-    def can_create(self):
+    def can_create(self) -> bool:
         return True
 
-    def can_execute_action(self, action):
+    def can_execute_action(self, action: str) -> bool:
         if action in ["increment-epoch-if-exists", "increment-revision-if-exists"]:
             return True
         return False
 
-    def print_help(self):
+    def print_help(self) -> None:
         pass
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
 
         gr_aptly = parser.add_argument_group("Aptly Versioner")
@@ -45,7 +47,7 @@ class AptlyVersioner(BaseVersioner):
                               help="Specify additional command-line parameters which will be appened to every "
                                    "invocation of aptly by the Aptly Versioner.")
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
 
         if args.aptly_fallback_version:
@@ -59,7 +61,7 @@ class AptlyVersioner(BaseVersioner):
         if not args.package_name:
             print_error("To use the Aptly Versioner, you must specify --package-name.")
 
-    def read(self, args):
+    def read(self, args: argparse.ArgumentParser) -> str:
         cmd = _aptly_args.get_aptly_cmdline(args)
 
         if args.aptly_versioner_opts:
@@ -69,16 +71,14 @@ class AptlyVersioner(BaseVersioner):
 
         output = run_process(cmd)
 
-
-
-    def create(self, args):
+    def create(self, args: argparse.ArgumentParser) -> str:
         pass
 
     @property
-    def operates_on(self):
+    def operates_on(self) -> List[str]:
         return [u"debian"]
 
-    def execute_action(self, version, action):
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
         pass
 
 

@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import argparse
 
 import os
 import sys
@@ -10,14 +11,14 @@ from gopythongo.utils.buildcontext import the_context
 
 
 class PbuilderBuilder(BaseBuilder):
-    def __init__(self, *args, **kwargs):
-        super(PbuilderBuilder, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def builder_name(self):
+    def builder_name(self) -> str:
         return u"pbuilder"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_pbuilder = parser.add_argument_group("Pbuilder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable")
@@ -50,7 +51,7 @@ class PbuilderBuilder(BaseBuilder):
                                  help="Instead of executing the '--inner' build, run pbuilder with '--login' to spawn "
                                       "a debug shell inside the chroot")
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         if args.is_inner:
             return
 
@@ -75,7 +76,7 @@ class PbuilderBuilder(BaseBuilder):
             print_error("pbuilder requires root privileges. Please run GoPythonGo as root when using pbuilder")
             sys.exit(1)
 
-    def build(self, args):
+    def build(self, args: argparse.Namespace) -> None:
         print_info("Building with %s" % highlight("pbuilder"))
 
         do_create = True

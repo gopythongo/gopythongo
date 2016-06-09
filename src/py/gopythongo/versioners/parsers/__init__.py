@@ -1,4 +1,6 @@
 # -* encoding: utf-8 *-
+import argparse
+from typing import Tuple
 
 from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper
 
@@ -12,12 +14,12 @@ class UnconvertableVersion(Exception):
 
 
 class VersionContainer(GoPythonGoEnableSuper):
-    def __init__(self, version, parsed_by, *args, **kwargs):
-        super(VersionContainer, self).__init__(version, parsed_by, *args, **kwargs)
+    def __init__(self, version, parsed_by: str, *args, **kwargs) -> None:
+        super().__init__(version, parsed_by, *args, **kwargs)
         self.version = version
         self.parsed_by = parsed_by
 
-    def convert_to(self, parsername):
+    def convert_to(self, parsername: str) -> 'VersionContainer':
         from gopythongo.versioners import version_parsers
         if parsername not in version_parsers:
             raise UnknownParserName("Unknown parser name: %s" % parsername)
@@ -41,7 +43,7 @@ class VersionContainer(GoPythonGoEnableSuper):
 
         raise UnconvertableVersion("No known way to convert version data from %s to %s" % (self.parsed_by, parsername))
 
-    def perform_action(self, action):
+    def perform_action(self, action: str) -> None:
         from gopythongo.versioners import version_parsers
         self.version = version_parsers[self.parsed_by].perform_action(self.version, action)
 
@@ -64,11 +66,11 @@ class BaseVersionParser(CommandLinePlugin):
     subclass of ``BaseVersionParser``. This parser will be registered under the identifier returned by the
     ``versionparser_name`` property of the subclass.
     """
-    def __init__(self, *args, **kwargs):
-        super(BaseVersionParser, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versionparser_name(self):
+    def versionparser_name(self) -> str:
         """
         Return the identifier and command-line parameter value for ==version-parser used by this Version Parser.
         :returns: the identifier
@@ -76,14 +78,14 @@ class BaseVersionParser(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseVersionParser MUST implement versionparser_name")
 
-    def print_help(self):
+    def print_help(self) -> None:
         """
         Output some information about the Version Parser, like how to use it, what it's format looks like, things like
         that. Then exit.
         """
         print("Version Parser %s provides no help, unfortunately." % self.versionparser_name)
 
-    def parse(self, version_str, args):
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         """
         Is called by GoPythonGo to parse a version string as it was read by a Versioner.
 
@@ -93,7 +95,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         raise NotImplementedError("Every Version Parser MUST implement parse()")
 
-    def can_convert_from(self, parserid):
+    def can_convert_from(self, parserid: str) -> Tuple[bool, bool]:
         """
         Is called by GoPythonGo to query whether this Version Parser can read version strings from a certain format.
         You should be familiar with the code of the other parser to write this.
@@ -107,7 +109,7 @@ class BaseVersionParser(CommandLinePlugin):
             return True, True  # we can convert and we can do so losslessly
         return False, False
 
-    def can_convert_to(self, parserid):
+    def can_convert_to(self, parserid: str) -> Tuple[bool, bool]:
         """
         Is called by GoPythonGo to query whether this Version Parser can create version strings in a certain format.
         You should be familiar with the code of the other parser to write this.
@@ -121,7 +123,7 @@ class BaseVersionParser(CommandLinePlugin):
             return True, True  # we can convert and we can do so losslessly
         return False, False
 
-    def convert_from(self, version):
+    def convert_from(self, version: VersionContainer) -> VersionContainer:
         """
         :type version: VersionContainer
         """
@@ -130,7 +132,7 @@ class BaseVersionParser(CommandLinePlugin):
         raise UnconvertableVersion("%s does not know how to convert versions read by %s" %
                                    (self.versionparser_name, version.parsed_by))
 
-    def convert_to(self, version, parserid):
+    def convert_to(self, version: VersionContainer, parserid: str) -> VersionContainer:
         """
         :type version: VersionContainer
         :type parserid: str

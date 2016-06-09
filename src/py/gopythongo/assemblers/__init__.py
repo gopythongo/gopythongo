@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import argparse
 
 import os
 import sys
@@ -9,7 +10,7 @@ from gopythongo.utils import run_process, create_script_path, print_info, print_
 assemblers = None
 
 
-def init_subsystem():
+def init_subsystem() -> None:
     global assemblers
 
     from gopythongo.assemblers import django
@@ -25,18 +26,18 @@ def init_subsystem():
 
 
 class BaseAssembler(CommandLinePlugin):
-    def __init__(self, *args, **kwargs):
-        super(BaseAssembler, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def assembler_name(self):
+    def assembler_name(self) -> str:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
 
-    def assemble(self, args):
+    def assemble(self, args: argparse.Namespace) -> None:
         pass
 
 
-def add_args(parser):
+def add_args(parser: argparse.ArgumentParser) -> None:
     global assemblers
 
     gr_pip = parser.add_argument_group("PIP options")
@@ -69,7 +70,7 @@ def add_args(parser):
         assembler.add_args(parser)
 
 
-def validate_args(args):
+def validate_args(args: argparse.Namespace):
     if not os.path.isabs(args.build_path):
         print_error("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
         sys.exit(1)
@@ -84,7 +85,7 @@ def validate_args(args):
             assemblers[args.assembler].validate_args(args)
 
 
-def assemble(args):
+def assemble(args: argparse.Namespace):
     pip_binary = create_script_path(args.build_path, "pip")
     run_pip = [pip_binary, "install"]
     if args.pip_opts:

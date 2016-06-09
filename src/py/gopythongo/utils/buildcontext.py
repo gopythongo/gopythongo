@@ -13,7 +13,7 @@ class BuildContext(object):
         >>> from gopythongo.utils.buildcontext import the_context
         >>> the_context.mounts.add("path/to/my/stuff")  # makes your stuff available to your code during the build
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.packs = []  # type: List[str]
         self.read_version = None  # type: VersionContainer
         self.out_version = None  # type: VersionContainer

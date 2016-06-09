@@ -1,4 +1,6 @@
 # -* encoding: utf-8 *-
+import argparse
+
 import shutil
 import sys
 import os
@@ -9,14 +11,14 @@ from gopythongo.utils import print_error, highlight
 
 
 class DjangoAssembler(BaseAssembler):
-    def __init__(self, *args, **kwargs):
-        super(DjangoAssembler, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def assembler_name(self):
+    def assembler_name(self) -> str:
         return u"django"
 
-    def add_parser(self, parser):
+    def add_parser(self, parser: argparse.ArgumentParser) -> None:
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
                                help="run 'django-admin.py collectstatic' inside the bundle")
@@ -37,14 +39,14 @@ class DjangoAssembler(BaseAssembler):
                                help="'--settings' argument to pass to django-admin.py when it is called by " +
                                     "this script")
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         if args.static_outfile or args.collect_static:
             if not (args.static_outfile and args.collect_static):
                 print_error("%s and %s must be used together" %
                             (highlight("--static-out"), highlight("--collect-static")))
                 sys.exit(1)
 
-    def _collect_static(self, args):
+    def _collect_static(self, args: argparse.Namespace) -> None:
         envpy = utils.create_script_path(args.build_path, "python")
         print("Collecting static artifacts")
         if os.path.exists(args.static_root):

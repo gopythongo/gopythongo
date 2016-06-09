@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import argparse
 import sys
 
 from gopythongo.utils import print_error, highlight
@@ -7,20 +8,20 @@ from packaging.version import parse, InvalidVersion
 
 
 class PEP440VersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs):
-        super(PEP440VersionParser, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versionparser_name(self):
+    def versionparser_name(self) -> str:
         return u"pep440"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         pass
 
-    def parse(self, version_str, args):
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:
             version = parse(version_str)
         except InvalidVersion as e:
@@ -30,7 +31,7 @@ class PEP440VersionParser(BaseVersionParser):
 
         return VersionContainer(version, self.versionparser_name)
 
-    def print_help(self):
+    def print_help(self) -> None:
         print("%s\n"
               "=====================\n"
               "\n"

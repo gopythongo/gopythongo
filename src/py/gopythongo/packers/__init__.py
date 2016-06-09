@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import sys
 
 from gopythongo.utils import print_error, plugins, CommandLinePlugin
@@ -7,7 +7,7 @@ from gopythongo.utils import print_error, plugins, CommandLinePlugin
 packers = None
 
 
-def init_subsystem():
+def init_subsystem() -> None:
     global packers
     from gopythongo.packers import fpm, targz
     packers = {
@@ -22,11 +22,11 @@ def init_subsystem():
 
 
 class BasePacker(CommandLinePlugin):
-    def __init__(self, *args, **kwargs):
-        super(BasePacker, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def packer_name(self):
+    def packer_name(self) -> str:
         """
         Return the identifier and command-line parameter value for --packer used by this Packer.
         :returns: the identifier
@@ -34,11 +34,11 @@ class BasePacker(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BasePacker MUST implement packer_name")
 
-    def pack(self, args):
+    def pack(self, args: argparse.Namespace) -> None:
         pass
 
 
-def add_args(parser):
+def add_args(parser: argparse.ArgumentParser) -> None:
     for m in packers.values():
         m.add_args(parser)
 
@@ -49,10 +49,10 @@ def add_args(parser):
                                  "build folder of your build server, for example.")
 
 
-def validate_args(args):
+def validate_args(args: argparse.Namespace):
     if args.packer in packers.keys():
         packers[args.packer].validate_args(args)
 
 
-def pack(args):
+def pack(args: argparse.Namespace):
     packers[args.packer].pack(args)

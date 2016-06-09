@@ -1,13 +1,15 @@
 # -* encoding: utf-8 *-
+import argparse
 import sys
 
 import gopythongo.versioners as _versioners
 
 from importlib import import_module
 from gopythongo.utils import print_error, highlight
+from types import ModuleType
 
 
-def import_string(dotted_path):
+def import_string(dotted_path: str) -> ModuleType:
     """
     Import a dotted module path and return the attribute/class designated by the
     last name in the path. Raise ImportError if the import failed.
@@ -31,25 +33,25 @@ def import_string(dotted_path):
 
 
 class PymoduleVersioner(_versioners.BaseVersioner):
-    def __init__(self, *args, **kwargs):
-        super(PymoduleVersioner, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versioner_name(self):
+    def versioner_name(self) -> str:
         return u"pymodule"
 
     @property
-    def can_read(self):
+    def can_read(self) -> bool:
         return True
 
     @property
-    def can_create(self):
+    def can_create(self) -> bool:
         return False
 
-    def can_execute_action(self, action):
+    def can_execute_action(self, action: str) -> bool:
         return False
 
-    def print_help(self):
+    def print_help(self) -> None:
         print("The pymodule versioner reads version strings from Python modules which must be\n"
               "on PYTHONPATH. It accepts one parameter with is a dotted string identifying the\n"
               "fully qualified module name of a Python module and an attribute to read or\n"
@@ -59,13 +61,13 @@ class PymoduleVersioner(_versioners.BaseVersioner):
               "Examples: --versioner='pymodule' --pymodule-read='gopythongo.version'\n"
               "          --versioner='pymodule' --pymodule-read='a.deeper.module.get_version'\n")
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_pymod = parser.add_argument_group("Pymodule Versioner")
         gr_pymod.add_argument("--pymodule-read", dest="pymodule_read", default=None,
                               help="A fully qualified dotted path to a str attribute in a Python module accessible on"
                                    "the current PYTHONPATH to be read to get the version string.")
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         if args.pymodule_read:
             try:
                 import_string(args.pymodule_read)
@@ -76,7 +78,7 @@ class PymoduleVersioner(_versioners.BaseVersioner):
             print_error("%s requires %s" % (highlight("--versioner=pymodule"), highlight("--pymodule-read")))
             sys.exit(1)
 
-    def read(self, args):
+    def read(self, args: argparse.Namespace) -> str:
         attr = import_string(args.pymodule_read)
         if callable(attr):
             return attr()

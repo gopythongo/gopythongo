@@ -1,7 +1,9 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import subprocess
 import sys
+from typing import List, Tuple
+
 import os
 
 import gopythongo
@@ -14,7 +16,7 @@ from gopythongo.utils.buildcontext import the_context
 builders = None
 
 
-def init_subsystem():
+def init_subsystem() -> None:
     global builders
 
     from gopythongo.builders import docker, pbuilder
@@ -31,18 +33,18 @@ def init_subsystem():
 
 
 class BaseBuilder(CommandLinePlugin):
-    def __init__(self, *args, **kwargs):
-        super(BaseBuilder, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def builder_name(self):
+    def builder_name(self) -> str:
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
 
-    def build(self, args):
+    def build(self, args: argparse.Namespace) -> None:
         pass
 
 
-def add_args(parser):
+def add_args(parser: argparse.ArgumentParser):
     global builders
 
     gr_bundle = parser.add_argument_group("Bundle settings")
@@ -61,7 +63,7 @@ class NoMountableGoPythonGo(Exception):
     pass
 
 
-def _test_gopythongo_version(cmd):
+def _test_gopythongo_version(cmd: List[str]) -> bool:
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).strip().decode("utf-8")
         if output == gopythongo.program_version:
@@ -78,7 +80,7 @@ def _test_gopythongo_version(cmd):
     raise NoMountableGoPythonGo("Found something, but it's not GoPythonGo? (%s)" % output)
 
 
-def test_gopythongo(path):
+def test_gopythongo(path: str) -> Tuple[str, List[str]]:
     """
     :returns: (str, list) -- A tuple containing the base path of the virtualenv/executable and a list containing
                              the executable and a list of command-line parameters necessary to execute GoPythonGo,
@@ -107,7 +109,7 @@ def test_gopythongo(path):
     raise NoMountableGoPythonGo("Can't find GoPythonGo as a virtualenv or PEX executable in %s" % path)
 
 
-def validate_args(args):
+def validate_args(args: argparse.ArgumentParser) -> None:
     if args.builder:
         if args.builder in builders.keys():
             builders[args.builder].validate_args(args)
@@ -152,5 +154,5 @@ def validate_args(args):
         sys.exit(1)
 
 
-def build(args):
+def build(args: argparse.ArgumentParser) -> None:
     builders[args.builder].build(args)

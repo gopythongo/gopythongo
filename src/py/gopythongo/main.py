@@ -4,6 +4,8 @@
 import atexit
 import signal
 import sys
+from argparse import Namespace
+
 import os
 
 from configargparse import ArgParser as ArgumentParser
@@ -23,7 +25,7 @@ from gopythongo.utils import highlight, print_error, print_warning, print_info, 
 tempfiles = []  # type: List[str]
 
 
-def get_parser():
+def get_parser() -> ArgumentParser:
     parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
                                         "a Django project's static content if needed. The created "
                                         "virtualenv is packaged and ready to be deployed to a server. "
@@ -88,7 +90,7 @@ def get_parser():
     return parser
 
 
-def validate_args(args):
+def validate_args(args: Namespace) -> None:
     if not args.builder:
         print_error("You must select a builder using --builder.")
         sys.exit(1)
@@ -110,7 +112,7 @@ def validate_args(args):
         m.validate_args(args)
 
 
-def print_help():
+def print_help() -> None:
     print("Usage: python -m gopythongo.main (--help|--init [folder]|-c [configfile])\n"
           "\n"
           "While the command-line interface provides a useful reference and can be\n"
@@ -132,7 +134,7 @@ def _sigint_handler(signal, frame):
     sys.exit(1)
 
 
-def _cleanup_tempfiles():
+def _cleanup_tempfiles() -> None:
     if tempfiles:
         print_info("Cleaning up temporary files...")
         for f in tempfiles:
@@ -140,7 +142,7 @@ def _cleanup_tempfiles():
                 os.unlink(f)
 
 
-def route():
+def route() -> None:
     atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
 

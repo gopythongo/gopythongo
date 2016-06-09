@@ -1,18 +1,23 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import sys
+from typing import List, Dict, TypeVar
 
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils import highlight, print_error, print_info, plugins, CommandLinePlugin
-from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser
+from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser, VersionContainer
 from gopythongo.versioners import help as versioner_help
 
 
-versioners = None
-version_parsers = None
+BaseVersioner_t = TypeVar("BaseVersioner_t", 'BaseVersioner', covariant=True)
+BaseVersionParser_t = TypeVar("BaseVersionParser_t", BaseVersionParser, covariant=True)
 
 
-def init_subsystem():
+versioners = None  # type: Dict[str, BaseVersioner_t]
+version_parsers = None  # type: Dict[str, BaseVersionParser_t]
+
+
+def init_subsystem() -> None:
     global versioners, version_parsers
     from gopythongo.versioners import aptly, pymodule, bumpversion, static
     from gopythongo.versioners.parsers import regexparser, semverparser, debianparser, pep440parser
@@ -42,11 +47,11 @@ def init_subsystem():
 
 
 class BaseVersioner(CommandLinePlugin):
-    def __init__(self, *args, **kwargs):
-        super(BaseVersioner, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versioner_name(self):
+    def versioner_name(self) -> str:
         """
         Return the identifier and command-line parameter value for ==versioner used by this Versioner.
         :returns: the identifier
@@ -55,30 +60,30 @@ class BaseVersioner(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement versioner_name")
 
     @property
-    def can_read(self):
+    def can_read(self) -> bool:
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement can_read")
 
     @property
-    def can_create(self):
+    def can_create(self) -> bool:
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement can_create")
 
-    def print_help(self):
+    def print_help(self) -> None:
         """
         Output some information about the Versioner, like how to use it.
         """
         print("Versioner %s provides no help, unfortunately." % self.versioner_name)
 
-    def read(self, args):
+    def read(self, args: argparse.Namespace) -> str:
         """
         Read a version string from wherever this Versioner reads versions. The parsed command-line arguments are
         passed along for context.
         """
         raise NotImplementedError("This Versioner does not support reading versions")
 
-    def create(self, args):
+    def create(self, args: argparse.Namespace) -> str:
         raise NotImplementedError("This Versioner does not support creating versions")
 
-    def can_execute_action(self, action):
+    def can_execute_action(self, action: str) -> bool:
         """
         This method is called to make sure that a Versioner, given a ``VersionContainer`` instance in ``version`` can
         perform the action as defined by ``action``
@@ -90,7 +95,7 @@ class BaseVersioner(CommandLinePlugin):
         raise NotImplementedError("This Versioner does not support executing actions")
 
     @property
-    def operates_on(self):
+    def operates_on(self) -> List[str]:
         """
         :returns: A list of strings that identify Version Parser formats that this versioner can work with in order of
                   priority/compatibility/convenience, whatever sorting criteria you choose. GoPythonGo will try to use
@@ -99,7 +104,7 @@ class BaseVersioner(CommandLinePlugin):
         """
         raise NotImplementedError("This Versioner does not support executing actions")
 
-    def execute_action(self, version, action):
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
         """
         Execute an action on a version.
 
@@ -112,7 +117,7 @@ class BaseVersioner(CommandLinePlugin):
         raise NotImplementedError("This Versioner does not support executing actions")
 
 
-def add_args(parser):
+def add_args(parser: argparse.ArgumentParser) -> None:
     global versioners, version_parsers
 
     gp_version = parser.add_argument_group("Version determination")
@@ -143,7 +148,7 @@ def add_args(parser):
         vp.add_args(parser)
 
 
-def validate_args(args):
+def validate_args(args: argparse.Namespace) -> None:
     if args.version_parser not in version_parsers:
         print_error("%s is not a valid version parser. Valid options are: %s" %
                     (highlight(args.version_parser), ", ".join(version_parsers.keys())))
@@ -177,7 +182,7 @@ def validate_args(args):
             sys.exit(1)
 
 
-def version(args):
+def version(args: argparse.Namespace) -> None:
     reader_name = args.input_versioner
     reader = versioners[reader_name]
     version_str = reader.read(args)

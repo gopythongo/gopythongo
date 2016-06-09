@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import argparse
 import sys
 
 from semantic_version import Version as SemVerBase
@@ -7,22 +8,22 @@ from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
 class SemVerVersion(SemVerBase):
-    def __init__(self, *args):
-        super(SemVerVersion, self).__init__(*args)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-    def tostring(self):
+    def tostring(self) -> str:
         return str(self)
 
 
 class SemVerVersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs):
-        super(SemVerVersionParser, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versionparser_name(self):
+    def versionparser_name(self) -> str:
         return u"semver"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_semver = parser.add_argument_group("SemVer Versioner")
         gr_semver.add_argument("--semver-allow-partial", dest="semver_partial", action="store_true", default=False,
                                help="Allow the parsing of incomplete version strings, which still partially comply "
@@ -31,7 +32,7 @@ class SemVerVersionParser(BaseVersionParser):
                                help="Try really hard to make the input version into something resembling SemVer. Use "
                                     "this with caution.")
 
-    def parse(self, version_str, args):
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:
             sv = SemVerVersion.parse(version_str, partial=args.semver_partial, coerce=args.semver_coerce)
         except ValueError as e:
@@ -40,7 +41,7 @@ class SemVerVersionParser(BaseVersionParser):
 
         return VersionContainer(sv, self.versionparser_name)
 
-    def print_help(self):
+    def print_help(self) -> None:
         print("%s\n"
               "=====================\n"
               "\n"

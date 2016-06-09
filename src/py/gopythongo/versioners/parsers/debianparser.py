@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import sys
 
 from gopythongo.utils import print_error, highlight
@@ -8,17 +8,17 @@ from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
 class DebianVersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs):
-        super(DebianVersionParser, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
-    def versionparser_name(self):
+    def versionparser_name(self) -> str:
         return u"debian"
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass
 
-    def parse(self, version_str, args):
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:
             dv = DebianVersion.fromstring(version_str)
         except InvalidDebianVersionString as e:
@@ -27,7 +27,7 @@ class DebianVersionParser(BaseVersionParser):
 
         return VersionContainer(dv, self.versionparser_name)
 
-    def print_help(self):
+    def print_help(self) -> None:
         print("%s\n"
               "=====================\n"
               "\n"

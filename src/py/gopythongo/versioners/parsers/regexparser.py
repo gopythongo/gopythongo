@@ -10,7 +10,7 @@ from gopythongo.utils import print_error, highlight, GoPythonGoEnableSuper
 
 class RegexVersionParser(GoPythonGoEnableSuper):
     def __init__(self, *args, **kwargs):
-        super(RegexVersionParser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def add_args(self, parser):
         gr_regex = parser.add_argument_group("Regex Versioner")

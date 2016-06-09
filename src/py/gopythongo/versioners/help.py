@@ -12,8 +12,8 @@ class VersionerHelpAction(argparse.Action):
                  default=None,
                  choices=None,
                  help="Show help for GoPythonGo Versioners."):
-        super(VersionerHelpAction, self).__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
-                                                  choices=choices, help=help)
+        super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
+                         choices=choices, help=help)
 
     def __call__(self, parser, namespace, values, option_string=None):
         from gopythongo.versioners import versioners

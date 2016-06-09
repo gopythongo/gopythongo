@@ -1,10 +1,11 @@
 # -* encoding: utf-8 *-
+from typing import Dict, Union, Iterable, Any
 
 import pkg_resources
 
 
-def load_plugins(entrypoint, registry, plugin_class_attribute, plugin_baseclass, plugin_name_property,
-                 initargs=None):
+def load_plugins(entrypoint: str, registry: Dict[str, object], plugin_class_attribute: str,
+                 plugin_baseclass: type, plugin_name_property: str, initargs: Union[Iterable[Any], None]=None):
     """
     Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it. It then
     looks at the attribute ``plugin_class_attribute`` of the module, which is set to the plugin class. It instantiates

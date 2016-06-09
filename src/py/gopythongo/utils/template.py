@@ -1,10 +1,11 @@
 # -* encoding: utf-8 *-
+from typing import Dict, Any
 
 import tempfile
 import jinja2
 
 
-def process_to_tempfile(filepath, context):
+def process_to_tempfile(filepath: str, context: Dict[str, Any]) -> str:
     """
     renders the template in ``filepath`` using ``context`` through Jinja2. The result
     is saved into a temporary file, which will be garbage collected automatically when the
@@ -19,6 +20,6 @@ def process_to_tempfile(filepath, context):
     outf.write(tpl.render(context))
     outf.close()
 
-    import gopythongo
+    import gopythongo.main
     gopythongo.main.tempfiles.append(outf)
     return ofname
