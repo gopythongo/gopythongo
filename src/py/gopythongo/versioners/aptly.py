@@ -69,7 +69,7 @@ class AptlyVersioner(BaseVersioner):
 
         cmd += ["package", "search", "-format=\"{{.Version}}\"", args.package_name]
 
-        output = run_process(cmd)
+        output = run_process(*cmd)
 
     def create(self, args: argparse.Namespace) -> str:
         pass

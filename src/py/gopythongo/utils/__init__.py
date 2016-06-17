@@ -72,16 +72,17 @@ def flatten(x: Iterable[Any]) -> List[Any]:
     return result
 
 
-def run_process(*args: Iterable[str], raise_nonzero_exitcode: bool=False) -> str:
+def run_process(*args: str, raise_nonzero_exitcode: bool=False) -> str:
+    actual_args = None  # type: List[str]
     if prepend_exec:
-        args = prepend_exec + list(args)
+        actual_args = prepend_exec + list(args)
 
-    print_debug("Running %s" % str(args))
+    print_debug("Running %s" % str(actual_args))
     if not debug_donotexecute:
 
         exitcode = 0
         try:
-            output = subprocess.check_output(args, stderr=subprocess.STDOUT, universal_newlines=True)
+            output = subprocess.check_output(actual_args, stderr=subprocess.STDOUT, universal_newlines=True)
         except subprocess.CalledProcessError as e:
             if raise_nonzero_exitcode:
                 raise
