@@ -4,8 +4,7 @@ import sys
 from argparse import Action
 from typing import Dict, TextIO
 
-from gopythongo.utils import plugins, print_error
-
+from gopythongo.utils import plugins, print_error, GoPythonGoEnableSuper
 
 initializers = {}  # type: Dict[str, 'BaseInitializer']
 
@@ -27,7 +26,7 @@ def initialize_subsystem() -> None:
         sys.exit(1)
 
 
-class BaseInitializer(Action):
+class BaseInitializer(GoPythonGoEnableSuper):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -46,9 +45,15 @@ class BaseInitializer(Action):
     def build_config(self) -> str:
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
-    def __call__(self, parser, namespace, values, option_string=None) -> None:
-        self.create_config_folder()
 
-        cf = self.create_file_in_config_folder("config")
-        cf.write(self.build_config())
+class InitializerAction(Action):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None) -> None:
+        initializer = initializers[values]
+        initializer.create_config_folder()
+
+        cf = initializer.create_file_in_config_folder("config")
+        cf.write(initializer.build_config())
         cf.close()

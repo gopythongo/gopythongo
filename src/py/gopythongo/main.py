@@ -13,7 +13,7 @@ from typing import List
 
 import gopythongo
 
-from gopythongo import builders, versioners, assemblers, packers, stores, utils
+from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
 
 
@@ -141,7 +141,7 @@ def route() -> None:
     atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
 
-    for s in [versioners, builders, assemblers, packers, stores]:
+    for s in [initializers, versioners, builders, assemblers, packers, stores]:
         s.init_subsystem()
 
     if len(sys.argv) > 1:
