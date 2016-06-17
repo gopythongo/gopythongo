@@ -95,7 +95,7 @@ def assemble(args: argparse.Namespace):
 
     if args.upgrade_pip:
         print_info("Making sure that pip and virtualenv are up to date")
-        run_process(run_pip, "--upgrade", "pip", "virtualenv")
+        run_process(*run_pip + ["--upgrade", "pip", "virtualenv"])
 
     print_info("Initializing virtualenv in %s" % args.build_path)
     run_process(args.virtualenv_binary, args.build_path)
