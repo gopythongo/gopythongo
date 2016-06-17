@@ -44,7 +44,7 @@ class BaseBuilder(CommandLinePlugin):
         pass
 
 
-def add_args(parser: argparse.ArgumentParser):
+def add_args(parser: argparse.ArgumentParser) -> None:
     global builders
 
     gr_bundle = parser.add_argument_group("Bundle settings")
