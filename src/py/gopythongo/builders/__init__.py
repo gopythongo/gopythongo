@@ -2,12 +2,11 @@
 import argparse
 import subprocess
 import sys
-from typing import Dict, List, Tuple
-
 import os
 
-import gopythongo
+from typing import Dict, List, Tuple
 
+import gopythongo
 from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins, \
                              CommandLinePlugin
 from gopythongo.utils.buildcontext import the_context
