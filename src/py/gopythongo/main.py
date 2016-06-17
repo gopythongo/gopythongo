@@ -13,7 +13,7 @@ from typing import List
 
 import gopythongo
 
-from gopythongo import builders, versioners, assemblers, packers, stores
+from gopythongo import builders, versioners, assemblers, packers, stores, utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
 
 
