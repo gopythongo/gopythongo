@@ -8,7 +8,7 @@ T = TypeVar("T")
 
 
 def load_plugins(entrypoint: str, registry: Dict[str, T], plugin_class_attribute: str,
-                 plugin_baseclass: T, plugin_name_property: str, initargs: Union[Iterable[Any], Type[None]]=None):
+                 plugin_baseclass: Type[T], plugin_name_property: str, initargs: Union[Iterable[Any], Type[None]]=None):
     """
     Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it. It then
     looks at the attribute ``plugin_class_attribute`` of the module, which is set to the plugin class. It instantiates
