@@ -12,13 +12,8 @@ from configargparse import ArgParser as ArgumentParser
 from typing import List
 
 import gopythongo
-import gopythongo.builders as builders
-import gopythongo.versioners as versioners
-import gopythongo.stores as stores
-import gopythongo.assemblers as assemblers
-import gopythongo.packers as packers
-import gopythongo.utils as utils
 
+from gopythongo import builders, versioners, assemblers, packers, stores
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
 
 
