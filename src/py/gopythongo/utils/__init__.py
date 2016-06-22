@@ -10,8 +10,6 @@ import os
 import colorama
 from colorama import Fore, Style
 
-from . import buildcontext, debversion, plugins, template
-
 
 success_color = Fore.LIGHTGREEN_EX  # type: str
 debug_hl = Fore.LIGHTMAGENTA_EX  # type: str

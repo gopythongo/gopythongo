@@ -3,7 +3,6 @@ import argparse
 import sys
 from typing import List, Dict, TypeVar, Type
 
-from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils import highlight, print_error, print_info, plugins, CommandLinePlugin
 from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser, VersionContainer
 from gopythongo.versioners import help as versioner_help
@@ -184,4 +183,5 @@ def version(args: argparse.Namespace) -> None:
     version_str = reader.read(args)
     print_info("Read version using versioner %s: %s" % (highlight(reader_name), highlight(version_str)))
 
+    from gopythongo.utils.buildcontext import the_context
     the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
