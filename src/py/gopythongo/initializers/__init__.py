@@ -8,6 +8,7 @@ import sys
 from argparse import Action
 from typing import Dict, TextIO, Sequence
 
+from gopythongo.initializers.help import InitializerHelpAction
 from gopythongo.utils import plugins, print_error, GoPythonGoEnableSuper, highlight, print_info
 
 initializers = {}  # type: Dict[str, 'BaseInitializer']
@@ -31,10 +32,14 @@ def init_subsystem() -> None:
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    gp_init = parser.add_argument("--init", action=InitializerAction, nargs="+", metavar=("BUILDTYPE", "PATH"),
-                                  help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
-                                       "is the path of the configuration folder you want to initialize." %
-                                       (", ".join(initializers.keys())))
+    gp_init = parser.add_argument_group("Quick start / Configuration generators")
+    gp_init.add_argument("--init", action=InitializerAction, nargs="+", metavar=("BUILDTYPE", "PATH"),
+                         help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
+                              "is the path of the configuration folder you want to initialize." %
+                              (", ".join(initializers.keys())))
+    gp_init.add_argument("--help-initializer", action=InitializerHelpAction, choices=initializers.keys(), default=None,
+                         help="Get help on individual quick start configuration generators or general help on "
+                              "configuration generators.")
 
 
 def validate_args(args: argparse.Namespace) -> None:
@@ -97,6 +102,9 @@ class BaseInitializer(GoPythonGoEnableSuper):
     def build_config(self) -> str:
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
+    def print_help(self) -> None:
+        print("Unfortunately %s does not provide help" % self.initializer_name)
+
 
 class InitializerAction(Action):
     def __init__(self, *args, **kwargs) -> None:
@@ -104,7 +112,6 @@ class InitializerAction(Action):
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Sequence[str],
                  option_string: str=None) -> None:
-        # TODO: validate the parameters, output help
         if len(values) > 2:
             print_error("%s takes 1 or 2 arguments, not more." % highlight("--init"))
             parser.exit(1)
