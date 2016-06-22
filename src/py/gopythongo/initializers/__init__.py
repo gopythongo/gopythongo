@@ -1,18 +1,19 @@
 # -* encoding: utf-8 *-
 import argparse
+import io
 
 import os
 import sys
 
 from argparse import Action
-from typing import Dict, TextIO
+from typing import Dict, TextIO, Sequence
 
 from gopythongo.utils import plugins, print_error, GoPythonGoEnableSuper, highlight, print_info
 
 initializers = {}  # type: Dict[str, 'BaseInitializer']
 
 
-def initialize_subsystem() -> None:
+def init_subsystem() -> None:
     global initializers
 
     from gopythongo.initializers import pbuilder_fpm_aptly, docker_copy_docker
@@ -30,7 +31,10 @@ def initialize_subsystem() -> None:
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    pass
+    gp_init = parser.add_argument("--init", action=InitializerAction, nargs="+", metavar=("BUILDTYPE", "PATH"),
+                                  help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
+                                       "is the path of the configuration folder you want to initialize." %
+                                       (", ".join(initializers.keys())))
 
 
 def validate_args(args: argparse.Namespace) -> None:
@@ -83,8 +87,8 @@ class BaseInitializer(GoPythonGoEnableSuper):
             raise InvalidArgumentException("Call create_file_in_config_folder with a filename, not a path")
 
         self.ensure_config_folder()
-        f = open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8")
-        return f
+        f = io.open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8")
+        return io.TextIOWrapper(f)
 
     @property
     def initializer_name(self) -> str:
@@ -98,10 +102,22 @@ class InitializerAction(Action):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def __call__(self, parser, namespace, values, option_string=None) -> None:
-        initializer = initializers[values]
-        initializer.configfolder = values
-        initializer.create_config_folder()
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Sequence[str],
+                 option_string: str=None) -> None:
+        # TODO: validate the parameters, output help
+        if len(values) > 2:
+            print_error("%s takes 1 or 2 arguments, not more." % highlight("--init"))
+            parser.exit(1)
+
+        if values[0] not in initializers:
+            print_error("Unknown initializer \"%s\". Acceptable values are: %s" %
+                        (highlight(values[0]), highlight(", ".join(initializers.keys()))))
+            parser.exit(1)
+
+        initializer = initializers[values[0]]
+
+        if len(values) > 1:
+            initializer.configfolder = values[1]  # override config folder if it's not the default
 
         cf = initializer.create_file_in_config_folder("config")
         cf.write(initializer.build_config())
