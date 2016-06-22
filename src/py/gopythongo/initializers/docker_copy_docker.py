@@ -8,7 +8,7 @@ class DockerCopyDockerInitializer(BaseInitializer):
 
     @property
     def initializer_name(self) -> str:
-        return "docker_copy_docker"
+        return "docker"
 
     def build_config(self) -> str:
         return ""

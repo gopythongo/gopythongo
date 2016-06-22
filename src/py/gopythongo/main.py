@@ -36,7 +36,7 @@ def get_parser() -> ArgumentParser:
                             config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
                             default_config_files=[".gopythongo/config"])
 
-    for m in [builders, versioners, assemblers, packers, stores]:
+    for m in [initializers, builders, versioners, assemblers, packers, stores]:
         m.add_args(parser)
 
     gr_plan = parser.add_argument_group("Execution plan")
@@ -103,7 +103,7 @@ def validate_args(args: Namespace) -> None:
             print_warning("Make sure that eatmydata is available *inside* your build environment as well, if you want "
                           "to use it to speed up the build process inside the environment.")
 
-    for m in [builders, versioners, assemblers, packers, stores]:
+    for m in [initializers, builders, versioners, assemblers, packers, stores]:
         m.validate_args(args)
 
 

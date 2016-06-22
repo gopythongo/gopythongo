@@ -8,7 +8,7 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
 
     @property
     def initializer_name(self) -> str:
-        return "pbuilder_fpm_aptly"
+        return "pbuilder_deb"
 
     def build_config(self) -> str:
         return ""
