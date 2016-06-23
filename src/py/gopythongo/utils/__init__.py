@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 import argparse
-from typing import List, Iterable, Union, Any, Sequence
+from typing import List, Iterable, Union, Any, Sequence, cast
 
 import collections
 import subprocess
@@ -60,13 +60,15 @@ def create_script_path(virtualenv_path: str, script_name: str) -> str:
         return os.path.join(virtualenv_path, "bin/", script_name)
 
 
-def flatten(x: Iterable[Any]) -> List[Any]:
-    result = []
+def flatten(x: Union[Iterable[str], str]) -> List[str]:
+    result = []  # type: List[str]
     for el in x:
         if isinstance(el, collections.Iterable) and not isinstance(el, str):
             result.extend(flatten(el))
         else:
-            result.append(el)
+            # we cast here because mypy otherwise assumes el is Iterable[Any]
+            # which it can't be... el could be Any but NOT Iterable
+            result.append(cast(str, el))
     return result
 
 
