@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from typing import Dict
+from typing import Dict, Any
 
 from gopythongo.utils import print_error, plugins, CommandLinePlugin
 
@@ -26,7 +26,7 @@ def init_subsystem() -> None:
 
 
 class BaseStore(CommandLinePlugin):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

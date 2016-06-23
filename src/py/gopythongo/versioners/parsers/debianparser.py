@@ -2,13 +2,15 @@
 import argparse
 import sys
 
+from typing import Any
+
 from gopythongo.utils import print_error, highlight
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
 class DebianVersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

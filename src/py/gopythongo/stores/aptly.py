@@ -1,13 +1,15 @@
 # -* encoding: utf-8 *-
 import argparse
 
+from typing import Any
+
 import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.stores import BaseStore
 
 
 class AptlyStore(BaseStore):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

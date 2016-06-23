@@ -7,10 +7,11 @@ import shutil
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_error, print_info, highlight
+from typing import Any
 
 
 class FPMPacker(BasePacker):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -45,7 +46,7 @@ class FPMPacker(BasePacker):
                                  "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
                                  "errors! http://bugs.python.org/issue9334")
 
-    def validate_args(self, args: argparse.Namespace):
+    def validate_args(self, args: argparse.Namespace) -> None:
         if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
             print_error("fpm not found in path or not executable (%s).\n"
                         "You can specify an alternative executable using %s" %
@@ -66,10 +67,10 @@ class FPMPacker(BasePacker):
                             "does not exist and can't be packaged." % (highlight(mapping.split("=")[0]),
                                                                        highlight(mapping)))
 
-    def _create_deb(self, args):
+    def _create_deb(self, outfile: str, path: str, package_name: str, args: argparse.Namespace) -> None:
         fpm_deb = [
-            args.fpm, "-t", "deb", "-s", "dir", "-p", args.outfile,
-            "-n", args.package_name,
+            args.fpm, "-t", "deb", "-s", "dir", "-p", outfile,
+            "-n", package_name,
         ]
         for p in args.provides:
             fpm_deb.append("--provides")
@@ -103,7 +104,7 @@ class FPMPacker(BasePacker):
             epoch = args.epoch
 
         ctx = {
-            'basedir': args.build_path,
+            'basedir': path,
             'service_folders': args.service_folders,
             'service_folders_str': " ".join(args.service_folders),
         }
@@ -135,12 +136,13 @@ class FPMPacker(BasePacker):
             # if necessary then update repo index
             pass
 
-    def _build_deb(self, args):
+    def _build_deb(self, args: argparse.Namespace) -> None:
+        # FIXME
         if args.collect_static:
-            _collect_static()
+            self._collect_static()
             if os.path.exists(args.static_root):
                 print("creating static .deb package of %s in %s" % (args.static_root, args.static_outfile,))
-                _create_deb(args.static_outfile, args.static_root)
+                self._create_deb(args.static_outfile, args.static_root, args.static_package_name, args)
             else:
                 print('')
                 print("error: %s should now exist, but it doesn't" % args.static_root)
@@ -151,9 +153,9 @@ class FPMPacker(BasePacker):
                 shutil.rmtree(args.static_root)
 
         print('Creating .deb of %s in %s' % (args.build_path, args.outfile,))
-        _create_deb(args.outfile, _args.build_path)
+        self._create_deb(args.outfile, args.build_path, args.package_name, args)
 
-    def pack(self, args):
+    def pack(self, args: argparse.Namespace) -> None:
         self.validate_args(args)
         self._build_deb(args)
 

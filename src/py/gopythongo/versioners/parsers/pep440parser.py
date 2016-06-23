@@ -2,13 +2,15 @@
 import argparse
 import sys
 
+from typing import Any
+
 from gopythongo.utils import print_error, highlight
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
 from packaging.version import parse, InvalidVersion
 
 
 class PEP440VersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

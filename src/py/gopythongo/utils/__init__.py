@@ -32,7 +32,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
     _cwidth, _cheight = get_terminal_size()
 else:
     import shutil
-    _cwidth, _cheight = shutil.get_terminal_size()
+    _cwidth, _cheight = shutil.get_terminal_size()  # type: ignore
 
 
 def init_color(no_color: bool) -> None:
@@ -123,12 +123,12 @@ def highlight(message: str) -> str:
 
 
 class GoPythonGoEnableSuper(object):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         pass
 
 
 class CommandLinePlugin(GoPythonGoEnableSuper):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:

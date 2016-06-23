@@ -5,7 +5,7 @@ from gopythongo.utils.debversion import debian_substr_compare, split_version_par
 
 
 class DebianVersionTests(TestCase):
-    def test_debian_substr_compare(self):
+    def test_debian_substr_compare(self) -> None:
         self.assertEqual(debian_substr_compare("", "a"), -1)
         self.assertEqual(debian_substr_compare("09", "10"), -1)
         self.assertEqual(debian_substr_compare("~~", "~"), -1)
@@ -14,7 +14,7 @@ class DebianVersionTests(TestCase):
         self.assertEqual(debian_substr_compare("~", ""), -1)
         self.assertEqual(debian_substr_compare("30", "30"), 0)
 
-    def test_debian_version_compare(self):
+    def test_debian_version_compare(self) -> None:
         self.assertTrue(DebianVersion.fromstring("2:1.0") < DebianVersion.fromstring("3:1.0"))
         self.assertTrue(DebianVersion.fromstring("2:1.0~1") < DebianVersion.fromstring("3:1.0"))
         self.assertTrue(DebianVersion.fromstring("2:1.0~bpo1") < DebianVersion.fromstring("2:1.0"))
@@ -25,7 +25,7 @@ class DebianVersionTests(TestCase):
         self.assertTrue(DebianVersion.fromstring("1.0") == DebianVersion.fromstring("1.0"))
         self.assertTrue(DebianVersion.fromstring("0:1.0") == DebianVersion.fromstring("1.0"))
 
-    def test_split_version_parts(self):
+    def test_split_version_parts(self) -> None:
         self.assertListEqual(split_version_parts("a67bhgs89"), ["a", "67", "bhgs", "89"])
         self.assertListEqual(split_version_parts("33a67bhgs89"), ["33", "a", "67", "bhgs", "89"])
         self.assertListEqual(split_version_parts("~33a67bhgs89"), ["~", "33", "a", "67", "bhgs", "89"])
@@ -33,7 +33,7 @@ class DebianVersionTests(TestCase):
         self.assertListEqual(split_version_parts("1"), ["1"])
         self.assertListEqual(split_version_parts(""), [""])
 
-    def test_sorting_compatibility_aptpkg(self):
+    def test_sorting_compatibility_aptpkg(self) -> None:
         version_strings = ["~~a", "~", "~~", "a1", "1.0", "1.0-1", "1.0~bpo1", "1.0-1~bpo1"]
         # sorted using python-apt's apt_pkg.version_compare
         aptpkg_sorting = ['~~', '~~a', '~', '1.0~bpo1', '1.0', '1.0-1~bpo1', '1.0-1', 'a1']
@@ -45,7 +45,7 @@ class DebianVersionTests(TestCase):
         l.sort()
         self.assertListEqual(aptpkg_sorting, [str(x) for x in l])
 
-    def test_validation(self):
+    def test_validation(self) -> None:
         self.assertRaises(InvalidDebianVersionString, DebianVersion.fromstring, "1.0:0")
         self.assertRaises(InvalidDebianVersionString, DebianVersion.fromstring, "ö:1.0")
         self.assertRaises(InvalidDebianVersionString, DebianVersion.fromstring, "1.Ö")

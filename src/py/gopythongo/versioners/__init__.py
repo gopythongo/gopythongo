@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import sys
-from typing import List, Dict, TypeVar, Type
+from typing import List, Dict, TypeVar, Type, Any
 
 from gopythongo.utils import highlight, print_error, print_info, plugins, CommandLinePlugin
 from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser, VersionContainer
@@ -42,7 +42,7 @@ def init_subsystem() -> None:
 
 
 class BaseVersioner(CommandLinePlugin):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

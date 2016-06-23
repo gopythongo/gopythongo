@@ -6,12 +6,14 @@ import sys
 import shutil
 import tarfile
 
+from typing import Any
+
 from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, print_error, highlight
 
 
 class TarGzPacker(BasePacker):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -24,12 +26,12 @@ class TarGzPacker(BasePacker):
     def validate_args(self, args: argparse.Namespace) -> None:
         pass
 
-    def _create_targzip(self, outfile: str, basepath: str, make_paths_relative: bool=False) -> None:
+    def _create_targzip(self, outfile: str, basepath: str, args: argparse.Namespace,
+                        make_paths_relative: bool=False) -> None:
         """
         creates a .tar.gz of everything below basepath, making sure all
         stored paths are relative
         """
-        global _args
         if os.path.exists(outfile):
             os.remove(outfile)
 
@@ -45,33 +47,32 @@ class TarGzPacker(BasePacker):
                 if make_paths_relative:
                     arcpath = root[len(basepath):]
                 arcname = os.path.join(arcpath, filename)
-                if _args.verbose:
+                if args.verbose:
                     print('adding %s as %s' % (filepath, arcname,))
                 tf.add(filepath, arcname, recursive=False)
         tf.close()
         f.close()
 
-    def _build_tar(self) -> None:
-        global _args
-        if _args.collect_static:
-            _collect_static()
+    def _build_tar(self, args: argparse.Namespace) -> None:
+        if args.collect_static:
+            self._collect_static()
 
-            if os.path.exists(_args.static_root):
-                print_info("creating static tarball of %s in %s" % (highlight(_args.static_root),
-                                                                    highlight(_args.static_outfile),))
-                _create_targzip(_args.static_outfile, _args.static_root, _args.static_relative)
+            if os.path.exists(args.static_root):
+                print_info("creating static tarball of %s in %s" % (highlight(args.static_root),
+                                                                    highlight(args.static_outfile),))
+                self._create_targzip(args.static_outfile, args.static_root, args.static_relative)
             else:
-                print_error("%s should now exist, but it doesn't" % highlight(_args.static_root))
+                print_error("%s should now exist, but it doesn't" % highlight(args.static_root))
                 sys.exit(1)
 
-            if _args.remove_static:
-                print_info("removing static artifacts in %s" % highlight(_args.static_root))
-                shutil.rmtree(_args.static_root)
+            if args.remove_static:
+                print_info("removing static artifacts in %s" % highlight(args.static_root))
+                shutil.rmtree(args.static_root)
 
-        print_info("Creating bundle tarball of %s in %s" % (highlight(_args.build_path), highlight(_args.outfile),))
-        _create_targzip(_args.outfile, _args.build_path, _args.bundle_relative)
+        print_info("Creating bundle tarball of %s in %s" % (highlight(args.build_path), highlight(args.outfile),))
+        self._create_targzip(args.outfile, args.build_path, args.bundle_relative)
 
-    def pack(self, args: argparse.Namespace):
+    def pack(self, args: argparse.Namespace) -> None:
         pass
 
 

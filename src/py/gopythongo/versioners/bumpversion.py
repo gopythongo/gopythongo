@@ -3,12 +3,14 @@ import argparse
 import sys
 import os
 
+from typing import Any
+
 from gopythongo.utils import print_error, highlight
 from gopythongo.versioners import BaseVersioner
 
 
 class BumpVersioner(BaseVersioner):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -39,10 +41,10 @@ class BumpVersioner(BaseVersioner):
     def can_create(self) -> bool:
         return True
 
-    def read(self, args) -> str:
+    def read(self, args: argparse.Namespace) -> str:
         pass
 
-    def create(self, args) -> str:
+    def create(self, args: argparse.Namespace) -> str:
         pass
 
 

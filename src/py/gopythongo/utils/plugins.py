@@ -8,7 +8,8 @@ T = TypeVar("T")
 
 
 def load_plugins(entrypoint: str, registry: Dict[str, T], plugin_class_attribute: str,
-                 plugin_baseclass: Type[T], plugin_name_property: str, initargs: Union[Iterable[Any], None]=None):
+                 plugin_baseclass: Type[T], plugin_name_property: str,
+                 initargs: Union[Iterable[Any], None]=None) -> None:
     """
     Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it. It then
     looks at the attribute ``plugin_class_attribute`` of the module, which is set to the plugin class. It instantiates
@@ -31,7 +32,7 @@ def load_plugins(entrypoint: str, registry: Dict[str, T], plugin_class_attribute
         initargs = []
 
     # load external modules
-    for ep in pkg_resources.iter_entry_points(entrypoint):
+    for ep in pkg_resources.iter_entry_points(entrypoint):  # type: ignore
         module = ep.load()
         if not hasattr(module, plugin_class_attribute):
             raise ImportError("Plugin modules for entry point %s must all have an attribute called %s, but %s has "

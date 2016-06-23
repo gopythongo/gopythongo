@@ -6,7 +6,7 @@ import os
 import sys
 
 from argparse import Action
-from typing import Dict, TextIO, Sequence
+from typing import Dict, TextIO, Sequence, Any
 
 from gopythongo.initializers.help import InitializerHelpAction
 from gopythongo.utils import plugins, print_error, GoPythonGoEnableSuper, highlight, print_info
@@ -51,7 +51,7 @@ class InvalidArgumentException(Exception):
 
 
 class BaseInitializer(GoPythonGoEnableSuper):
-    def __init__(self, configfolder: str, *args, **kwargs) -> None:
+    def __init__(self, configfolder: str, *args: Any, **kwargs: Any) -> None:
         super().__init__(configfolder, *args, **kwargs)
         self._configfolder = configfolder
 
@@ -107,7 +107,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
 
 
 class InitializerAction(Action):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Sequence[str],

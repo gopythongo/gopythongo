@@ -1,7 +1,9 @@
 # -* encoding: utf-8 *-
-
+import argparse
 import sys
 import re
+
+from typing import Any
 
 from gopythongo.versioners.parsers.semverparser import SemVerVersion
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
@@ -9,10 +11,10 @@ from gopythongo.utils import print_error, highlight
 
 
 class RegexVersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def add_args(self, parser):
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_regex = parser.add_argument_group("Regex Versioner")
         gr_regex.add_argument("--version-regex", dest="version_regex", default=None,
                               help="Select the regular expression used to parse the version string read by the version "
@@ -22,10 +24,10 @@ class RegexVersionParser(BaseVersionParser):
                                    "(?P<major>[0-9]+)\.(?P<minor>[0-9]+)\.(?P<patch>[0-9]+)")
 
     @property
-    def versionparser_name(self):
+    def versionparser_name(self) -> str:
         return u"regex"
 
-    def validate_args(self, args):
+    def validate_args(self, args: argparse.Namespace) -> None:
         if args.version_parser == self.versionparser_name:
             if args.version_regex:
                 try:
@@ -35,10 +37,11 @@ class RegexVersionParser(BaseVersionParser):
                                 (highlight("--version-regex"), highlight(args.version_regex), str(e)))
                     sys.exit(1)
 
-                def check_for(str):
-                    if str not in args.version_regex:
+                def check_for(string: str) -> None:
+                    if string not in args.version_regex:
                         print_error("The regular expression specified in %s must contain a named group %s." %
-                                    (highlight("--version-regex"), highlight(str)))
+                                    (highlight("--version-regex"), highlight(string)))
+                        sys.exit(1)
 
                 for g in ["<major>", "<minor>", "<patch>"]:
                     check_for(g)
@@ -47,17 +50,17 @@ class RegexVersionParser(BaseVersionParser):
                             (highlight("--version-parser=%s" % self.versionparser_name), highlight("--version-regex")))
                 sys.exit(1)
 
-    def parse(self, version_str, args):
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         match = re.match(args.version_regex, version_str)
         if not match:
             print_error("The regular expression '%s' does not match the version read '%s'" %
                         (highlight(args.version_regex), highlight(version_str)))
             sys.exit(1)
 
-        def check_for(str):
-            if str in match.groupdict():
+        def check_for(string: str) -> None:
+            if string in match.groupdict():
                 print_error("The regular expression %s does not match group %s in %s." %
-                            (highlight(args.version_regex), highlight(str), version_str))
+                            (highlight(args.version_regex), highlight(string), version_str))
                 sys.exit(1)
 
         for g in ["major", "minor", "patch"]:
@@ -71,7 +74,7 @@ class RegexVersionParser(BaseVersionParser):
 
         return VersionContainer(SemVerVersion.parse(semver), self.versionparser_name)
 
-    def print_help(self):
+    def print_help(self) -> None:
         print("%s\n"
               "=================================\n"
               "\n"

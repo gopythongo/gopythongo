@@ -5,13 +5,13 @@ tools to parse and compare Debian version strings as per
 https://www.debian.org/doc/debian-policy/ch-controlfields.html. Partially based on
 https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debVersioningSystem::DoCmpVersion)
 """
-from typing import List, TypeVar, Generic, Callable, Tuple, Union, Any
-
 import re
+
+from typing import List, Tuple, Union, Any
 
 
 class InvalidDebianVersionString(Exception):
-    def __init__(self, msg, *args):
+    def __init__(self, msg: str, *args: Any) -> None:
         message = "%s\nPlease see https://www.debian.org/doc/debian-policy/ch-controlfields.html for details." % msg
         self.args = ([message] + list(args)) if msg else args
 
@@ -106,7 +106,7 @@ def split_version_parts(version_str: str, version_char_re: str="[A-Za-z\+\.~]+")
         return [""]
 
 
-def debian_versionpart_compare(mine: List[str], theirs: List[str]):
+def debian_versionpart_compare(mine: List[str], theirs: List[str]) -> int:
     maxlen = len(mine) if len(mine) > len(theirs) else len(theirs)
     for g_ix in range(0, maxlen):
         res = debian_substr_compare(mine[g_ix] if g_ix < len(mine) else "",
@@ -140,7 +140,7 @@ class DebianVersion(object):
 
         self.validate()
 
-    def validate(self):
+    def validate(self) -> None:
         """
         :raises InvalidDebianVersionString: if this DebianVersion object represents an invalid version
         """

@@ -2,13 +2,15 @@
 import argparse
 import sys
 
+from typing import Any
+
 from semantic_version import Version as SemVerBase
 from gopythongo.utils import highlight, print_error
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
 class SemVerVersion(SemVerBase):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def tostring(self) -> str:
@@ -16,7 +18,7 @@ class SemVerVersion(SemVerBase):
 
 
 class SemVerVersionParser(BaseVersionParser):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

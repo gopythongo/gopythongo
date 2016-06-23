@@ -1,11 +1,13 @@
 # -* encoding: utf-8 *-
 import argparse
 
+from typing import Any
+
 import gopythongo.versioners as _versioners
 
 
 class StaticVersioner(_versioners.BaseVersioner):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

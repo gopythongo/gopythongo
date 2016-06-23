@@ -3,19 +3,21 @@
 import argparse
 
 from gopythongo.utils import highlight
+from typing import Any, Iterable
 
 
 class VersionerHelpAction(argparse.Action):
     def __init__(self,
-                 option_strings,
-                 dest,
-                 default=None,
-                 choices=None,
-                 help="Show help for GoPythonGo Versioners."):
+                 option_strings: str,
+                 dest: str,
+                 default: Any=None,
+                 choices: Iterable[Any]=None,
+                 help: str="Show help for GoPythonGo Versioners.") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
+                 values: str, option_string: str=None) -> None:
         from gopythongo.versioners import versioners
         if values in versioners.keys():
             versioners[values].print_help()

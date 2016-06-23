@@ -1,6 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
-from typing import Tuple
+
+from typing import Tuple, Any
 
 from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper
 
@@ -14,7 +15,7 @@ class UnconvertableVersion(Exception):
 
 
 class VersionContainer(GoPythonGoEnableSuper):
-    def __init__(self, version, parsed_by: str, *args, **kwargs) -> None:
+    def __init__(self, version: Any, parsed_by: str, *args: Any, **kwargs: Any) -> None:
         super().__init__(version, parsed_by, *args, **kwargs)
         self.version = version
         self.parsed_by = parsed_by
@@ -62,7 +63,7 @@ class BaseVersionParser(CommandLinePlugin):
     subclass of ``BaseVersionParser``. This parser will be registered under the identifier returned by the
     ``versionparser_name`` property of the subclass.
     """
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

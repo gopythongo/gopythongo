@@ -5,10 +5,11 @@ import gopythongo.shared.docker_args
 
 from gopythongo.utils import print_info, highlight
 from gopythongo.builders import BaseBuilder
+from typing import Any
 
 
 class DockerBuilder(BaseBuilder):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

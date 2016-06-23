@@ -1,10 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
-
 import os
 import sys
 
-from typing import Dict
+from typing import Dict, Any
 
 from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins, \
     CommandLinePlugin
@@ -28,7 +27,7 @@ def init_subsystem() -> None:
 
 
 class BaseAssembler(CommandLinePlugin):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -72,7 +71,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
         assembler.add_args(parser)
 
 
-def validate_args(args: argparse.Namespace):
+def validate_args(args: argparse.Namespace) -> None:
     if not os.path.isabs(args.build_path):
         print_error("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
         sys.exit(1)
@@ -87,7 +86,7 @@ def validate_args(args: argparse.Namespace):
             assemblers[args.assembler].validate_args(args)
 
 
-def assemble(args: argparse.Namespace):
+def assemble(args: argparse.Namespace) -> None:
     pip_binary = create_script_path(args.build_path, "pip")
     run_pip = [pip_binary, "install"]
     if args.pip_opts:

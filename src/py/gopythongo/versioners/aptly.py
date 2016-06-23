@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import sys
-from typing import List
+from typing import List, Any
 
 import gopythongo.shared.aptly_args as _aptly_args
 
@@ -12,7 +12,7 @@ from gopythongo.versioners.parsers import VersionContainer
 
 
 class AptlyVersioner(BaseVersioner):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from typing import Dict
+from typing import Dict, Any
 
 from gopythongo.utils import print_error, plugins, CommandLinePlugin
 
@@ -24,7 +24,7 @@ def init_subsystem() -> None:
 
 
 class BasePacker(CommandLinePlugin):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property
@@ -51,10 +51,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                                  "build folder of your build server, for example.")
 
 
-def validate_args(args: argparse.Namespace):
+def validate_args(args: argparse.Namespace) -> None:
     if args.packer in packers.keys():
         packers[args.packer].validate_args(args)
 
 
-def pack(args: argparse.Namespace):
+def pack(args: argparse.Namespace) -> None:
     packers[args.packer].pack(args)

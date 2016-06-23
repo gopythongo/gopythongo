@@ -4,11 +4,11 @@
 import atexit
 import signal
 import sys
-from argparse import Namespace
-
 import os
 
 from configargparse import ArgParser as ArgumentParser
+from argparse import Namespace
+from types import FrameType
 from typing import List
 
 import gopythongo
@@ -36,8 +36,9 @@ def get_parser() -> ArgumentParser:
                             config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
                             default_config_files=[".gopythongo/config"])
 
-    for m in [initializers, builders, versioners, assemblers, packers, stores]:
-        m.add_args(parser)
+    for subargs in [initializers.add_args, builders.add_args, versioners.add_args, assemblers.add_args,
+                    packers.add_args, stores.add_args]:
+        subargs(parser)
 
     gr_plan = parser.add_argument_group("Execution plan")
     gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
@@ -103,8 +104,9 @@ def validate_args(args: Namespace) -> None:
             print_warning("Make sure that eatmydata is available *inside* your build environment as well, if you want "
                           "to use it to speed up the build process inside the environment.")
 
-    for m in [initializers, builders, versioners, assemblers, packers, stores]:
-        m.validate_args(args)
+    for subvalidate in [initializers.validate_args, builders.validate_args, versioners.validate_args,
+                        assemblers.validate_args, packers.validate_args, stores.validate_args]:
+        subvalidate(args)
 
 
 def print_help() -> None:
@@ -124,7 +126,7 @@ def print_help() -> None:
           "You can also find more information at http://gopythongo.com/.\n")
 
 
-def _sigint_handler(signal, frame):
+def _sigint_handler(sig: int, frame: FrameType) -> None:
     print_warning("CTRL+BREAK. Exiting.")
     sys.exit(1)
 
@@ -141,8 +143,9 @@ def route() -> None:
     atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
 
-    for s in [initializers, versioners, builders, assemblers, packers, stores]:
-        s.init_subsystem()
+    for subinit in [initializers.init_subsystem, versioners.init_subsystem, builders.init_subsystem,
+                    assemblers.init_subsystem, packers.init_subsystem, stores.init_subsystem]:
+        subinit()
 
     if len(sys.argv) > 1:
         args = get_parser().parse_args()

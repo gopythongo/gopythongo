@@ -1,9 +1,10 @@
 # -* encoding: utf-8 *-
 import argparse
-
 import shutil
 import sys
 import os
+
+from typing import Any
 
 from gopythongo import utils
 from gopythongo.assemblers import BaseAssembler
@@ -11,7 +12,7 @@ from gopythongo.utils import print_error, highlight
 
 
 class DjangoAssembler(BaseAssembler):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

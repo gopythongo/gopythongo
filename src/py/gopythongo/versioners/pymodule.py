@@ -1,6 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import sys
+
 from typing import Any
 
 import gopythongo.versioners as _versioners
@@ -33,7 +34,7 @@ def import_string(dotted_path: str) -> Any:
 
 
 class PymoduleVersioner(_versioners.BaseVersioner):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

@@ -3,6 +3,7 @@
 from typing import Set
 from gopythongo.versioners.parsers import VersionContainer
 
+
 class BuildContext(object):
     """
     This is a global singleton accessed via ``gopythongo.utils.buildcontext.the_context`` that should be used

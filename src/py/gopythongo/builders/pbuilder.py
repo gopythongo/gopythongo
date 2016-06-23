@@ -8,10 +8,11 @@ import shlex
 from gopythongo.builders import BaseBuilder
 from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path, print_debug
 from gopythongo.utils.buildcontext import the_context
+from typing import Any
 
 
 class PbuilderBuilder(BaseBuilder):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

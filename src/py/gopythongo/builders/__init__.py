@@ -4,7 +4,7 @@ import subprocess
 import sys
 import os
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 import gopythongo
 from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins, \
@@ -32,7 +32,7 @@ def init_subsystem() -> None:
 
 
 class BaseBuilder(CommandLinePlugin):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     @property

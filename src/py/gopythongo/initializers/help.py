@@ -1,20 +1,23 @@
 # -* encoding: utf-8 *-
+import argparse
 from argparse import Action
 
 from gopythongo.utils import highlight
+from typing import Iterable, Sequence, Any
 
 
 class InitializerHelpAction(Action):
     def __init__(self,
-                 option_strings,
-                 dest,
-                 default=None,
-                 choices=None,
-                 help="Show help for GoPythonGo Configuration Initializers."):
+                 option_strings: str,
+                 dest: str,
+                 default: Any=None,
+                 choices: Iterable[Any]=None,
+                 help: str="Show help for GoPythonGo Configuration Initializers.") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
+                 values: str, option_string: str=None) -> None:
         from gopythongo.initializers import initializers
         if values in initializers.keys():
             initializers[values].print_help()
