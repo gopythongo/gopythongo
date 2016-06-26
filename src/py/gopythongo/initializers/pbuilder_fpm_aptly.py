@@ -19,8 +19,8 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
         return ""
 
     def print_help(self) -> None:
-        print("Pbuilder and .deb Quickstart\n"
-              "============================\n"
+        print("Pbuilder and .deb quick start\n"
+              "=============================\n"
               "\n"
               "This Initializer generates an example configuration for GoPythonGo that depends\n"
               "on the Debian Pbuilder chroot build system. This allows you to build a\n"
