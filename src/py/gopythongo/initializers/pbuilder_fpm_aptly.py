@@ -34,7 +34,12 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
               "        echo deb http://repo.aptly.info/ squeeze main \\\n"
               "          > /etc/apt/sources.list.d/aptly.info\n"
               "        apt-get update\n"
-              "        apt-get --no-install-recommends install pbuilder ruby ruby-dev aptly\n" %
+              "        apt-get --no-install-recommends install pbuilder ruby ruby-dev aptly\n"
+              "\n"
+              "You can find more information at the following URLs:\n"
+              "    http://gopythongo.com/\n"
+              "    https://aptly.info/\n"
+              "    https://github.com/jordansissel/fpm\n" %
               (highlight("fpm"), highlight("apt-get"), highlight("As root run:")))
         sys.exit(0)
 
