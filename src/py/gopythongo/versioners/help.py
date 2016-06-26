@@ -22,8 +22,8 @@ class VersionerHelpAction(argparse.Action):
         if values in versioners.keys():
             versioners[values].print_help()
         else:
-            print(u"Versioners\n"
-                  "===========\n"
+            print("Versioners\n"
+                  "==========\n"
                   "\n"
                   "Versioners are responsible for reading a version string from a source. What the\n"
                   "source is, depends on the Versioner.\n"
