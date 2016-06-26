@@ -103,7 +103,8 @@ class BaseInitializer(GoPythonGoEnableSuper):
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
     def print_help(self) -> None:
-        print("Unfortunately %s does not provide help" % self.initializer_name)
+        print_info("Unfortunately %s does not provide help" % self.initializer_name)
+        sys.exit(1)
 
 
 class InitializerAction(Action):

@@ -1,4 +1,6 @@
 # -* encoding: utf-8 *-
+import sys
+
 from typing import Any
 
 from gopythongo.initializers import BaseInitializer
@@ -14,6 +16,13 @@ class DockerCopyDockerInitializer(BaseInitializer):
 
     def build_config(self) -> str:
         return ""
+
+    def print_help(self) -> None:
+        print("Docker Quick Start\n"
+              "==================\n"
+              "\n"
+              "")
+        sys.exit(0)
 
 
 initializer_class = DockerCopyDockerInitializer
