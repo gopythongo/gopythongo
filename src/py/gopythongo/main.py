@@ -1,15 +1,14 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
-
+import argparse
 import atexit
 import signal
 import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
-from argparse import Namespace
 from types import FrameType
-from typing import List
+from typing import List, Any, Iterable
 
 import gopythongo
 
@@ -18,6 +17,23 @@ from gopythongo.utils import highlight, print_error, print_warning, print_info, 
 
 
 tempfiles = []  # type: List[str]
+
+
+class DebugConfigAction(argparse.Action):
+    def __init__(self,
+                 option_strings: str,
+                 dest: str,
+                 default: Any=None,
+                 choices: Iterable[Any]=None,
+                 help: str="Show all configuration keys and where they were loaded from, i.e. from the command-line, "
+                           "a configuration file, or the environment") -> None:
+        super().__init__(option_strings=option_strings, dest=dest, default=default,
+                         nargs="?", choices=choices, help=help)
+
+    def __call__(self, parser: ArgumentParser, namespace: argparse.Namespace,
+                 values: str, option_string: str=None) -> None:
+        parser.print_values()
+        parser.exit(0)
 
 
 def get_parser() -> ArgumentParser:
@@ -82,11 +98,12 @@ def get_parser() -> ArgumentParser:
     gr_out.add_argument("-V", "--version", action="version", version=gopythongo.program_version)
     gr_out.add_argument("--no-color", dest="no_color", action="store_true", default=False,
                         help="Do not use ANSI color sequences in output")
+    gr_out.add_argument("--debug-config", action=DebugConfigAction)
 
     return parser
 
 
-def validate_args(args: Namespace) -> None:
+def validate_args(args: argparse.Namespace) -> None:
     if not args.builder:
         print_error("You must select a builder using --builder.")
         sys.exit(1)
