@@ -2,7 +2,7 @@
 
 Docker deployments
 ==================
-Lightweight isolation, i.e. application containers is currently clearly the future of service deployment. Docker
+Lightweight isolation (i.e. application containers) is currently clearly the future of service deployment. Docker
 seems to be the defacto standard in this space.
 
 The art of the minimal container
