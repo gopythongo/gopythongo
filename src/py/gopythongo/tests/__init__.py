@@ -1,3 +1,3 @@
 # -* encoding: utf-8 *-
 
-from . import debversion
+from . import debversion, template
