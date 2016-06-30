@@ -48,7 +48,7 @@ class DjangoAssembler(BaseAssembler):
         if os.path.exists(args.static_root):
             print("    %s exists." % args.static_root)
             if args.fresh_static:
-                print("removing stale static artifacts in %s" % args.static_root)\
+                print("removing stale static artifacts in %s" % args.static_root)
                 shutil.rmtree(args.static_root)
 
         django_admin = utils.create_script_path(args.build_path, 'django-admin.py')
