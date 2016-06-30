@@ -42,8 +42,8 @@ def process_in_memory(filepath: str, context: Dict[str, Any]) -> str:
 
 
 class ProcessedStringWithTemplates(GoPythonGoEnableSuper):
-    def __init__(self, original: str, format_str: str, templates: List[str]=None, *args,
-                 **kwargs) -> None:
+    def __init__(self, original: str, format_str: str, templates: List[str]=None, *args: Any,
+                 **kwargs: Any) -> None:
         super().__init__(original, format_str, templates, *args, **kwargs)
         self.original = original  # type: str
         self.format_str = format_str  # type: str

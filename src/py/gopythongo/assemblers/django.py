@@ -31,11 +31,6 @@ class DjangoAssembler(BaseAssembler):
         gr_django.add_argument("--assert-static-root-empty", dest="fresh_static", action="store_true",
                                help="if set, this script will make sure that STATIC_ROOT is empty " +
                                     "before running collectstatic by DELETING it (be careful!)")
-        gr_django.add_argument("--keep-staticroot", dest="remove_static",
-                               default=True, action="store_false",
-                               help="will make sure that STATIC_ROOT is NOT removed before bundling the " +
-                                    "virtualenv. This way the static files may end up in the virtualenv " +
-                                    "bundle")
         gr_django.add_argument("--django-settings", dest="django_settings_module",
                                help="'--settings' argument to pass to django-admin.py when it is called by " +
                                     "this script")
@@ -47,12 +42,13 @@ class DjangoAssembler(BaseAssembler):
                             (highlight("--static-out"), highlight("--collect-static")))
                 sys.exit(1)
 
-    def _collect_static(self, args: argparse.Namespace) -> None:
+    def assemble(self, args: argparse.Namespace) -> None:
         envpy = utils.create_script_path(args.build_path, "python")
         print("Collecting static artifacts")
         if os.path.exists(args.static_root):
             print("    %s exists." % args.static_root)
             if args.fresh_static:
+                print("removing stale static artifacts in %s" % args.static_root)\
                 shutil.rmtree(args.static_root)
 
         django_admin = utils.create_script_path(args.build_path, 'django-admin.py')
@@ -62,6 +58,11 @@ class DjangoAssembler(BaseAssembler):
         run_dja.append("--noinput")
         run_dja.append("--traceback")
         utils.run_process(*run_dja)
+
+        if not os.path.exists(args.static_root):
+            print('')
+            print("error: %s should now exist, but it doesn't" % args.static_root)
+            sys.exit(1)
 
 
 assembler_class = DjangoAssembler

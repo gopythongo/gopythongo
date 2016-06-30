@@ -7,7 +7,7 @@ import shutil
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_error, print_info, highlight
-from typing import Any
+from typing import Any, List
 
 from gopythongo.utils.buildcontext import the_context
 
@@ -67,7 +67,7 @@ class FPMPacker(BasePacker):
             if error_found:
                 sys.exit(1)
 
-    def _load_fpm_opts(self, optsfile):
+    def _load_fpm_opts(self, optsfile: str) -> List[str]:
         f = open(optsfile, mode="rt", encoding="utf-8")
         opts = f.readlines()
         f.close()
@@ -81,34 +81,10 @@ class FPMPacker(BasePacker):
             args.fpm, "-t", "deb", "-s", "dir", "-n", package_name,
         ]
 
-        fpm_deb += ["-v", version, "--epoch", epoch]
-
         ctx = {
             "basedir": path,
-            "service_folders": args.service_folders,
-            "service_folders_str": " ".join(args.service_folders),
             "buildctx": the_context,
         }
-
-        if args.preinst:
-            scriptfile = template.process_to_tempfile(args.preinst, ctx)
-            fpm_deb += ["--before-install", scriptfile]
-
-        if args.postinst:
-            scriptfile = template.process_to_tempfile(args.postinst, ctx)
-            fpm_deb += ["--after-install", scriptfile]
-
-        if args.prerm:
-            scriptfile = template.process_to_tempfile(args.prerm, ctx)
-            fpm_deb += ["--before-remove", scriptfile]
-
-        if args.postrm:
-            scriptfile = template.process_to_tempfile(args.postrm, ctx)
-            fpm_deb += ["--after-remove", scriptfile]
-
-        if args.file_map:
-            for mapping in args.file_map:
-                fpm_deb += [mapping]
 
         if args.repo:
             # TODO: compare outfile and _args.repo and copy built package
@@ -116,21 +92,6 @@ class FPMPacker(BasePacker):
             pass
 
     def _build_deb(self, args: argparse.Namespace) -> None:
-        # FIXME
-        if args.collect_static:
-            self._collect_static()
-            if os.path.exists(args.static_root):
-                print("creating static .deb package of %s in %s" % (args.static_root, args.static_outfile,))
-                self._create_deb(args.static_outfile, args.static_root, args.static_package_name, args)
-            else:
-                print('')
-                print("error: %s should now exist, but it doesn't" % args.static_root)
-                sys.exit(1)
-
-            if args.remove_static:
-                print("removing static artifacts in %s" % args.static_root)
-                shutil.rmtree(args.static_root)
-
         print('Creating .deb of %s in %s' % (args.build_path, args.outfile,))
         self._create_deb(args.outfile, args.build_path, args.package_name, args)
 
