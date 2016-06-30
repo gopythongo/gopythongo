@@ -24,10 +24,7 @@ def init_subsystem() -> None:
         u"docker": docker.builder_class(),
     }
 
-    try:
-        plugins.load_plugins("gopythongo.builders", builders, "builder_class", BaseBuilder, "builder_name")
-    except ImportError as e:
-        raise ErrorMessage(str(e)) from e
+    plugins.load_plugins("gopythongo.builders", builders, "builder_class", BaseBuilder, "builder_name")
 
 
 class BaseBuilder(CommandLinePlugin):

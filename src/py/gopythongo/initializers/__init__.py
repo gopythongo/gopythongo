@@ -20,11 +20,8 @@ def init_subsystem() -> None:
         "docker": docker_copy_docker.initializer_class(".gopythongo"),
     }
 
-    try:
-        plugins.load_plugins("gopythongo.initializers", initializers, "initializer_class", BaseInitializer,
-                             "initializer_name", [".gopythongo"])
-    except ImportError as e:
-        raise ErrorMessage(str(e)) from e
+    plugins.load_plugins("gopythongo.initializers", initializers, "initializer_class", BaseInitializer,
+                         "initializer_name", [".gopythongo"])
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:

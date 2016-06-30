@@ -11,14 +11,13 @@ packers = {}  # type: Dict[str, 'BasePacker']
 def init_subsystem() -> None:
     global packers
     from gopythongo.packers import fpm, targz
+
     packers = {
         u"fpm": fpm.packer_class(),
         u"targz": targz.packer_class(),
     }
-    try:
-        plugins.load_plugins("gopythongo.packers", packers, "packer_class", BasePacker, "packer_name")
-    except ImportError as e:
-        raise ErrorMessage(str(e)) from e
+
+    plugins.load_plugins("gopythongo.packers", packers, "packer_class", BasePacker, "packer_name")
 
 
 class BasePacker(CommandLinePlugin):

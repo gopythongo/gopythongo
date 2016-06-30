@@ -17,10 +17,7 @@ def init_subsystem() -> None:
         u"docker": docker.store_class(),
     }
 
-    try:
-        plugins.load_plugins("gopythongo.stores", stores, "store_class", BaseStore, "store_name")
-    except ImportError as e:
-        raise ErrorMessage(str(e)) from e
+    plugins.load_plugins("gopythongo.stores", stores, "store_class", BaseStore, "store_name")
 
 
 class BaseStore(CommandLinePlugin):

@@ -18,10 +18,7 @@ def init_subsystem() -> None:
         u"django": django.assembler_class(),
     }
 
-    try:
-        plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_class", BaseAssembler, "assembler_name")
-    except ImportError as e:
-        raise ErrorMessage(str(e)) from e
+    plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_class", BaseAssembler, "assembler_name")
 
 
 class BaseAssembler(CommandLinePlugin):

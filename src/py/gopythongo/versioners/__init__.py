@@ -31,14 +31,10 @@ def init_subsystem() -> None:
         u"pep440": pep440parser.versionparser_class(),
     }
 
-    try:
-        plugins.load_plugins("gopythongo.versioners", versioners, "versioner_class", BaseVersioner,
-                             "versioner_name")
-        plugins.load_plugins("gopythongo.versionparsers", version_parsers, "versionparser_class",
-                             BaseVersionParser, "versionparser_name")
-    except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
+    plugins.load_plugins("gopythongo.versioners", versioners, "versioner_class", BaseVersioner,
+                         "versioner_name")
+    plugins.load_plugins("gopythongo.versionparsers", version_parsers, "versionparser_class",
+                         BaseVersionParser, "versionparser_name")
 
 
 class BaseVersioner(CommandLinePlugin):
