@@ -1,12 +1,11 @@
 # -* encoding: utf-8 *-
 import argparse
 import os
-import sys
 
 from typing import Dict, Any
 
-from gopythongo.utils import run_process, create_script_path, print_info, print_error, highlight, plugins, \
-    CommandLinePlugin
+from gopythongo.utils import run_process, create_script_path, print_info, highlight, plugins, \
+    CommandLinePlugin, ErrorMessage
 
 assemblers = {}  # type: Dict[str, 'BaseAssembler']
 
@@ -22,8 +21,7 @@ def init_subsystem() -> None:
     try:
         plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_class", BaseAssembler, "assembler_name")
     except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
+        raise ErrorMessage(str(e)) from e
 
 
 class BaseAssembler(CommandLinePlugin):
@@ -73,13 +71,11 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 def validate_args(args: argparse.Namespace) -> None:
     if not os.path.isabs(args.build_path):
-        print_error("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
-        sys.exit(1)
+        raise ErrorMessage("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
 
     for path in args.setuppy_install:
         if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
-            print_error("Cannot run setup.py in %s, because it does not exist" % highlight(path))
-            sys.exit(1)
+            raise ErrorMessage("Cannot run setup.py in %s, because it does not exist" % highlight(path))
 
     if args.assembler:
         if args.assembler in assemblers.keys():

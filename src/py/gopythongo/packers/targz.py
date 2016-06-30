@@ -1,15 +1,13 @@
 # -* encoding: utf-8 *-
-import argparse
-
 import os
-import sys
 import shutil
 import tarfile
+import argparse
 
 from typing import Any
 
 from gopythongo.packers import BasePacker
-from gopythongo.utils import print_info, print_error, highlight
+from gopythongo.utils import print_info, highlight, ErrorMessage
 
 
 class TarGzPacker(BasePacker):
@@ -62,8 +60,7 @@ class TarGzPacker(BasePacker):
                                                                     highlight(args.static_outfile),))
                 self._create_targzip(args.static_outfile, args.static_root, args.static_relative)
             else:
-                print_error("%s should now exist, but it doesn't" % highlight(args.static_root))
-                sys.exit(1)
+                raise ErrorMessage("%s should now exist, but it doesn't" % highlight(args.static_root))
 
             if args.remove_static:
                 print_info("removing static artifacts in %s" % highlight(args.static_root))

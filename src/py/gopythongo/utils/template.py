@@ -1,10 +1,12 @@
 # -* encoding: utf-8 *-
 import os
+import tempfile
+
 from typing import Dict, Any, List, Tuple
 
-import tempfile
 import jinja2
-from gopythongo.utils import GoPythonGoEnableSuper, print_error
+
+from gopythongo.utils import GoPythonGoEnableSuper, ErrorMessage
 
 
 def process_to_tempfile(filepath: str, context: Dict[str, Any]) -> str:
@@ -75,7 +77,7 @@ def parse_template_prefixes(input: str) -> ProcessedStringWithTemplates:
         # basic quoting
         if sub.startswith('"'):
             if '"' not in sub[1:]:  # missing closing quote
-                print_error("Failed to parse %s. It seems to be missing a closing quote." % sub)
+                raise ErrorMessage("Failed to parse %s. It seems to be missing a closing quote." % sub)
             filename = sub[0:sub[1:].index('"') + 2]  # +2 because sub[1:] is 1 shorter and we want to include the quote
         else:
             if " " in sub:

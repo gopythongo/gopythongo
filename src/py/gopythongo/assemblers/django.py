@@ -1,14 +1,13 @@
 # -* encoding: utf-8 *-
 import argparse
 import shutil
-import sys
 import os
 
 from typing import Any
 
 from gopythongo import utils
 from gopythongo.assemblers import BaseAssembler
-from gopythongo.utils import print_error, highlight
+from gopythongo.utils import highlight, ErrorMessage
 
 
 class DjangoAssembler(BaseAssembler):
@@ -38,9 +37,8 @@ class DjangoAssembler(BaseAssembler):
     def validate_args(self, args: argparse.Namespace) -> None:
         if args.static_outfile or args.collect_static:
             if not (args.static_outfile and args.collect_static):
-                print_error("%s and %s must be used together" %
-                            (highlight("--static-out"), highlight("--collect-static")))
-                sys.exit(1)
+                raise ErrorMessage("%s and %s must be used together" %
+                                   (highlight("--static-out"), highlight("--collect-static")))
 
     def assemble(self, args: argparse.Namespace) -> None:
         envpy = utils.create_script_path(args.build_path, "python")
@@ -60,9 +58,7 @@ class DjangoAssembler(BaseAssembler):
         utils.run_process(*run_dja)
 
         if not os.path.exists(args.static_root):
-            print('')
-            print("error: %s should now exist, but it doesn't" % args.static_root)
-            sys.exit(1)
+            raise ErrorMessage("%s should now exist, but it doesn't" % args.static_root)
 
 
 assembler_class = DjangoAssembler

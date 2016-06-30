@@ -1,14 +1,11 @@
 # -* encoding: utf-8 *-
 import argparse
-
 import os
-import sys
-import shutil
 
-from gopythongo.packers import BasePacker
-from gopythongo.utils import template, print_error, print_info, highlight, run_process
 from typing import Any, List, Dict
 
+from gopythongo.packers import BasePacker
+from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -44,20 +41,15 @@ class FPMPacker(BasePacker):
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
-            print_error("fpm not found in path or not executable (%s).\n"
-                        "You can specify an alternative executable using %s" %
-                        (args.fpm, highlight("--use-fpm")))
-            sys.exit(1)
+            raise ErrorMessage("fpm not found in path or not executable (%s).\n"
+                               "You can specify an alternative executable using %s" %
+                               (args.fpm, highlight("--use-fpm")))
 
         if args.fpm_opts:
-            error_found = False
             for opts in args.fpm_opts:
                 if not os.path.exists(opts) or not os.access(opts, os.R_OK):
-                    print_error("It seems that fpm will not be able to read %s under the user id that GoPythonGo is "
-                                "running under." % opts)
-                    error_found = True
-            if error_found:
-                sys.exit(1)
+                    raise ErrorMessage("It seems that fpm will not be able to read %s under the user id that "
+                                       "GoPythonGo is running under." % opts)
 
     def _read_fpm_opts_from_file(self, optsfile: str, ctx: Dict[str, Any]) -> List[str]:
         f = open(optsfile, mode="rt", encoding="utf-8")
@@ -79,9 +71,8 @@ class FPMPacker(BasePacker):
         pswt = template.parse_template_prefixes(filespec)
         if pswt:
             if len(pswt.templates) > 1:
-                print_error("%s can only take a single file argument, there seem to be multiple templates "
-                            "specified." % highlight("--fpm-opts"))
-                sys.exit(1)
+                raise ErrorMessage("%s can only take a single file argument, there seem to be multiple templates "
+                                   "specified." % highlight("--fpm-opts"))
             thefile = template.process_to_tempfile(pswt.templates[0], ctx)
         else:
             thefile = filespec

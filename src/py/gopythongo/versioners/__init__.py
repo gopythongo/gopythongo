@@ -1,9 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
 import sys
-from typing import List, Dict, TypeVar, Type, Any
+from typing import List, Dict, Type, Any
 
-from gopythongo.utils import highlight, print_error, print_info, plugins, CommandLinePlugin
+from gopythongo.utils import highlight, print_info, plugins, CommandLinePlugin, ErrorMessage
 from gopythongo.versioners.parsers import help as parser_help, BaseVersionParser, VersionContainer
 from gopythongo.versioners import help as versioner_help
 
@@ -145,36 +145,32 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 def validate_args(args: argparse.Namespace) -> None:
     if args.version_parser not in version_parsers:
-        print_error("%s is not a valid version parser. Valid options are: %s" %
-                    (highlight(args.version_parser), ", ".join(version_parsers.keys())))
-        sys.exit(1)
+        raise ErrorMessage("%s is not a valid version parser. Valid options are: %s" %
+                           (highlight(args.version_parser), ", ".join(version_parsers.keys())))
 
     if args.input_versioner:
         if args.input_versioner in versioners.keys():
             versioners[args.input_versioner].validate_args(args)
         else:
-            print_error("%s is not a valid versioner for reading versions. Valid options are %s" %
-                        (highlight(args.versioner), highlight(", ".join(
-                            [x for x in versioners.keys() if versioners[x].can_read]
-                        ))))
-            sys.exit(1)
+            raise ErrorMessage("%s is not a valid versioner for reading versions. Valid options are %s" %
+                               (highlight(args.versioner), highlight(", ".join(
+                                   [x for x in versioners.keys() if versioners[x].can_read]
+                               ))))
 
     if args.version_parser in version_parsers:
         version_parsers[args.version_parser].validate_args(args)
     else:
-        print_error("%s is not a valid Version Parser for parsing version numbers. Valid options are %s" %
-                    (highlight(args.version_parser), ", ".join(version_parsers.keys())))
-        sys.exit(1)
+        raise ErrorMessage("%s is not a valid Version Parser for parsing version numbers. Valid options are %s" %
+                           (highlight(args.version_parser), ", ".join(version_parsers.keys())))
 
     if args.output_versioner:
         if args.output_versioner in versioners.keys():
             versioners[args.output_versioner].validate_args(args)
         else:
-            print_error("%s is not a valid versioner for creating/modifying versions. Valid options are %s" %
-                        (highlight(args.output_versioner), highlight(", ".join(
-                            [x for x in versioners.keys() if versioners[x].can_create]
-                        ))))
-            sys.exit(1)
+            raise ErrorMessage("%s is not a valid versioner for creating/modifying versions. Valid options are %s" %
+                               (highlight(args.output_versioner), highlight(", ".join(
+                                   [x for x in versioners.keys() if versioners[x].can_create]
+                               ))))
 
 
 def version(args: argparse.Namespace) -> None:

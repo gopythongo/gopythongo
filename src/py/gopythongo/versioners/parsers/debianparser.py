@@ -1,10 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Any
 
-from gopythongo.utils import print_error, highlight
+from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
@@ -24,8 +23,7 @@ class DebianVersionParser(BaseVersionParser):
         try:
             dv = DebianVersion.fromstring(version_str)
         except InvalidDebianVersionString as e:
-            print_error("%s is not a valid Debian version string: %s" % (highlight(version_str), str(e)))
-            sys.exit(1)
+            raise ErrorMessage("%s is not a valid Debian version string: %s" % (highlight(version_str), str(e))) from e
 
         return VersionContainer(dv, self.versionparser_name)
 

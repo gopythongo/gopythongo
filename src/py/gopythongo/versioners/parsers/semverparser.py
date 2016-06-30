@@ -1,11 +1,10 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Any
 
 from semantic_version import Version as SemVerBase
-from gopythongo.utils import highlight, print_error
+from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
@@ -38,8 +37,7 @@ class SemVerVersionParser(BaseVersionParser):
         try:
             sv = SemVerVersion.parse(version_str, partial=args.semver_partial, coerce=args.semver_coerce)
         except ValueError as e:
-            print_error("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e)))
-            sys.exit(1)
+            raise ErrorMessage("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e))) from e
 
         return VersionContainer(sv, self.versionparser_name)
 

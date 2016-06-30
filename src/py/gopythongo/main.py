@@ -13,8 +13,7 @@ from typing import List, Any, Iterable
 import gopythongo
 
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
-from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color
-
+from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage
 
 tempfiles = []  # type: List[str]
 
@@ -105,14 +104,11 @@ def get_parser() -> ArgumentParser:
 
 def validate_args(args: argparse.Namespace) -> None:
     if not args.builder:
-        print_error("You must select a builder using --builder.")
-        sys.exit(1)
+        raise ErrorMessage("You must select a builder using --builder.")
     if not args.packer:
-        print_error("You must select a packer using --packer.")
-        sys.exit(1)
+        raise ErrorMessage("You must select a packer using --packer.")
     if not args.store:
-        print_error("You must select a store using --store.")
-        sys.exit(1)
+        raise ErrorMessage("You must select a store using --store.")
 
     if args.eatmydata:
         if not os.path.exists(args.eatmydata_executable) or not os.access(args.eatmydata_executable, os.X_OK):
@@ -193,5 +189,16 @@ def route() -> None:
         print_help()
 
 
+def main() -> None:
+    try:
+        route()
+    except ErrorMessage as e:
+        print_error("%s" % e.ansi_msg)
+        if utils.enable_debug_output:
+            raise
+        else:
+            sys.exit(e.exitcode)
+
+
 if __name__ == "__main__":
-    route()
+    main()

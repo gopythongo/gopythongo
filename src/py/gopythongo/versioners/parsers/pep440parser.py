@@ -1,10 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Any
 
-from gopythongo.utils import print_error, highlight
+from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
 from packaging.version import parse, InvalidVersion
 
@@ -27,9 +26,8 @@ class PEP440VersionParser(BaseVersionParser):
         try:
             version = parse(version_str)
         except InvalidVersion as e:
-            print_error("%s is not a valid PEP-440 version string: %s" %
-                        (highlight(version_str), str(e)))
-            sys.exit(1)
+            raise ErrorMessage("%s is not a valid PEP-440 version string: %s" %
+                               (highlight(version_str), str(e))) from e
 
         return VersionContainer(version, self.versionparser_name)
 

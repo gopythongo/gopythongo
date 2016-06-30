@@ -1,13 +1,13 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
+
 from typing import List, Any
 
 import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, print_error, run_process
+from gopythongo.utils import highlight, run_process, ErrorMessage
 from gopythongo.versioners.parsers import VersionContainer
 
 
@@ -54,12 +54,11 @@ class AptlyVersioner(BaseVersioner):
             try:
                 DebianVersion.fromstring(args.aptly_fallback_version)
             except InvalidDebianVersionString as e:
-                print_error("The fallback version string you specified via %s is not a valid Debian version string. "
-                            "(%s)" % (highlight("--fallback-version"), str(e)))
-                sys.exit(1)
+                raise ErrorMessage("The fallback version string you specified via %s is not a valid Debian version "
+                                   "string. (%s)" % (highlight("--fallback-version"), str(e))) from e
 
         if not args.package_name:
-            print_error("To use the Aptly Versioner, you must specify --package-name.")
+            raise ErrorMessage("To use the Aptly Versioner, you must specify --package-name.")
 
     def read(self, args: argparse.Namespace) -> str:
         cmd = _aptly_args.get_aptly_cmdline(args)

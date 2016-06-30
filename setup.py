@@ -38,7 +38,7 @@ setup(
     },
     entry_points = {
         "console_scripts": [
-            "gopythongo = gopythongo.main:route"
+            "gopythongo = gopythongo.main:main"
         ]
     },
     install_requires=_requirements,

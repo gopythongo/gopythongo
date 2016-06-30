@@ -5,10 +5,11 @@ import os
 import sys
 import shlex
 
-from gopythongo.builders import BaseBuilder
-from gopythongo.utils import print_error, print_info, highlight, run_process, flatten, create_script_path, print_debug
-from gopythongo.utils.buildcontext import the_context
 from typing import Any
+
+from gopythongo.builders import BaseBuilder
+from gopythongo.utils import print_info, highlight, run_process, flatten, print_debug, ErrorMessage
+from gopythongo.utils.buildcontext import the_context
 
 
 class PbuilderBuilder(BaseBuilder):
@@ -57,25 +58,22 @@ class PbuilderBuilder(BaseBuilder):
             return
 
         if not os.path.exists(args.pbuilder_executable) or not os.access(args.pbuilder_executable, os.X_OK):
-            print_error("pbuilder not found in path or not executable (%s).\n"
-                        "You can specify an alternative path using %s" % (args.pbuilder_executable,
-                                                                          highlight("--use-pbuilder")))
-            sys.exit(1)
+            raise ErrorMessage("pbuilder not found in path or not executable (%s).\n"
+                               "You can specify an alternative path using %s" %
+                               (args.pbuilder_executable, highlight("--use-pbuilder")))
 
         if args.basetgz and os.path.exists(args.basetgz) and not os.path.isfile(args.basetgz):
-            print_error("pbuilder basetgz %s\nexists but is not a file. Can't continue with this inconsistency." %
-                        highlight(args.basetgz))
-            sys.exit(1)
+            raise ErrorMessage("pbuilder basetgz %s exists but is not a file. Can't continue with this "
+                               "inconsistency." % highlight(args.basetgz))
 
         if not args.pbuilder_distribution:
-            print_error("pbuilder distribution unfortunately defaults to %s, so you must explicitly set it using "
-                        "the parameter %s" %
-                        (highlight("sid (unstable)"), highlight("--distribution")))
-            sys.exit(1)
+            raise ErrorMessage("pbuilder distribution unfortunately defaults to %s, so you must explicitly set it "
+                               "using the parameter %s" %
+                               (highlight("sid (unstable)"), highlight("--distribution")))
 
         if os.getuid() != 0:
-            print_error("pbuilder requires root privileges. Please run GoPythonGo as root when using pbuilder")
-            sys.exit(1)
+            raise ErrorMessage("pbuilder requires root privileges. Please run GoPythonGo as root when using "
+                               "pbuilder")
 
     def build(self, args: argparse.Namespace) -> None:
         print_info("Building with %s" % highlight("pbuilder"))

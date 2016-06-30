@@ -1,10 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Dict, Any
 
-from gopythongo.utils import print_error, plugins, CommandLinePlugin
+from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
 
 stores = {}  # type: Dict[str, 'BaseStore']
 
@@ -21,8 +20,7 @@ def init_subsystem() -> None:
     try:
         plugins.load_plugins("gopythongo.stores", stores, "store_class", BaseStore, "store_name")
     except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
+        raise ErrorMessage(str(e)) from e
 
 
 class BaseStore(CommandLinePlugin):

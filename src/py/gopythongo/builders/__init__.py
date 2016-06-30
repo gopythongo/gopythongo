@@ -7,8 +7,8 @@ import os
 from typing import Dict, List, Tuple, Any
 
 import gopythongo
-from gopythongo.utils import print_error, print_info, highlight, create_script_path, print_warning, plugins, \
-                             CommandLinePlugin
+from gopythongo.utils import print_info, highlight, create_script_path, print_warning, plugins, \
+                             CommandLinePlugin, ErrorMessage
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -27,8 +27,7 @@ def init_subsystem() -> None:
     try:
         plugins.load_plugins("gopythongo.builders", builders, "builder_class", BaseBuilder, "builder_name")
     except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
+        raise ErrorMessage(str(e)) from e
 
 
 class BaseBuilder(CommandLinePlugin):
@@ -58,7 +57,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
         b.add_args(parser)
 
 
-class NoMountableGoPythonGo(Exception):
+class NoMountableGoPythonGo(ErrorMessage):
     pass
 
 
@@ -68,13 +67,12 @@ def _test_gopythongo_version(cmd: List[str]) -> bool:
         if output == gopythongo.program_version:
             return True
         if len(output) >= 10 and output[:10] == gopythongo.program_version[:10]:
-            print_error("%s is GoPthonGo, but a different version (%s vs. %s)" %
-                        (highlight(cmd[0]), highlight(output[11:]), highlight(gopythongo.program_version[11:])))
-            raise NoMountableGoPythonGo("Mixed GoPythonGo versions")
+            raise NoMountableGoPythonGo("Mixed versions! %s is GoPthonGo, but a different version (%s vs. %s)" %
+                                        (highlight(cmd[0]), highlight(output[11:]),
+                                         highlight(gopythongo.program_version[11:])))
     except subprocess.CalledProcessError as e:
-        print_error("Error when trying to find out GoPythonGo version of nested executable")
-        print_error(str(e))
-        raise NoMountableGoPythonGo("Error when trying to get GoPythonGo version")
+        raise NoMountableGoPythonGo("Error when trying to find out GoPythonGo version of nested executable. %s" %
+                                    str(e)) from e
 
     raise NoMountableGoPythonGo("Found something, but it's not GoPythonGo? (%s)" % output)
 
@@ -89,22 +87,14 @@ def test_gopythongo(path: str) -> Tuple[str, List[str]]:
         if os.access(path, os.X_OK):
             # path might be a PEX executable
             print_info("We found what is presumably a PEX executable in %s" % highlight(path))
-            try:
-                if _test_gopythongo_version([path, "--version"]):
-                    return os.path.dirname(path), [path]
-            except NoMountableGoPythonGo as e:
-                print_error(str(e))
-                sys.exit(1)
+            if _test_gopythongo_version([path, "--version"]):
+                return os.path.dirname(path), [path]
 
     elif os.path.isdir(path):
         if os.access(create_script_path(path, "python"), os.X_OK):
             print_info("We found what is presumably a virtualenv in %s" % highlight(path))
-            try:
-                if _test_gopythongo_version([create_script_path(path, "python"), "-m", "gopythongo.main", "--version"]):
-                    return path, [create_script_path(path, "python"), "-m", "gopythongo.main"]
-            except NoMountableGoPythonGo as e:
-                print_error(str(e))
-                sys.exit(1)
+            if _test_gopythongo_version([create_script_path(path, "python"), "-m", "gopythongo.main", "--version"]):
+                return path, [create_script_path(path, "python"), "-m", "gopythongo.main"]
     raise NoMountableGoPythonGo("Can't find GoPythonGo as a virtualenv or PEX executable in %s" % path)
 
 
@@ -114,15 +104,13 @@ def validate_args(args: argparse.Namespace) -> None:
             builders[args.builder].validate_args(args)
 
     if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
-        print_error("virtualenv not found in path or not executable (%s).\n"
-                    "You can specify an alternative path with %s" %
-                    (args.virtualenv_binary, highlight("--use-virtualenv")))
-        sys.exit(1)
+        raise ErrorMessage("virtualenv not found in path or not executable (%s).\n"
+                           "You can specify an alternative path with %s" %
+                           (args.virtualenv_binary, highlight("--use-virtualenv")))
 
     for mount in args.mounts:
         if not os.path.exists(mount):
-            print_error("Folder to be mounted does not exist:\n%s" % highlight(mount))
-            sys.exit(1)
+            raise ErrorMessage("Folder to be mounted does not exist: %s" % highlight(mount))
 
     gpg_path_found = False
     if os.getenv("VIRTUAL_ENV"):
@@ -149,8 +137,7 @@ def validate_args(args: argparse.Namespace) -> None:
             gpg_path_found = True
 
     if not gpg_path_found:
-        print_error("Can't detect GoPythonGo path. You should run GoPythonGo from a virtualenv.")
-        sys.exit(1)
+        raise ErrorMessage("Can't detect GoPythonGo path. You should run GoPythonGo from a virtualenv.")
 
 
 def build(args: argparse.Namespace) -> None:

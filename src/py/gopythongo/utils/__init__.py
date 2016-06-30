@@ -1,11 +1,11 @@
 # -* encoding: utf-8 *-
-import argparse
-from typing import List, Iterable, Union, Any, Sequence, cast
-
 import collections
 import subprocess
+import argparse
 import sys
 import os
+
+from typing import List, Iterable, Union, Any, cast
 
 import colorama
 from colorama import Fore, Style
@@ -89,8 +89,7 @@ def run_process(*args: str, raise_nonzero_exitcode: bool=False) -> str:
             exitcode = e.returncode
 
         if exitcode != 0:
-            print_error("%s exited with non-zero exit code %s" % (str(args), exitcode))
-            sys.exit(exitcode)
+            raise ErrorMessage("%s exited with non-zero exit code %s" % (str(args), exitcode), exitcode=exitcode)
 
         return output.strip().decode("utf-8")
 
@@ -145,10 +144,19 @@ class CommandLinePlugin(GoPythonGoEnableSuper):
 
     def validate_args(self, args: argparse.Namespace) -> None:
         """
-        Validate the arguments added by ``add_args``. Feel free to call ``sys.exit(1)`` from here if any argument
-        is invalid. Please use ``gopythongo.utils.print_error`` to output a meaningful error message to the user before
-        exiting.
+        Validate the arguments added by ``add_args``. Feel free to raise ``ErrorMessage`` from here if any argument
+        is invalid.
 
         :param args: The parsed command-line arguments as provided by argparse
         """
         pass
+
+
+class ErrorMessage(Exception):
+    def __init__(self, ansi_msg: str, exitcode: int=1) -> None:
+        super().__init__(ansi_msg)
+        self.ansi_msg = ansi_msg
+        self.exitcode = exitcode
+
+    def __str__(self) -> str:
+        return self.ansi_msg

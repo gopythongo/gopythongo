@@ -1,11 +1,10 @@
 # -* encoding: utf-8 *-
-import argparse
-import sys
 import os
+import argparse
 
 from typing import Any
 
-from gopythongo.utils import print_error, highlight
+from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners import BaseVersioner
 
 
@@ -25,13 +24,11 @@ class BumpVersioner(BaseVersioner):
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if not args.bumpversion_executable:
-            print_error("To use the bumpversion Versioner, you must set %s" % highlight("--use-bumpversioner"))
-            sys.exit(1)
+            raise ErrorMessage("To use the bumpversion Versioner, you must set %s" % highlight("--use-bumpversioner"))
 
         if not os.path.exists(args.bumpversion_executable) or not os.access(args.bumpversion_executable, os.X_OK):
-            print_error("%s (from %s) does not exist or is not executable" %
-                        (highlight(args.bumpversion_executable), highlight("--use-bumpversioner")))
-            sys.exit(1)
+            raise ErrorMessage("%s (from %s) does not exist or is not executable" %
+                               (highlight(args.bumpversion_executable), highlight("--use-bumpversioner")))
 
     @property
     def can_read(self) -> bool:

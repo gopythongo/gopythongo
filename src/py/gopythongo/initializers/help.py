@@ -3,7 +3,7 @@ import argparse
 from argparse import Action
 
 from gopythongo.utils import highlight
-from typing import Iterable, Sequence, Any
+from typing import Iterable, Any
 
 
 class InitializerHelpAction(Action):

@@ -1,10 +1,9 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Dict, Any
 
-from gopythongo.utils import print_error, plugins, CommandLinePlugin
+from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
 
 packers = {}  # type: Dict[str, 'BasePacker']
 
@@ -19,8 +18,7 @@ def init_subsystem() -> None:
     try:
         plugins.load_plugins("gopythongo.packers", packers, "packer_class", BasePacker, "packer_name")
     except ImportError as e:
-        print_error(str(e))
-        sys.exit(1)
+        raise ErrorMessage(str(e)) from e
 
 
 class BasePacker(CommandLinePlugin):

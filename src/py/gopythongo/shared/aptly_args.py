@@ -1,10 +1,11 @@
 # -* encoding: utf-8 *-
-import argparse
-import sys
 import os
+import argparse
 
-from gopythongo.utils import highlight, print_error
 from typing import List
+
+from gopythongo.utils import highlight, ErrorMessage
+
 
 _aptly_shared_args_added = False  # type: bool
 
@@ -27,10 +28,9 @@ def add_shared_args(parser: argparse.ArgumentParser) -> None:
 
 def validate_shared_args(args: argparse.Namespace) -> None:
     if not os.path.exists(args.aptly_executable) or not os.access(args.aptly_executable, os.X_OK):
-        print_error("aptly not found in path or not executable (%s). You can specify "
-                    "an alternative path using %s" % (args.aptly_executable,
-                                                      highlight("--use-aptly")))
-        sys.exit(1)
+        raise ErrorMessage("aptly not found in path or not executable (%s). You can specify "
+                           "an alternative path using %s" %
+                           (args.aptly_executable, highlight("--use-aptly")))
 
 
 def get_aptly_cmdline(args: argparse.Namespace) -> List[str]:

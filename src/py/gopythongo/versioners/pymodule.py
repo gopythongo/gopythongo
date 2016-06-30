@@ -1,13 +1,12 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
 
 from typing import Any
 
 import gopythongo.versioners as _versioners
 
 from importlib import import_module
-from gopythongo.utils import print_error, highlight
+from gopythongo.utils import highlight, ErrorMessage
 
 
 def import_string(dotted_path: str) -> Any:
@@ -73,11 +72,9 @@ class PymoduleVersioner(_versioners.BaseVersioner):
             try:
                 import_string(args.pymodule_read)
             except ImportError as e:
-                print_error("Pymodule versioner can't import/read %s" % args.pymodule_read)
-                sys.exit(1)
+                raise ErrorMessage("Pymodule versioner can't import/read %s" % args.pymodule_read) from e
         else:
-            print_error("%s requires %s" % (highlight("--versioner=pymodule"), highlight("--pymodule-read")))
-            sys.exit(1)
+            raise ErrorMessage("%s requires %s" % (highlight("--versioner=pymodule"), highlight("--pymodule-read")))
 
     def read(self, args: argparse.Namespace) -> str:
         attr = import_string(args.pymodule_read)
