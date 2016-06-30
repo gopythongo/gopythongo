@@ -9,6 +9,8 @@ from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_error, print_info, highlight
 from typing import Any
 
+from gopythongo.utils.buildcontext import the_context
+
 
 class FPMPacker(BasePacker):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -37,16 +39,12 @@ class FPMPacker(BasePacker):
         gr_opts = parser.add_argument_group("FPM related options (can also be used in OPTS_FILE):")
         gr_opts.add_argument("--fpm-format", dest="fpm_format", choices=["deb"], default="deb",
                              help="Output package format. Only 'deb' is supported for now")
-        gr_opts.add_argument("--file-map", dest="file_map", action="append", default=[],
-                             help="Install a file in any location on the target system. The format of its parameter is "
-                                  "the same as the FPM file map: [local relative path]=[installed absolute path/dir]. "
-                                  "You can specify this argument multiple times. See "
-                                  "https://github.com/jordansissel/fpm/wiki/Source:-dir for more information")
         gr_opts.add_argument("--fpm-opts", dest="fpm_opts", action="append",
                              help="Any string specified here will be directly appended to the FPM command-line when it "
                                   "is invoked, allowing you to specify arbitrary extra command-line parameters. Make "
                                   "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
-                                  "errors! http://bugs.python.org/issue9334")
+                                  "errors! (http://bugs.python.org/issue9334). You can use 'template:' processing IN "
+                                  "THE FPM_OPTS FILE itself and FOR the FPM_OPTS file.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
@@ -59,60 +57,39 @@ class FPMPacker(BasePacker):
             print_error("%s requires %s" % (highlight("--fpm_format=deb"), highlight("--package-name")))
             sys.exit(1)
 
-        for mapping in args.file_map:
-            if "=" not in mapping:
-                print_error("%s does not contain '='.\nA mapping must be formatted as "
-                            "[source file]=[destination file/dir]." % highlight(mapping))
+        if args.fpm_opts:
+            error_found = False
+            for opts in args.fpm_opts:
+                if not os.path.exists(opts) or not os.access(opts, os.R_OK):
+                    print_error("It seems that fpm will not be able to read %s under the user id that GoPythonGo is "
+                                "running under." % opts)
+                    error_found = True
+            if error_found:
                 sys.exit(1)
-            if not os.path.exists(mapping.split("=")[0]):
-                print_error("%s in file mapping %s\n"
-                            "does not exist and can't be packaged." % (highlight(mapping.split("=")[0]),
-                                                                       highlight(mapping)))
+
+    def _load_fpm_opts(self, optsfile):
+        f = open(optsfile, mode="rt", encoding="utf-8")
+        opts = f.readlines()
+        f.close()
+
+        for ix in range(0, len(opts)):
+            opts[ix] = opts[ix].strip()
+        return opts
 
     def _create_deb(self, outfile: str, path: str, package_name: str, args: argparse.Namespace) -> None:
         fpm_deb = [
-            args.fpm, "-t", "deb", "-s", "dir", "-p", outfile,
-            "-n", package_name,
+            args.fpm, "-t", "deb", "-s", "dir", "-n", package_name,
         ]
-        for p in args.provides:
-            fpm_deb.append("--provides")
-            fpm_deb.append(p)
-        for c in args.conflicts:
-            fpm_deb.append("--conflicts")
-            fpm_deb.append(c)
-        for r in args.replaces:
-            fpm_deb.append("--replaces")
-            fpm_deb.append(r)
-        for d in args.depends:
-            fpm_deb.append("--depends")
-            fpm_deb.append(d)
-        for c in args.debconfig:
-            fpm_deb.append("--config-files")
-            fpm_deb.append(c)
-        for d in args.dirs:
-            fpm_deb.append("--directories")
-            fpm_deb.append(d)
 
-        if args.repo and not args.version:
-            # TODO: find latest version
-            pass
-        elif args.version:
-            version = args.version
-
-        if args.repo and not args.epoch:
-            # TODO: find latest epoch and increment by one
-            pass
-        elif args.epoch:
-            epoch = args.epoch
+        fpm_deb += ["-v", version, "--epoch", epoch]
 
         ctx = {
-            'basedir': path,
-            'service_folders': args.service_folders,
-            'service_folders_str': " ".join(args.service_folders),
+            "basedir": path,
+            "service_folders": args.service_folders,
+            "service_folders_str": " ".join(args.service_folders),
+            "buildctx": the_context,
         }
 
-        # build package
-        fpm_deb += ["-v", version, "--epoch", epoch]
         if args.preinst:
             scriptfile = template.process_to_tempfile(args.preinst, ctx)
             fpm_deb += ["--before-install", scriptfile]
