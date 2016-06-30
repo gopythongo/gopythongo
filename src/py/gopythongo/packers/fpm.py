@@ -26,8 +26,8 @@ class FPMPacker(BasePacker):
                             help="Execute FPM (can be used multiple times). You must pass a filename to this "
                                  "parameter, which specifies a file containing the command-line parameters for "
                                  "invoking FPM (one per line). FPM will be invoked with the CWD set to the build "
-                                 "folder inside the selected builder. You can use 'template:' processing IN "
-                                 "THE FPM_OPTS FILE itself and FOR the FPM_OPTS file. "
+                                 "folder inside the selected builder. Templating is supported. You can use 'template:' "
+                                 "prefixes INSIDE THE OPTS_FILE ITSELF and also process OPTS_FILE as a template. "
                                  "Default opts file: .gopythongo/fpm_opts")
 
         gr_opts = parser.add_argument_group("FPM related options (can also be used in OPTS_FILE):")
@@ -80,7 +80,7 @@ class FPMPacker(BasePacker):
         return self._read_fpm_opts_from_file(thefile, ctx)
 
     def _run_fpm(self, args: argparse.Namespace) -> None:
-        # TODO: don't use deb here
+        # TODO: don't use deb here, fpm works universally
         # TODO: we have to specify package names somehow for aptly, but still allow multiple fpm runs
         fpm_base = [
             args.fpm, "-t", "deb", "-s", "dir",

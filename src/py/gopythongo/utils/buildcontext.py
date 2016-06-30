@@ -20,7 +20,8 @@ class BuildContext(object):
         self.out_version = None  # type: VersionContainer
         self.gopythongo_path = None  # type: str
         self.gopythongo_cmd = None  # type: List[str]
-        self.mounts = set()  # type: Set
+        self.mounts = set()  # type: Set[str]
+        self.build_artifacts = set()  # type: Set[str]
 
 
 the_context = BuildContext()  # type: BuildContext
