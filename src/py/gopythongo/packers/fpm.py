@@ -1,17 +1,41 @@
 # -* encoding: utf-8 *-
 import argparse
+import json
 import os
 
 from typing import Any, List, Dict
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage
-from gopythongo.utils.buildcontext import the_context
+from gopythongo.utils.buildcontext import the_context, PackerArtifact
 
 
 class FPMPacker(BasePacker):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def _get_fpm_opts_parser() -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-n", "--name", dest="package_name", default="")
+        parser.add_argument("-p", "--package", dest="package_file", defalt="")
+        return parser
+
+    @staticmethod
+    def _convert_hash_to_dict(ruby_hash: str):
+        dict_str = ruby_hash.replace(":",'"')    # Remove the ruby object key prefix
+        dict_str = dict_str.replace("=>",'" : ') # swap the k => v notation, and close any unshut quotes
+        dict_str = dict_str.replace('""','"')    # strip back any double quotes we created to sinlges
+        return json.loads(dict_str)
+
+    def _parse_fpm_output(self, fpm_output: str) -> Dict[str, str]:
+        # find the Ruby dict
+        try:
+            dic = self._convert_hash_to_dict(fpm_output[fpm_output.index("{"):fpm_output.index("}") + 1])
+        except json.JSONDecodeError as e:
+            raise ErrorMessage("Can't parse FPM output (%s). Output was: %s" % (str(e), fpm_output)) from e
+
+        return dic
 
     @property
     def packer_name(self) -> str:
@@ -81,7 +105,6 @@ class FPMPacker(BasePacker):
 
     def _run_fpm(self, args: argparse.Namespace) -> None:
         # TODO: don't use deb here, fpm works universally
-        # TODO: we have to specify package names somehow for aptly, but still allow multiple fpm runs
         fpm_base = [
             args.fpm, "-t", "deb", "-s", "dir",
         ]
@@ -95,8 +118,41 @@ class FPMPacker(BasePacker):
 
         for ix in range(args.run_fpm):
             print_info("Running FPM run %s of %s" % (ix, len(args.run_fpm)))
-            run_params = fpm_base + self._load_fpm_opts(args.run_fpm[ix], ctx)
-            run_process(*run_params)
+            processed_args = self._load_fpm_opts(args.run_fpm[ix], ctx)
+            parsed_args = self._get_fpm_opts_parser().parse_known_args(processed_args)
+
+            if not parsed_args.package_name:
+                raise ErrorMessage("FPM opts file MUST contain a package name (-n|--name) parameter (%s)" %
+                                   args.run_fpm[ix])
+
+            run_params = fpm_base + processed_args
+            fpm_out = run_process(*run_params)
+
+            out_file = ""
+            if parsed_args.package_file:
+                if not os.path.exists(args.package_file):
+                    raise ErrorMessage("File not found: %s expected to exist from parsed FPM opts" %
+                                       highlight(args.package_file))
+                out_file = parsed_args.package_file
+            else:
+                parsed_output = self._parse_fpm_output(fpm_out)
+                if "path" in parsed_output:
+                    if not os.path.exists(parsed_output["path"]):
+                        raise ErrorMessage("File not found: %s expected to exist from parsed FPM output (%s)" %
+                                           highlight(parsed_output["path"]), fpm_out)
+                    out_file = parsed_output["path"]
+                else:
+                    raise ErrorMessage("Running FPM did not result in an output file. Unable to find a %s property in "
+                                       "FPM's output or an output filename parameter (-p) in the FPM opts file (%s)" %
+                                       (highlight(":path"), highlight(args.run_fpm[ix])))
+
+            the_context.packer_artifacts += PackerArtifact(
+                "deb",
+                out_file,
+                {"package_name": parsed_args.package_name},
+                self,
+                self.packer_name
+            )
 
     def pack(self, args: argparse.Namespace) -> None:
         self._run_fpm(args)
