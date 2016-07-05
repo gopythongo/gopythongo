@@ -1,6 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import json
+
 import os
 
 from typing import Any, List, Dict
@@ -18,11 +19,11 @@ class FPMPacker(BasePacker):
     def _get_fpm_opts_parser() -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser()
         parser.add_argument("-n", "--name", dest="package_name", default="")
-        parser.add_argument("-p", "--package", dest="package_file", defalt="")
+        parser.add_argument("-p", "--package", dest="package_file", default="")
         return parser
 
     @staticmethod
-    def _convert_hash_to_dict(ruby_hash: str):
+    def _convert_hash_to_dict(ruby_hash: str) -> Dict[str, str]:
         dict_str = ruby_hash.replace(":",'"')    # Remove the ruby object key prefix
         dict_str = dict_str.replace("=>",'" : ') # swap the k => v notation, and close any unshut quotes
         dict_str = dict_str.replace('""','"')    # strip back any double quotes we created to sinlges
@@ -76,9 +77,8 @@ class FPMPacker(BasePacker):
                                        "GoPythonGo is running under." % opts)
 
     def _read_fpm_opts_from_file(self, optsfile: str, ctx: Dict[str, Any]) -> List[str]:
-        f = open(optsfile, mode="rt", encoding="utf-8")
-        opts = f.readlines()
-        f.close()
+        with open(optsfile, mode="rt", encoding="utf-8") as f:
+            opts = f.readlines()
 
         for ix in range(0, len(opts)):
             opts[ix] = opts[ix].strip()
@@ -139,20 +139,20 @@ class FPMPacker(BasePacker):
                 if "path" in parsed_output:
                     if not os.path.exists(parsed_output["path"]):
                         raise ErrorMessage("File not found: %s expected to exist from parsed FPM output (%s)" %
-                                           highlight(parsed_output["path"]), fpm_out)
+                                           (highlight(parsed_output["path"]), fpm_out))
                     out_file = parsed_output["path"]
                 else:
                     raise ErrorMessage("Running FPM did not result in an output file. Unable to find a %s property in "
                                        "FPM's output or an output filename parameter (-p) in the FPM opts file (%s)" %
                                        (highlight(":path"), highlight(args.run_fpm[ix])))
 
-            the_context.packer_artifacts += PackerArtifact(
+            the_context.packer_artifacts.add(PackerArtifact(
                 "deb",
                 out_file,
                 {"package_name": parsed_args.package_name},
                 self,
                 self.packer_name
-            )
+            ))
 
     def pack(self, args: argparse.Namespace) -> None:
         self._run_fpm(args)
