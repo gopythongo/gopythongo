@@ -7,7 +7,7 @@ https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debV
 """
 import re
 
-from typing import List, Tuple, Union, Any
+from typing import List, Tuple, Union, Any, TypeVar, Type
 
 
 class InvalidDebianVersionString(Exception):
@@ -176,7 +176,7 @@ class DebianVersion(object):
                                              (self.version, self.version_re, details))
 
     @classmethod
-    def fromstring(cls: type, version_str: str) -> 'DebianVersion':
+    def fromstring(cls: Type['DebianVersion'], version_str: str) -> 'DebianVersion':
         epoch, version, revision = (None, None, None)
         if ":" in version_str:
             epoch = version_str.split(":")[0]
