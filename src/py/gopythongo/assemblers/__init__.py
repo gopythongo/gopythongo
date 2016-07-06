@@ -39,7 +39,7 @@ class BaseAssembler(CommandLinePlugin):
 def add_args(parser: argparse.ArgumentParser) -> None:
     global assemblers
 
-    gr_pip = parser.add_argument_group("PIP options")
+    gr_pip = parser.add_argument_group("PIP Assembler options")
     gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
                         help="Any string specified here will be directly appended to all pip command-lines when it is "
                              "invoked, allowing you to specify arbitrary extra command-line parameters, like "
@@ -49,7 +49,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                         help="If specified, GoPythonGo will update pip and virtualenv inside the build environment "
                              "to the newest available version before installing packages")
 
-    gr_setuppy = parser.add_argument_group("Additional source packages")
+    gr_setuppy = parser.add_argument_group("Setup.py Assembler options")
     gr_setuppy.add_argument("--setuppy-install", dest="setuppy_install", action="append", default=[],
                             help="After all pip commands have run, this can run 'python setup.py install' on " +
                                  "additional packages available in any filesystem path. This option can be " +
