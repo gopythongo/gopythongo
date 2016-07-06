@@ -21,7 +21,7 @@ class PbuilderBuilder(BaseBuilder):
         return u"pbuilder"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gr_pbuilder = parser.add_argument_group("Pbuilder options")
+        gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable")
         gr_pbuilder.add_argument("--basetgz", dest="basetgz", default="/var/cache/pbuilder/base.tgz",

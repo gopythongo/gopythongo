@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, Tuple
+from typing import Any, Tuple, List
 
 from semantic_version import Version as SemVerBase
 from packaging.version import Version as Pep440Version
@@ -26,8 +26,12 @@ class SemVerVersionParser(BaseVersionParser):
     def versionparser_name(self) -> str:
         return u"semver"
 
+    @property
+    def supported_actions(self) -> List[str]:
+        return ["bump-major", "bump-minor", "bump-patch", "bump-prerelease"]
+
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gr_semver = parser.add_argument_group("SemVer Versioner")
+        gr_semver = parser.add_argument_group("SemVer Version Parser options")
         gr_semver.add_argument("--semver-allow-partial", dest="semver_partial", action="store_true", default=False,
                                help="Allow the parsing of incomplete version strings, which still partially comply "
                                     "with SemVer (e.g. '2.0')")

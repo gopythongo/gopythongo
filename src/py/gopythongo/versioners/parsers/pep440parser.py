@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any
+from typing import Any, List
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
@@ -15,6 +15,10 @@ class PEP440VersionParser(BaseVersionParser):
     @property
     def versionparser_name(self) -> str:
         return u"pep440"
+
+    @property
+    def supported_actions(self) -> List[str]:
+        return ["bump-epoch", "bump-minor", "bump-major", "bump-patch", "bump-revision"]
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass

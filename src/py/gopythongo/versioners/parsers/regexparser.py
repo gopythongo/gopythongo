@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any, Tuple
+from typing import Any, Tuple, List
 
 from gopythongo.versioners.parsers.semverparser import SemVerVersion
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
@@ -14,7 +14,7 @@ class RegexVersionParser(BaseVersionParser):
         super().__init__(*args, **kwargs)
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gr_regex = parser.add_argument_group("Regex Versioner")
+        gr_regex = parser.add_argument_group("Regex Version Parser options")
         gr_regex.add_argument("--version-regex", dest="version_regex", default=None,
                               help="Select the regular expression used to parse the version string read by the version "
                                    "reader. It must contain named groups for 'major', 'minor' and 'patch' and can "
@@ -25,6 +25,10 @@ class RegexVersionParser(BaseVersionParser):
     @property
     def versionparser_name(self) -> str:
         return u"regex"
+
+    @property
+    def supported_actions(self) -> List[str]:
+        return ["bump-major", "bump-minor", "bump-patch", "bump-prerelease"]
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if args.version_parser == self.versionparser_name:

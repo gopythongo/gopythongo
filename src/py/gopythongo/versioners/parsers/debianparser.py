@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, Tuple
+from typing import Any, Tuple, List
 from packaging.version import Version as Pep440Version
 
 from gopythongo.utils import highlight, ErrorMessage
@@ -17,8 +17,17 @@ class DebianVersionParser(BaseVersionParser):
     def versionparser_name(self) -> str:
         return u"debian"
 
+    @property
+    def supported_actions(self) -> List[str]:
+        return ["bump-epoch", "bump-revision"]
+
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass
+
+    def validate_args(self, args: argparse.Namespace) -> None:
+        if args.version_action not in self.supported_actions:
+            raise ErrorMessage("Debian Version Parser does not support the selected action (%s). Supported version "
+                               "actions are: %s" % (highlight(args.version_action), ", ".join(self.supported_actions)))
 
     def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:

@@ -16,7 +16,7 @@ class StaticVersioner(BaseVersioner):
         return u"static"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gp_static = parser.add_argument_group("Static Versioner")
+        gp_static = parser.add_argument_group("Static Versioner options")
         gp_static.add_argument("--static-version", dest="static_version", required=True,
                                help="The static version string to use.")
 

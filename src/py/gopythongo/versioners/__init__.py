@@ -76,6 +76,11 @@ class BaseVersioner(CommandLinePlugin):
 def add_args(parser: argparse.ArgumentParser) -> None:
     global versioners, version_parsers
 
+    collected_actions = set()
+    for vp in version_parsers.values():
+        for action in vp.supported_actions:
+            collected_actions.add(action)
+
     gp_version = parser.add_argument_group("Version determination")
     gp_version.add_argument("--help-versioner", choices=versioners.keys(), default=None,
                             action=versioner_help.VersionerHelpAction)
@@ -88,10 +93,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                             help="Parse the version string read by --versioner with this parser. See "
                                  "--help-versionparser for details")
     gp_version.add_argument("--version-action", dest="version_action",
-                            choices=["increment-epoch", "increment-patch", "increment-revision", "none"],
-                            default="none",
-                            help="Choose what to do to the version for the output package after it is "
-                                 "formatted/converted according to --new-version")
+                            choices=collected_actions, default="none",
+                            help="Choose what to do to the version for the output package. Most included Version "
+                                 "Parsers can only increment numeric version parts. If you need more control, you "
+                                 "should take a look at the bumpversion Versioner")
 
     for v in versioners.values():
         v.add_args(parser)
@@ -135,4 +140,4 @@ def version(args: argparse.Namespace) -> None:
         the_context.out_version = version_parsers[args.version_parser].deserialize(args.inner_vout)
     else:
         the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
-        the_context.out_version = version_parsers[args.version_parser].parse(version_str, args)
+        # TODO: execute action

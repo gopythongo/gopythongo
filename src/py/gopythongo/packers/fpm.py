@@ -43,7 +43,7 @@ class FPMPacker(BasePacker):
         return u"fpm"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gr_fpm = parser.add_argument_group("FPM related options (can also be used in OPTS_FILE):")
+        gr_fpm = parser.add_argument_group("FPM Packer options")
         gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
                             help="The full path to the fpm executable to use")
         gr_fpm.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
