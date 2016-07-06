@@ -27,7 +27,7 @@ if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_in
     _requirements.append('backports.shutil_get_terminal_size==1.0.0')
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-    _requirements.append('typing==3.5.1.0')
+    _requirements.append('typing==3.5.2.2')
 
 setup(
     name='gopythongo',
