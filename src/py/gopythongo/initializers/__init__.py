@@ -50,6 +50,10 @@ class BaseInitializer(GoPythonGoEnableSuper):
 
     @property
     def configfolder(self) -> str:
+        """
+        **@property**
+        :return: the relative name of the config folder
+        """
         return self._configfolder
 
     @configfolder.setter
@@ -88,6 +92,9 @@ class BaseInitializer(GoPythonGoEnableSuper):
 
     @property
     def initializer_name(self) -> str:
+        """
+        **@property**
+        """
         raise NotImplementedError("Subclasses of BaseInitializer must override initializer_name")
 
     def build_config(self) -> str:

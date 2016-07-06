@@ -48,14 +48,7 @@ class BumpVersioner(BaseVersioner):
     def can_read(self) -> bool:
         return True
 
-    @property
-    def can_create(self) -> bool:
-        return True
-
     def read(self, args: argparse.Namespace) -> str:
-        pass
-
-    def create(self, args: argparse.Namespace) -> str:
         pass
 
     def print_help(self) -> None:

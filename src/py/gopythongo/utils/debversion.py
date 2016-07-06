@@ -7,7 +7,7 @@ https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debV
 """
 import re
 
-from typing import List, Tuple, Union, Any, TypeVar, Type
+from typing import List, Tuple, Union, Any, Type
 
 
 class InvalidDebianVersionString(Exception):

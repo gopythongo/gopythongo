@@ -27,6 +27,8 @@ class BaseStore(CommandLinePlugin):
     @property
     def store_name(self) -> str:
         """
+        **@property**
+
         Return the identifier and command-line parameter value for --store used by this Store.
         :returns: the identifier
         :rtype: str

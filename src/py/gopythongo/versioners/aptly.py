@@ -23,10 +23,6 @@ class AptlyVersioner(BaseVersioner):
     def can_read(self) -> bool:
         return True
 
-    @property
-    def can_create(self) -> bool:
-        return True
-
     def can_execute_action(self, action: str) -> bool:
         if action in ["increment-epoch-if-exists", "increment-revision-if-exists"]:
             return True
@@ -69,16 +65,7 @@ class AptlyVersioner(BaseVersioner):
         cmd += ["package", "search", "-format=\"{{.Version}}\"", args.package_name]
 
         output = run_process(*cmd)
-
-    def create(self, args: argparse.Namespace) -> str:
-        pass
-
-    @property
-    def operates_on(self) -> List[str]:
-        return [u"debian"]
-
-    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
-        pass
+        # TODO: parse output
 
 
 versioner_class = AptlyVersioner

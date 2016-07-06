@@ -27,6 +27,8 @@ class BasePacker(CommandLinePlugin):
     @property
     def packer_name(self) -> str:
         """
+        **@property**
+        
         Return the identifier and command-line parameter value for --packer used by this Packer.
         :returns: the identifier
         :rtype: str

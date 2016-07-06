@@ -44,6 +44,8 @@ class BaseVersioner(CommandLinePlugin):
     @property
     def versioner_name(self) -> str:
         """
+        **@property**
+
         Return the identifier and command-line parameter value for ==versioner used by this Versioner.
         :returns: the identifier
         :rtype: str
@@ -52,11 +54,10 @@ class BaseVersioner(CommandLinePlugin):
 
     @property
     def can_read(self) -> bool:
+        """
+        **@property**
+        """
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement can_read")
-
-    @property
-    def can_create(self) -> bool:
-        raise NotImplementedError("Each subclass of BaseVersioner MUST implement can_create")
 
     def print_help(self) -> None:
         """
@@ -71,42 +72,6 @@ class BaseVersioner(CommandLinePlugin):
         """
         raise NotImplementedError("This Versioner does not support reading versions")
 
-    def create(self, args: argparse.Namespace) -> str:
-        raise NotImplementedError("This Versioner does not support creating versions")
-
-    def can_execute_action(self, action: str) -> bool:
-        """
-        This method is called to make sure that a Versioner, given a ``VersionContainer`` instance in ``version`` can
-        perform the action as defined by ``action``
-
-        :param action: The action to be taken as set up though command-line parameters or otherwise
-        :type action: str
-        :returns: True or False
-        """
-        raise NotImplementedError("This Versioner does not support executing actions")
-
-    @property
-    def operates_on(self) -> List[str]:
-        """
-        :returns: A list of strings that identify Version Parser formats that this versioner can work with in order of
-                  priority/compatibility/convenience, whatever sorting criteria you choose. GoPythonGo will try to use
-                  the first one, then the next, and so on.
-        :rtype: List[str]
-        """
-        raise NotImplementedError("This Versioner does not support executing actions")
-
-    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
-        """
-        Execute an action on a version.
-
-        :param version: A VersionContainer instance read by this or another Versioner
-        :type version: gopythongo.versioners.parsers.VersionContainer
-        :param action: The action to be taken as set up though command-line parameters or otherwise
-        :type action: str
-        :returns: A ``VersionContainer`` instance with the updated version (can be the same instance)
-        """
-        raise NotImplementedError("This Versioner does not support executing actions")
-
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     global versioners, version_parsers
@@ -118,7 +83,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                             action=parser_help.VersionParserHelpAction)
     gp_version.add_argument("--input-versioner", dest="input_versioner", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
-                                 "details. Most versioners have specific additional command-line parameters")
+                                 "details. Most versioners take specific additional command-line parameters")
     gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
                             help="Parse the version string read by --versioner with this parser. See "
                                  "--help-versionparser for details")
@@ -172,8 +137,15 @@ def validate_args(args: argparse.Namespace) -> None:
 def version(args: argparse.Namespace) -> None:
     reader_name = args.input_versioner
     reader = versioners[reader_name]
-    version_str = reader.read(args)
-    print_info("Read version using versioner %s: %s" % (highlight(reader_name), highlight(version_str)))
+    version_str = None
+    if not args.is_inner:
+        version_str = reader.read(args)
+        print_info("Read version using versioner %s: %s" % (highlight(reader_name), highlight(version_str)))
 
     from gopythongo.utils.buildcontext import the_context
-    the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
+    if args.is_inner:
+        the_context.read_version = version_parsers[args.version_parser].deserialize(args.inner_vin)
+        the_context.out_version = version_parsers[args.version_parser].deserialize(args.inner_vout)
+    else:
+        the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
+        the_context.out_version = version_parsers[args.version_parser].parse(version_str, args)

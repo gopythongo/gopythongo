@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any
+from typing import Any, Tuple
 
 from gopythongo.versioners.parsers.semverparser import SemVerVersion
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
@@ -68,6 +68,18 @@ class RegexVersionParser(BaseVersionParser):
             semver = "%s+%s" % match.group("metadata")
 
         return VersionContainer(SemVerVersion.parse(semver), self.versionparser_name)
+
+    def can_convert_from(self, parserid: str) -> Tuple[bool, bool]:
+        if parserid in [self.versionparser_name, "semver"]:
+            return True, True
+        return False, False
+
+    def serialize(self, version: VersionContainer) -> str:
+        v = version.version  # type: SemVerVersion
+        return v.tostring()
+
+    def deserialize(self, serialized: str) -> VersionContainer:
+        return VersionContainer(SemVerVersion.parse(serialized), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"

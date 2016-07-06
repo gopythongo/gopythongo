@@ -27,6 +27,9 @@ class BaseAssembler(CommandLinePlugin):
 
     @property
     def assembler_name(self) -> str:
+        """
+        **@property**
+        """
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
 
     def assemble(self, args: argparse.Namespace) -> None:

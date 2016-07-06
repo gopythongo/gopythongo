@@ -33,6 +33,9 @@ class BaseBuilder(CommandLinePlugin):
 
     @property
     def builder_name(self) -> str:
+        """
+        **@property**
+        """
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
 
     def build(self, args: argparse.Namespace) -> None:

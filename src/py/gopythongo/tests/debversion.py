@@ -33,6 +33,10 @@ class DebianVersionTests(TestCase):
         self.assertListEqual(split_version_parts("1"), ["1"])
         self.assertListEqual(split_version_parts(""), [""])
 
+    def test_serialization(self) -> None:
+        v = DebianVersion.fromstring("2:1.0~bpo1")
+        self.assertEqual(v, v.fromstring(v.tostring()))
+
     def test_sorting_compatibility_aptpkg(self) -> None:
         version_strings = ["~~a", "~", "~~", "a1", "1.0", "1.0-1", "1.0~bpo1", "1.0-1~bpo1"]
         # sorted using python-apt's apt_pkg.version_compare

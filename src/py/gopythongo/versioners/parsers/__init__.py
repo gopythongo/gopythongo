@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Tuple, Any
+from typing import Tuple, Any, Union, List
 
 from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper
 
@@ -69,6 +69,8 @@ class BaseVersionParser(CommandLinePlugin):
     @property
     def versionparser_name(self) -> str:
         """
+        **@property**
+
         Return the identifier and command-line parameter value for ==version-parser used by this Version Parser.
         :returns: the identifier
         :rtype: str
@@ -98,13 +100,13 @@ class BaseVersionParser(CommandLinePlugin):
         You should be familiar with the code of the other parser to write this.
 
         :type parserid: str
-        :returns: a tuple saying "do I know how to convert?" and "can I do so losslessly?". GPythonGo will prefer
-                  lossless conversion and if all else is equal use the target Version Parser
+        :returns: a tuple saying "do I know how to convert?" and "can I do so losslessly?". GPythonGo will
+                  prefer lossless conversion and if all else is equal use the target Version Parser
         :rtype: (bool, bool)
         """
         if parserid == self.versionparser_name:
             return True, True  # we can convert and we can do so losslessly
-        return False, False
+        return None
 
     def can_convert_to(self, parserid: str) -> Tuple[bool, bool]:
         """
@@ -122,7 +124,10 @@ class BaseVersionParser(CommandLinePlugin):
 
     def convert_from(self, version: VersionContainer) -> VersionContainer:
         """
+        Convert from the input ``version`` to this parser's version format. Raise ``UnconvertableVersion`` if the
+        conversion is not possible.
         :type version: VersionContainer
+        :raises UnconvertableVersion: if the conversion is impossible
         """
         if version.parsed_by == self.versionparser_name:
             return version
@@ -131,11 +136,65 @@ class BaseVersionParser(CommandLinePlugin):
 
     def convert_to(self, version: VersionContainer, parserid: str) -> VersionContainer:
         """
+        Convert from this parser's version format to the target parser's format. This requires intimate knowledge
+        of the other parser's version format. Raise ``UnconvertableVersion`` if the conversion is not possible.
         :type version: VersionContainer
         :type parserid: str
+        :raises UnconvertableVersion: if the conversion is impossible
         """
         if version.parsed_by == self.versionparser_name:
             return version
         else:
             raise UnconvertableVersion("%s does not know how to convert into %s" %
                                        (self.versionparser_name, parserid))
+
+    def serialize(self, version: VersionContainer) -> str:
+        """
+        should return a string that can be deserialized by ``deserialize`` that represents the exact same version.
+        :param version: the version to serialize
+        :return: a lossless string representation of the version information
+        """
+        raise NotImplementedError("Every Version Parser must implement serialize()")
+
+    def deserialize(self, serialized: str) -> VersionContainer:
+        """
+        reads a serialized version string and puts it back into a VersionContainer
+        :param serialized: the serialized version string as created by ``serialize()``
+        :return: a VersionContainer instance containing the deserialized version object
+        """
+        raise NotImplementedError("Every Version Parser must implement deserialize()")
+
+    @property
+    def supported_actions(self) -> List[str]:
+        """
+        **@property**
+
+        returns a list of supported actions that this Version Parser can execute on versions
+        :return: a list of supported actions
+        """
+        return []
+
+    def can_execute_action(self, version: VersionContainer, action: str) -> bool:
+        """
+        This method is called to make sure that a Version Parser, given a ``VersionContainer`` instance in ``version``
+        can perform the action as defined by ``action`` on the version contained in the VersionContainer.
+
+        :param version: The version to modify
+        :type version: gopythongo.versioners.parsers.VersionContainer
+        :param action: The action to be taken as set up though command-line parameters or otherwise
+        :type action: str
+        :returns: True or False
+        """
+        raise NotImplementedError("This Version Parser does not support executing actions")
+
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
+        """
+        Execute an action on a version.
+
+        :param version: A VersionContainer instance read by this or another Version Parser
+        :type version: gopythongo.versioners.parsers.VersionContainer
+        :param action: The action to be taken as set up though command-line parameters or otherwise
+        :type action: str
+        :returns: A ``VersionContainer`` instance with the updated version (can be the same instance)
+        """
+        raise NotImplementedError("This Version Parser does not support executing actions")

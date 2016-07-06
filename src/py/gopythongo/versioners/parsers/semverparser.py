@@ -1,10 +1,12 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any
+from typing import Any, Tuple
 
 from semantic_version import Version as SemVerBase
-from gopythongo.utils import highlight, ErrorMessage
+from packaging.version import Version as Pep440Version
+
+from gopythongo.utils import highlight, ErrorMessage, print_info
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
 
 
@@ -40,6 +42,60 @@ class SemVerVersionParser(BaseVersionParser):
             raise ErrorMessage("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e))) from e
 
         return VersionContainer(sv, self.versionparser_name)
+
+    def can_convert_from(self, parserid: str) -> Tuple[bool, bool]:
+        if parserid == self.versionparser_name:
+            return True, True
+        elif parserid == "regex":
+            return True, True
+        elif parserid == "pep440":
+            return True, False
+        return False, False
+
+    @staticmethod
+    def semver_from_pep440(pep440: Pep440Version) -> str:
+        semstr = ""
+        for ix in range(0, len(pep440._version.release) - 1 if len(pep440._version.release) < 3 else 2):
+            semstr = "%s.%s" % (semstr, pep440._version.release[ix])
+        semstr = semstr[1:]  # cut the leading dot
+        if pep440.is_prerelease:
+            sep = "-"  # first group gets a -, everything else a .
+            if pep440._version.pre is not None:
+                semstr = "%s%s%s" % (semstr, sep, "".join(str(x) for x in pep440._version.pre))
+                sep = "."
+            if pep440._version.dev is not None:
+                semstr = "%s%s%s" % (semstr, sep, "dev{0}".format(pep440._version.dev[1]))
+
+        # this is where we lose data, because semver doesn't know post-releases or epochs
+        sep = "+"  # first metadata seperator is a +, then a .
+        if pep440.is_postrelease:
+            semstr = "%s%s%s" % (semstr, sep, "post{0}".format(pep440._version.post[1]))
+        if pep440.local:
+            semstr = "%s%s%s" % (semstr, sep, pep440.local)
+
+        if pep440._version.epoch != 0:
+            semstr = "%s%s%s" % (semstr, sep, "epoch%s" % pep440._version.epoch)
+
+        if pep440.is_postrelease or pep440._version.epoch != 0:
+            print_info("Unable to do lossless conversion to SemVer from PEP440, because SemVer does not know post-"
+                       "release identifiers or epochs. (%s => %s)" % (str(pep440), semstr))
+        return semstr
+
+    def convert_from(self, version: VersionContainer) -> VersionContainer:
+        if version.parsed_by == self.versionparser_name:
+            return version
+        elif version.parsed_by == "regex":
+            return VersionContainer(version.version, self.versionparser_name)
+        elif version.parsed_by == "pep440":
+            return VersionContainer(SemVerVersion.parse(SemVerVersionParser.semver_from_pep440(version.version)),
+                                    self.versionparser_name)
+
+    def serialize(self, version: VersionContainer) -> str:
+        v = version.version  # type: SemVerVersion
+        return v.tostring()
+
+    def deserialize(self, serialized: str) -> VersionContainer:
+        return VersionContainer(SemVerVersion.parse(serialized), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"

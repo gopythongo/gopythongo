@@ -76,10 +76,6 @@ def get_parser() -> ArgumentParser:
     gr_plan.add_argument("--gopythongo-path", dest="gopythongo_path", default=None,
                          help="Path to a virtual environment that contains GoPythonGo or a PEX GoPythonGo executable. "
                               "This will be mounted into the build environment")
-    gr_plan.add_argument("--inner", dest="is_inner", action="store_true", default=False,
-                         help="This parameter signals to GoPythonGo that it is running inside the build environment, "
-                              "you will likely never have to use this parameter yourself. It is used by GoPythonGo "
-                              "internally")
     gr_plan.add_argument("--debug-noexec", dest="debug_noexec", action="store_true", default=False,
                          help="Setting this will prevent GoPythonGo from executing any commands. The command-line "
                               "will instead be printed to stdout for debugging purposes")
@@ -99,6 +95,16 @@ def get_parser() -> ArgumentParser:
                         help="Do not use ANSI color sequences in output")
     gr_out.add_argument("--debug-config", action=DebugConfigAction)
 
+    # This parameter signals to GoPythonGo that it is running inside the build environment,
+    # you will likely never have to use this parameter yourself. It is used by GoPythonGo
+    # internally
+    parser.add_argument("--inner", dest="is_inner", action="store_true", default=False,
+                        help=argparse.SUPPRESS)
+    # serialized version as read by the Versioner and parsed by the Version Parser outside of the build environment
+    parser.add_argument("--inner-vin", dest="inner_vin", default=None, help=argparse.SUPPRESS)
+    # serialized version as modified by the output Version Parser outside of the build environment
+    parser.add_argument("--inner-vout", dest="inner_vout", default=None, help=argparse.SUPPRESS)
+
     return parser
 
 
@@ -109,6 +115,12 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("You must select a packer using --packer.")
     if not args.store:
         raise ErrorMessage("You must select a store using --store.")
+
+    if args.is_inner:
+        if not args.inner_vin or not args.inner_vout:
+            raise ErrorMessage("When GoPythonGo runs inside a build environment, marked by %s, then %s and %s %s also "
+                               "both be present." % (highlight("--inner"), highlight("--inner-vin"),
+                                                     highlight("--inner-vout"), highlight("MUST")))
 
     if args.eatmydata:
         if not os.path.exists(args.eatmydata_executable) or not os.access(args.eatmydata_executable, os.X_OK):

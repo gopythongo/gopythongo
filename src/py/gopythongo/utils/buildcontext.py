@@ -1,9 +1,11 @@
 # =* encoding: utf-8 *-
+import sys
 
 from typing import Set, Any, Dict
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import GoPythonGoEnableSuper
+from gopythongo.versioners import version_parsers
 from gopythongo.versioners.parsers import VersionContainer
 
 
@@ -44,6 +46,14 @@ class BuildContext(object):
         self.gopythongo_cmd = None  # type: List[str]
         self.mounts = set()  # type: Set[str]
         self.packer_artifacts = set()  # type: Set[PackerArtifact]
+
+    @staticmethod
+    def _serialize_version(v: VersionContainer) -> str:
+        return version_parsers[v.parsed_by].serialize(v)
+
+    def get_gopythongo_inner_commandline(self):
+        return self.gopythongo_cmd + ["--inner"] + ['--inner-vin="%s"' % self._serialize_version(self.read_version)] + \
+               ['--inner-vout="%s"' % self._serialize_version(self.out_version)] + sys.argv[1:]
 
 
 the_context = BuildContext()  # type: BuildContext

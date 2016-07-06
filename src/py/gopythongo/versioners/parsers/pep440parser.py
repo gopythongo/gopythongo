@@ -5,7 +5,7 @@ from typing import Any
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
-from packaging.version import parse, InvalidVersion
+from packaging.version import parse, InvalidVersion, Version
 
 
 class PEP440VersionParser(BaseVersionParser):
@@ -30,6 +30,13 @@ class PEP440VersionParser(BaseVersionParser):
                                (highlight(version_str), str(e))) from e
 
         return VersionContainer(version, self.versionparser_name)
+
+    def serialize(self, version: VersionContainer) -> str:
+        v = version.version  # type: Version
+        return str(v)
+
+    def deserialize(self, serialized: str) -> VersionContainer:
+        return VersionContainer(parse(serialized), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"
