@@ -17,8 +17,8 @@ class UnconvertableVersion(Exception):
 class VersionContainer(GoPythonGoEnableSuper):
     def __init__(self, version: Any, parsed_by: str, *args: Any, **kwargs: Any) -> None:
         super().__init__(version, parsed_by, *args, **kwargs)
-        self.version = version
-        self.parsed_by = parsed_by
+        self.version = version  # type: Any
+        self.parsed_by = parsed_by  # type: str
 
     def convert_to(self, parsername: str) -> 'VersionContainer':
         from gopythongo.versioners import version_parsers

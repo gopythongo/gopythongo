@@ -87,10 +87,6 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
                             help="Parse the version string read by --versioner with this parser. See "
                                  "--help-versionparser for details")
-    gp_version.add_argument("--output-versioner", dest="output_versioner", required=True,
-                            help="Specify the version format into which the version should be converted (can be the "
-                                 "same) before applying the selected version action to create the final version string "
-                                 "to be used for the output package. See --help-versionparser for details")
     gp_version.add_argument("--version-action", dest="version_action",
                             choices=["increment-epoch", "increment-patch", "increment-revision", "none"],
                             default="none",
@@ -123,15 +119,6 @@ def validate_args(args: argparse.Namespace) -> None:
     else:
         raise ErrorMessage("%s is not a valid Version Parser for parsing version numbers. Valid options are %s" %
                            (highlight(args.version_parser), ", ".join(version_parsers.keys())))
-
-    if args.output_versioner:
-        if args.output_versioner in versioners.keys():
-            versioners[args.output_versioner].validate_args(args)
-        else:
-            raise ErrorMessage("%s is not a valid versioner for creating/modifying versions. Valid options are %s" %
-                               (highlight(args.output_versioner), highlight(", ".join(
-                                   [x for x in versioners.keys() if versioners[x].can_create]
-                               ))))
 
 
 def version(args: argparse.Namespace) -> None:

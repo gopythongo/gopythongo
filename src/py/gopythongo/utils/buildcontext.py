@@ -1,7 +1,7 @@
 # =* encoding: utf-8 *-
 import sys
 
-from typing import Set, Any, Dict
+from typing import Set, Any, Dict, List
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import GoPythonGoEnableSuper
@@ -51,7 +51,7 @@ class BuildContext(object):
     def _serialize_version(v: VersionContainer) -> str:
         return version_parsers[v.parsed_by].serialize(v)
 
-    def get_gopythongo_inner_commandline(self):
+    def get_gopythongo_inner_commandline(self) -> List[str]:
         return self.gopythongo_cmd + ["--inner"] + ['--inner-vin="%s"' % self._serialize_version(self.read_version)] + \
                ['--inner-vout="%s"' % self._serialize_version(self.out_version)] + sys.argv[1:]
 

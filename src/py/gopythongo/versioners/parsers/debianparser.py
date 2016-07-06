@@ -69,7 +69,7 @@ class DebianVersionParser(BaseVersionParser):
             except InvalidDebianVersionString as e:
                 raise ErrorMessage("Unable to convert PEP440 version string to valid Debian version string: %s" %
                                    highlight(str(v))) from e
-            return dv
+            return VersionContainer(dv, self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"
