@@ -114,6 +114,7 @@ class FPMPacker(BasePacker):
         ctx = {
             "basedir": args.build_path,
             "buildctx": the_context,
+            "debian_version": the_context.out_version.convert_to("debian")  # FPM requires a Debian version for .debs
         }
 
         for ix in range(args.run_fpm):
