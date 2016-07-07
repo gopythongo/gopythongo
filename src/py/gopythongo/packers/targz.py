@@ -8,6 +8,7 @@ from typing import Any
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, highlight, ErrorMessage
+from gopythongo.utils.buildcontext import the_context
 
 
 class TarGzPacker(BasePacker):
@@ -19,10 +20,32 @@ class TarGzPacker(BasePacker):
         return u"targz"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        pass
+        gp_tgz = parser.add_argument_group("Tar/Gzip Packer options")
+        gp_tgz.add_argument("--targz-basename", dest="targz_basename", required=True,
+                            help="Each .tar.gz created by each instance of --targz in the parameters will be named "
+                                 "[basename]_[ext]-[version].tar.gz where [ext] is specified in --targz and [version] "
+                                 "is retrieved from the selected Versioner")
+        gp_tgz.add_argument("--targz", dest="targz", action="append", default=[],
+                            help="Takes an argument in the form 'ext:path' where 'ext' is appended to the "
+                                 "targz-basename and then the contents of path are stored and compressed in a .tar.gz "
+                                 "archive. 'ext' is optional, but be careful to not overwrite your archives when you "
+                                 "use multiple --targz arguments.")
+        gp_tgz.add_argument("--targz-relative", dest="targz_relative", action="store_true", default=False,
+                            help="Store relative paths in the .tar.gz archives.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
-        pass
+        validate_fns = []  # type: List[str]
+        for spec in args.targz:
+            if ":" in spec:
+                ext = spec.split(":", 1)[0]
+                fn = "%s_%s" % (args.targz_basename, ext)
+            else:
+                fn = args.targz_basename
+
+            if fn in validate_fns:
+                raise ErrorMessage("Multiple --targz parameters result in the same filename '%s'." % highlight(fn))
+            else:
+                validate_fns.append(fn)
 
     def _create_targzip(self, outfile: str, basepath: str, args: argparse.Namespace,
                         make_paths_relative: bool=False) -> None:
@@ -51,26 +74,18 @@ class TarGzPacker(BasePacker):
         tf.close()
         f.close()
 
-    def _build_tar(self, args: argparse.Namespace) -> None:
-        if args.collect_static:
-            self._collect_static()
-
-            if os.path.exists(args.static_root):
-                print_info("creating static tarball of %s in %s" % (highlight(args.static_root),
-                                                                    highlight(args.static_outfile),))
-                self._create_targzip(args.static_outfile, args.static_root, args.static_relative)
-            else:
-                raise ErrorMessage("%s should now exist, but it doesn't" % highlight(args.static_root))
-
-            if args.remove_static:
-                print_info("removing static artifacts in %s" % highlight(args.static_root))
-                shutil.rmtree(args.static_root)
-
-        print_info("Creating bundle tarball of %s in %s" % (highlight(args.build_path), highlight(args.outfile),))
-        self._create_targzip(args.outfile, args.build_path, args.bundle_relative)
-
     def pack(self, args: argparse.Namespace) -> None:
-        pass
+        for spec in args.targz:
+            if ":" in spec:
+                ext, path = spec.split(":", 1)
+                fn = "%s_%s-%s.tar.gz" % (args.targz_basename, ext,
+                                          str(the_context.out_version.version))
+            else:
+                path = spec
+                fn = "%s-%s.tar.gz" % (args.targz_basename, str(the_context.out_version.version))
+
+            print_info("Creating bundle tarball of %s in %s" % (highlight(path), highlight(fn)))
+            self._create_targzip(fn, path, args.targz_relative)
 
 
 packer_class = TarGzPacker
