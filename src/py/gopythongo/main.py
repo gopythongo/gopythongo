@@ -7,6 +7,7 @@ import sys
 import os
 
 from configargparse import ArgParser as ArgumentParser
+from gopythongo.utils.buildcontext import the_context
 from types import FrameType
 from typing import List, Any, Iterable
 
@@ -16,6 +17,8 @@ from gopythongo import initializers, builders, versioners, assemblers, packers, 
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage
 
 tempfiles = []  # type: List[str]
+default_config_files = [".gopythongo/config"]  # type: str
+args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
 
 class DebugConfigAction(argparse.Action):
@@ -47,9 +50,9 @@ def get_parser() -> ArgumentParser:
                                         "than one place, then command-line values override config file values which "
                                         "override defaults. More information at http://gopythongo.com/.",
                             prog="gopythongo.main",
-                            args_for_setting_config_path=["-c", "--config"],
+                            args_for_setting_config_path=args_for_setting_config_path,
                             config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
-                            default_config_files=[".gopythongo/config"])
+                            default_config_files=default_config_files)
 
     for subargs in [initializers.add_args, builders.add_args, versioners.add_args, assemblers.add_args,
                     packers.add_args, stores.add_args]:
@@ -164,6 +167,24 @@ def _cleanup_tempfiles() -> None:
                 os.unlink(f)
 
 
+def _find_default_mounts() -> List[str]:
+    basepath = os.getcwd()
+    miniparser = argparse.ArgumentParser()
+    miniparser.add_argument(*args_for_setting_config_path, dest="config", action="append",
+                            default=[])
+    args, _ = miniparser.parse_known_args()
+
+    if not args.config:
+        args.config = default_config_files
+
+    paths = set()
+    paths.add(basepath)
+    for cfg in args.config:
+        if os.path.isfile(cfg):
+            paths.add(os.path.abspath(os.path.dirname(cfg)))
+    return paths
+
+
 def route() -> None:
     atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
@@ -177,6 +198,9 @@ def route() -> None:
         init_color(args.no_color)
 
         validate_args(args)
+
+        for mount in _find_default_mounts():
+            the_context.mounts.add(mount)
 
         if args.eatmydata and os.path.exists(args.eatmydata_executable) and \
                 os.access(args.eatmydata_executable, os.X_OK):
