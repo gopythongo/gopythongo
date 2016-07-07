@@ -97,7 +97,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
         """
         raise NotImplementedError("Subclasses of BaseInitializer must override initializer_name")
 
-    def build_config(self) -> str:
+    def build_config(self) -> None:
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
     def print_help(self) -> None:
@@ -122,6 +122,4 @@ class InitializerAction(argparse.Action):
         if len(values) > 1:
             initializer.configfolder = values[1]  # override config folder if it's not the default
 
-        cf = initializer.create_file_in_config_folder("config")
-        cf.write(initializer.build_config())
-        cf.close()
+        initializer.build_config()
