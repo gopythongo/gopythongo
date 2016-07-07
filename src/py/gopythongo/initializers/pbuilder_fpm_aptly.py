@@ -68,8 +68,8 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
     def initializer_name(self) -> str:
         return "pbuilder_deb"
 
-    def build_config(self) -> str:
-        return ""
+    def build_config(self) -> None:
+        pass
 
     def print_help(self) -> None:
         print("Pbuilder and .deb quick start\n"

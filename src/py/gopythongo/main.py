@@ -9,7 +9,7 @@ import os
 from configargparse import ArgParser as ArgumentParser
 from gopythongo.utils.buildcontext import the_context
 from types import FrameType
-from typing import List, Any, Iterable
+from typing import List, Any, Iterable, Set
 
 import gopythongo
 
@@ -17,7 +17,7 @@ from gopythongo import initializers, builders, versioners, assemblers, packers, 
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage
 
 tempfiles = []  # type: List[str]
-default_config_files = [".gopythongo/config"]  # type: str
+default_config_files = [".gopythongo/config"]  # type: List[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
 
@@ -167,7 +167,7 @@ def _cleanup_tempfiles() -> None:
                 os.unlink(f)
 
 
-def _find_default_mounts() -> List[str]:
+def _find_default_mounts() -> Set[str]:
     basepath = os.getcwd()
     miniparser = argparse.ArgumentParser()
     miniparser.add_argument(*args_for_setting_config_path, dest="config", action="append",

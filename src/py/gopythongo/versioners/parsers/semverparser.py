@@ -61,7 +61,7 @@ class SemVerVersionParser(BaseVersionParser):
             return True, False
         return False, False
 
-    def can_execute_action(self, version: VersionContainer, action: str):
+    def can_execute_action(self, version: VersionContainer, action: str) -> bool:
         if action not in self.supported_actions:
             return False
         elif action == "bump-pre":

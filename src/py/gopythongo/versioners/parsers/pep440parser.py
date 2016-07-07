@@ -62,50 +62,50 @@ class PEP440VersionParser(BaseVersionParser):
             return True
 
     def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
-        version = copy(version.version)  # type: Version
+        ver = copy(version.version)  # type: Version
 
         cmdindex = ["bump-major", "bump-minor", "bump-patch"]
 
         if action == "bump-epoch":
-            self._patch_version(version, epoch=version._version.epoch + 1)
+            self._patch_version(ver, epoch=ver._version.epoch + 1)
         elif action in cmdindex:
             ix = cmdindex.index(action)
-            if ix < len(version._version.release):
-                rel = list(version._version.release)
+            if ix < len(ver._version.release):
+                rel = list(ver._version.release)
                 rel[ix] += 1
-                self._patch_version(version, release=tuple(rel))
+                self._patch_version(ver, release=tuple(rel))
             else:
                 raise ErrorMessage("--version-action is %s, but the version string %s does not have a %s field." %
-                                   (highlight(action), highlight(str(version)), highlight(action[5:])))
+                                   (highlight(action), highlight(str(ver)), highlight(action[5:])))
         elif action == "bump-pre":
-            if version._version.pre and isinstance(version._version.pre[1], int):
-                self._patch_version(version, pre=(version._version.pre[0], version._version.pre[1] + 1))
+            if ver._version.pre and isinstance(ver._version.pre[1], int):
+                self._patch_version(ver, pre=(ver._version.pre[0], ver._version.pre[1] + 1))
             else:
-                if version._version.post or version._version.dev:
+                if ver._version.post or ver._version.dev:
                     raise ErrorMessage("--version-action is %s, but the version string %s already has a dev or post "
-                                       "field." % (highlight(action), highlight(str(version))))
+                                       "field." % (highlight(action), highlight(str(ver))))
                 else:
-                    self._patch_version(version, pre=("a", 1))
+                    self._patch_version(ver, pre=("a", 1))
         elif action == "bump-dev":
-            if version._version.dev and isinstance(version._version.dev[1], int):
-                self._patch_version(version, dev=(version._version.dev[0], version._version.dev[1] + 1))
+            if ver._version.dev and isinstance(ver._version.dev[1], int):
+                self._patch_version(ver, dev=(ver._version.dev[0], ver._version.dev[1] + 1))
             else:
-                if version._version.pre or version._version.post:
+                if ver._version.pre or ver._version.post:
                     raise ErrorMessage("--version-action is %s, but the version string %s already has a pre or post "
-                                       "field." % (highlight(action), highlight(str(version))))
+                                       "field." % (highlight(action), highlight(str(ver))))
                 else:
-                    self._patch_version(version, dev=("dev", 1))
+                    self._patch_version(ver, dev=("dev", 1))
         elif action == "bump-post":
-            if version._version.post and isinstance(version._version.post[1], int):
-                self._patch_version(version, post=(version._version.post[0], version._version.post[1] + 1))
+            if ver._version.post and isinstance(ver._version.post[1], int):
+                self._patch_version(ver, post=(ver._version.post[0], ver._version.post[1] + 1))
             else:
-                if version._version.pre or version._version.dev:
+                if ver._version.pre or ver._version.dev:
                     raise ErrorMessage("--version-action is %s, but the version string %s already has a dev or pre "
-                                       "field." % (highlight(action), highlight(str(version))))
+                                       "field." % (highlight(action), highlight(str(ver))))
                 else:
-                    self._patch_version(version, post=("post", 1))
+                    self._patch_version(ver, post=("post", 1))
 
-        return VersionContainer(version, self.versionparser_name)
+        return VersionContainer(ver, self.versionparser_name)
 
     def serialize(self, version: VersionContainer) -> str:
         v = version.version  # type: Version

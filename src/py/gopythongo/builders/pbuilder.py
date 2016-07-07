@@ -127,7 +127,7 @@ class PbuilderBuilder(BaseBuilder):
                 mounts += " "
             mounts += " ".join(the_context.mounts)
 
-        build_args = []
+        build_args = []  # type: List[str]
         build_args += shlex.split(" ".join(flatten(args.pbuilder_opts)))
         build_args += shlex.split(" ".join(flatten(args.pbuilder_execute_opts)))
         if mounts:
@@ -138,7 +138,7 @@ class PbuilderBuilder(BaseBuilder):
 
         for ix, runspec in enumerate(args.pbuilder_run_after_create):
             print_info("Running post-creation commands for build environment %s of %s" %
-                       (highlight(ix + 1), highlight(str(len(args.pbuilder_run_after_create)))))
+                       (highlight(str(ix + 1)), highlight(str(len(args.pbuilder_run_after_create)))))
             if os.path.isfile(os.path.abspath(runspec)):
                 runspec = os.path.abspath(runspec)
             post_create_cmdline = [args.pbuilder_executable, "--execute"] + build_args + \

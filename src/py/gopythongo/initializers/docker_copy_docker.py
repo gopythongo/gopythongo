@@ -15,8 +15,8 @@ class DockerCopyDockerInitializer(BaseInitializer):
     def initializer_name(self) -> str:
         return "docker"
 
-    def build_config(self) -> str:
-        return ""
+    def build_config(self) -> None:
+        pass
 
     def print_help(self) -> None:
         print("Docker quick start\n"
