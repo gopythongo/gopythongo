@@ -30,7 +30,7 @@ class FPMPacker(BasePacker):
         return json.loads(dict_str)
 
     def _parse_fpm_output(self, fpm_output: str) -> Dict[str, str]:
-        # find the Ruby dict
+        # find the Ruby hash and crudely convert it into a Python one
         try:
             dic = self._convert_hash_to_dict(fpm_output[fpm_output.index("{"):fpm_output.index("}") + 1])
         except json.JSONDecodeError as e:
