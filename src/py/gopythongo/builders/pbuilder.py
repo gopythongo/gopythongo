@@ -153,8 +153,7 @@ class PbuilderBuilder(BaseBuilder):
             print_debug("Without --login, GoPythonGo would run: %s" % " ".join(debug_cmdline))
         else:
             build_cmdline = [args.pbuilder_executable, "--execute"] + build_args
-            # TODO: add version serialization
-            build_cmdline += ["--"] + the_context.gopythongo_cmd + ["--inner"] + sys.argv[1:]
+            build_cmdline += ["--"] + the_context.get_gopythongo_inner_commandline() + sys.argv[1:]
 
         run_process(*build_cmdline, interactive=args.pbuilder_debug_login)
 
