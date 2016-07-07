@@ -77,9 +77,9 @@ def validate_args(args: argparse.Namespace) -> None:
         if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
             raise ErrorMessage("Cannot run setup.py in %s, because it does not exist" % highlight(path))
 
-    if args.assembler:
-        if args.assembler in assemblers.keys():
-            assemblers[args.assembler].validate_args(args)
+    for assembler in args.assemblers:
+        if assembler in assemblers.keys():
+            assemblers[assembler].validate_args(args)
 
 
 def assemble(args: argparse.Namespace) -> None:

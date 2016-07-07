@@ -64,7 +64,7 @@ def get_parser() -> ArgumentParser:
 
     # right now we _always_ run the virtualenv assembler (argparse will always *append* to the default list)
     # because gopythongo does not support non-python ecosystems.
-    gr_plan.add_argument("--assembler", dest="assembler",
+    gr_plan.add_argument("--assembler", dest="assemblers",
                          choices=assemblers.assemblers.keys(), action="append", default=["virtualenv"],
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
                               "compile, pull all necessary source code and libraries")
