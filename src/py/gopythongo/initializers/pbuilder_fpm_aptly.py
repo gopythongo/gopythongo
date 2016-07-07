@@ -7,6 +7,59 @@ from gopythongo.initializers import BaseInitializer
 from gopythongo.utils import highlight
 
 
+configtpl = """
+builder=pbuilder
+distribution=jessie
+
+# if you use your own package mirror, you MUST add the Debian release keys to
+# /etc/apt/trusted.gpg first, otherwise debootstrap will be unable to
+# authenticate the packages
+#   gpg --no-default-keyring --keyring /etc/apt/trusted.gpg --import \
+#   /usr/share/keyrings/debian-archive-keyring.gpg
+#
+# The following MUST be on one line:
+# pbuilder-create-opts=[--keyring /etc/apt/trusted.gpg, --debootstrapopts --keyring=/etc/apt/trusted.gpg, --mirror http://fileserver.maurusnet.test/debian]
+run-after-create=[.gopythongo/install_fpm.sh]
+pbuilder-debug-login
+
+packer=fpm
+store=aptly
+
+versioner=pymodule
+pymodule-read=gopythongo.version
+
+version-parser=pep440
+version-action=none
+
+use-fpm=/usr/local/bin/fpm
+run-fpm=fpm_opts
+copy-out=/home/vagrant/test/build
+
+eatmydata
+eatmydata-path=/usr/bin/eatmydata
+"""
+
+installfpm = """
+#!/bin/bash
+
+# do nothing if fpm already exists
+test -e /usr/local/bin/fpm && exit 0
+
+EATMYDATA=""
+if test -e /usr/bin/eatmydata; then
+    EATMYDATA="/usr/bin/eatmydata"
+fi
+
+# make sure we have gem
+if ! test -e /usr/bin/gem; then
+    $EATMYDATA apt-get update
+    $EATMYDATA apt-get --no-install-recommends -y install ruby ruby-dev
+fi
+
+$EATMYDATA gem install fpm
+"""
+
+
 class PbuilderFpmAptlyInitializer(BaseInitializer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
