@@ -21,13 +21,11 @@ _requirements = [
     'colorama==0.3.7',
     'semantic_version==2.5.0',
     'packaging==16.6',
+    'typing==3.5.2.2',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
     _requirements.append('backports.shutil_get_terminal_size==1.0.0')
-
-if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-    _requirements.append('typing==3.5.2.2')
 
 setup(
     name='gopythongo',
