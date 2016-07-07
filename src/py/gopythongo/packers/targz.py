@@ -8,7 +8,7 @@ from typing import Any
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, highlight, ErrorMessage
-from gopythongo.utils.buildcontext import the_context
+from gopythongo.utils.buildcontext import the_context, PackerArtifact
 
 
 class TarGzPacker(BasePacker):
@@ -84,8 +84,18 @@ class TarGzPacker(BasePacker):
                 path = spec
                 fn = "%s-%s.tar.gz" % (args.targz_basename, str(the_context.out_version.version))
 
+            # TODO: find the full path for the resulting file
+
             print_info("Creating bundle tarball of %s in %s" % (highlight(path), highlight(fn)))
             self._create_targzip(fn, path, args.targz_relative)
+
+            the_context.packer_artifacts.add(PackerArtifact(
+                "targz",
+                fn,
+                {"package_name": args.targz_basename},
+                self,
+                self.packer_name
+            ))
 
 
 packer_class = TarGzPacker

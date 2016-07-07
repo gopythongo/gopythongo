@@ -24,9 +24,9 @@ class FPMPacker(BasePacker):
 
     @staticmethod
     def _convert_hash_to_dict(ruby_hash: str) -> Dict[str, str]:
-        dict_str = ruby_hash.replace(":",'"')    # Remove the ruby object key prefix
-        dict_str = dict_str.replace("=>",'" : ') # swap the k => v notation, and close any unshut quotes
-        dict_str = dict_str.replace('""','"')    # strip back any double quotes we created to sinlges
+        dict_str = ruby_hash.replace(":",'"')     # Remove the ruby object key prefix
+        dict_str = dict_str.replace("=>",'" : ')  # swap the k => v notation, and close any unshut quotes
+        dict_str = dict_str.replace('""','"')     # strip back any double quotes we created to sinlges
         return json.loads(dict_str)
 
     def _parse_fpm_output(self, fpm_output: str) -> Dict[str, str]:
