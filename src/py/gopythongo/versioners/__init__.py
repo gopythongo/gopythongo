@@ -141,10 +141,15 @@ def version(args: argparse.Namespace) -> None:
         version_str = reader.read(args)
         print_info("Read version using versioner %s: %s" % (highlight(reader_name), highlight(version_str)))
 
+    # if we're inside the build environment, read the versions from the command-line, otherwise parse the
+    # version string read by the Versioner and then bump the version as specified by the user
     from gopythongo.utils.buildcontext import the_context
     if args.is_inner:
         the_context.read_version = version_parsers[args.version_parser].deserialize(args.inner_vin)
         the_context.out_version = version_parsers[args.version_parser].deserialize(args.inner_vout)
     else:
         the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
-        # TODO: execute action
+        if args.version_action != "none":
+            the_context.out_version = version_parsers[args.version_parser].execute_action(
+                the_context.read_version, args.version_action
+            )
