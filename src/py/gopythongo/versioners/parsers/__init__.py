@@ -195,6 +195,6 @@ class BaseVersionParser(CommandLinePlugin):
         :type version: gopythongo.versioners.parsers.VersionContainer
         :param action: The action to be taken as set up though command-line parameters or otherwise
         :type action: str
-        :returns: A ``VersionContainer`` instance with the updated version (can be the same instance)
+        :returns: A ``VersionContainer`` instance with the updated version (**must** not be the same instance)
         """
         raise NotImplementedError("This Version Parser does not support executing actions")

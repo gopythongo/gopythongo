@@ -126,6 +126,12 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("%s is not a valid Version Parser for parsing version numbers. Valid options are %s" %
                            (highlight(args.version_parser), ", ".join(version_parsers.keys())))
 
+    if args.version_action != "none" and args.version_action not in \
+            version_parsers[args.version_parser].supported_actions:
+        raise ErrorMessage("Version Parser %s does not support action '%s'. Valid choices are: %s." %
+                           (highlight(args.version_parser), args.version_action,
+                            ", ".join(version_parsers[args.version_parser].supported_actions)))
+
 
 def version(args: argparse.Namespace) -> None:
     reader_name = args.input_versioner

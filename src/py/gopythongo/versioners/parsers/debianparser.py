@@ -37,6 +37,13 @@ class DebianVersionParser(BaseVersionParser):
 
         return VersionContainer(dv, self.versionparser_name)
 
+    def can_execute_action(self, version: VersionContainer, action: str) -> bool:
+        if action in self.supported_actions:
+            return True
+
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
+        ver = DebianVersion.fromstring(version.version.tostring())
+
     def serialize(self, version: VersionContainer) -> str:
         if version.parsed_by == self.versionparser_name:
             v = version.version  # type: DebianVersion
@@ -56,7 +63,7 @@ class DebianVersionParser(BaseVersionParser):
         elif parserid == "pep440":
             return True, True  # all of pep440 can be encoded in the Debian standard
         elif parserid == "regex":
-            return True, True  # regex really uses semver under the hood
+            return True, True  # regex really uses semver under the hood, so it's the same
         return False, False
 
     def convert_from(self, version: VersionContainer) -> VersionContainer:

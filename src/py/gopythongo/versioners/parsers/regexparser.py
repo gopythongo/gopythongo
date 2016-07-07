@@ -4,12 +4,12 @@ import re
 
 from typing import Any, Tuple, List
 
-from gopythongo.versioners.parsers.semverparser import SemVerVersion
-from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers.semverparser import SemVerVersion, SemVerVersionParser
+from gopythongo.versioners.parsers import VersionContainer
 from gopythongo.utils import highlight, ErrorMessage
 
 
-class RegexVersionParser(BaseVersionParser):
+class RegexVersionParser(SemVerVersionParser):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -25,10 +25,6 @@ class RegexVersionParser(BaseVersionParser):
     @property
     def versionparser_name(self) -> str:
         return u"regex"
-
-    @property
-    def supported_actions(self) -> List[str]:
-        return ["bump-major", "bump-minor", "bump-patch", "bump-prerelease"]
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if args.version_parser == self.versionparser_name:
@@ -72,18 +68,6 @@ class RegexVersionParser(BaseVersionParser):
             semver = "%s+%s" % match.group("metadata")
 
         return VersionContainer(SemVerVersion.parse(semver), self.versionparser_name)
-
-    def can_convert_from(self, parserid: str) -> Tuple[bool, bool]:
-        if parserid in [self.versionparser_name, "semver"]:
-            return True, True
-        return False, False
-
-    def serialize(self, version: VersionContainer) -> str:
-        v = version.version  # type: SemVerVersion
-        return v.tostring()
-
-    def deserialize(self, serialized: str) -> VersionContainer:
-        return VersionContainer(SemVerVersion.parse(serialized), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"

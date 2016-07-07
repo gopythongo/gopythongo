@@ -1,6 +1,8 @@
 # -* encoding: utf-8 *-
 import argparse
+import re
 
+from copy import copy
 from typing import Any, Tuple, List
 
 from semantic_version import Version as SemVerBase
@@ -28,7 +30,7 @@ class SemVerVersionParser(BaseVersionParser):
 
     @property
     def supported_actions(self) -> List[str]:
-        return ["bump-major", "bump-minor", "bump-patch", "bump-prerelease"]
+        return ["bump-major", "bump-minor", "bump-patch", "bump-pre"]
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_semver = parser.add_argument_group("SemVer Version Parser options")
@@ -41,7 +43,10 @@ class SemVerVersionParser(BaseVersionParser):
 
     def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:
-            sv = SemVerVersion.parse(version_str, partial=args.semver_partial, coerce=args.semver_coerce)
+            if args.semver_coerce:
+                sv = SemVerVersion.coerce(version_str, partial=args.semver_partial)
+            else:
+                sv = SemVerVersion(version_str, partial=args.semver_partial)
         except ValueError as e:
             raise ErrorMessage("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e))) from e
 
@@ -55,6 +60,47 @@ class SemVerVersionParser(BaseVersionParser):
         elif parserid == "pep440":
             return True, False
         return False, False
+
+    def can_execute_action(self, version: VersionContainer, action: str):
+        if action not in self.supported_actions:
+            return False
+        elif action == "bump-pre":
+            for part in version.version.prerelease:
+                m = re.match("(.*?)([0-9]*)(.*)", part)
+                if m.group(2):
+                    return True
+            return False
+        return True
+
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
+        ver = version.version  # type: SemVerVersion
+        if action == "bump-major":
+            ver = ver.next_major()
+        elif action == "bump-minor":
+            ver = ver.next_minor()
+        elif action == "bump-patch":
+            ver = ver.next_patch()
+        elif action == "bump-pre":
+            # find something to increment
+            newpre = []
+            found = False
+            for part in ver.prerelease:
+                m = re.match("(.*?)([0-9]*)(.*)", part)
+                if m.group(2):
+                    # increment the first integer we find
+                    newpre.append("%s%s%s" % (m.group(1), str(int(m.group(2)) + 1), m.group(3)))
+                    found = True
+                else:
+                    newpre.append(part)
+
+            if not found:
+                raise ErrorMessage("--version-action was %s, but the prerelease part of %s does not contain an integer "
+                                   "part to increment" % (highlight(action), highlight(str(ver))))
+
+            # create a copy of the original object
+            ver = SemVerVersion(str(ver))
+            ver.prerelease = tuple(newpre)
+        return VersionContainer(ver, self.versionparser_name)
 
     @staticmethod
     def semver_from_pep440(pep440: Pep440Version) -> str:

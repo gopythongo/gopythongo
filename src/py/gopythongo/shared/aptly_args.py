@@ -19,7 +19,7 @@ def add_shared_args(parser: argparse.ArgumentParser) -> None:
                                      help="The full path to the aptly executable to use")
         gr_aptly_shared.add_argument("--aptly-config", dest="aptly_config", default=None,
                                      help="Path to the aptly config file to use")
-        gr_aptly_shared.add_argument("--repo", dest="repo", default=None,
+        gr_aptly_shared.add_argument("--repo", dest="aptly_repo", default=None,
                                      help="Name of the aptly repository to place the package in. (This must be "
                                           "accessible from the builder environment to be useful.)")
 

@@ -1,11 +1,12 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, List
+from copy import copy
+from typing import Any, List, Tuple, Union
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
-from packaging.version import parse, InvalidVersion, Version
+from packaging.version import parse, InvalidVersion, Version, _Version
 
 
 class PEP440VersionParser(BaseVersionParser):
@@ -18,7 +19,8 @@ class PEP440VersionParser(BaseVersionParser):
 
     @property
     def supported_actions(self) -> List[str]:
-        return ["bump-epoch", "bump-minor", "bump-major", "bump-patch", "bump-revision"]
+        return ["bump-epoch", "bump-major", "bump-minor", "bump-patch",
+                "bump-pre", "bump-dev", "bump-post"]
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         pass
@@ -32,6 +34,76 @@ class PEP440VersionParser(BaseVersionParser):
         except InvalidVersion as e:
             raise ErrorMessage("%s is not a valid PEP-440 version string: %s" %
                                (highlight(version_str), str(e))) from e
+
+        return VersionContainer(version, self.versionparser_name)
+
+    # mad hackz ahead
+    def _patch_version(self, version: Version, *, epoch: int=None, release: Tuple[int, ...]=None,
+                       pre: Tuple[str, int]=None, dev: Tuple[str, int]=None, post: Tuple[str, int]=None,
+                       local: Tuple[Union[str, int], ...]=None) -> None:
+        version._version = _Version(
+            epoch=epoch if epoch else version._version.epoch,
+            release=release if release else version._version.release,
+            pre=pre if pre else version._version.pre,
+            dev=dev if dev else version._version.dev,
+            post=post if post else version._version.post,
+            local=local if local else version._version.local,
+        )
+
+    def can_execute_action(self, version: VersionContainer, action: str) -> bool:
+        v = version.version  # type: Version
+        if action == "bump-pre" and v._version.post or v._version.dev:
+            return False
+        elif action == "bump-post" and v._version.dev or v._version.pre:
+            return False
+        elif action == "bump-dev" and v._version.pre or v._version.post:
+            return False
+        else:
+            return True
+
+    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
+        version = copy(version.version)  # type: Version
+
+        cmdindex = ["bump-major", "bump-minor", "bump-patch"]
+
+        if action == "bump-epoch":
+            self._patch_version(version, epoch=version._version.epoch + 1)
+        elif action in cmdindex:
+            ix = cmdindex.index(action)
+            if ix < len(version._version.release):
+                rel = list(version._version.release)
+                rel[ix] += 1
+                self._patch_version(version, release=tuple(rel))
+            else:
+                raise ErrorMessage("--version-action is %s, but the version string %s does not have a %s field." %
+                                   (highlight(action), highlight(str(version)), highlight(action[5:])))
+        elif action == "bump-pre":
+            if version._version.pre and isinstance(version._version.pre[1], int):
+                self._patch_version(version, pre=(version._version.pre[0], version._version.pre[1] + 1))
+            else:
+                if version._version.post or version._version.dev:
+                    raise ErrorMessage("--version-action is %s, but the version string %s already has a dev or post "
+                                       "field." % (highlight(action), highlight(str(version))))
+                else:
+                    self._patch_version(version, pre=("a", 1))
+        elif action == "bump-dev":
+            if version._version.dev and isinstance(version._version.dev[1], int):
+                self._patch_version(version, dev=(version._version.dev[0], version._version.dev[1] + 1))
+            else:
+                if version._version.pre or version._version.post:
+                    raise ErrorMessage("--version-action is %s, but the version string %s already has a pre or post "
+                                       "field." % (highlight(action), highlight(str(version))))
+                else:
+                    self._patch_version(version, dev=("dev", 1))
+        elif action == "bump-post":
+            if version._version.post and isinstance(version._version.post[1], int):
+                self._patch_version(version, post=(version._version.post[0], version._version.post[1] + 1))
+            else:
+                if version._version.pre or version._version.dev:
+                    raise ErrorMessage("--version-action is %s, but the version string %s already has a dev or pre "
+                                       "field." % (highlight(action), highlight(str(version))))
+                else:
+                    self._patch_version(version, post=("post", 1))
 
         return VersionContainer(version, self.versionparser_name)
 
