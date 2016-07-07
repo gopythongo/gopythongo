@@ -3,7 +3,7 @@ import argparse
 
 from typing import Any
 
-from gopythongo.utils import highlight
+from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners import BaseVersioner
 
 
@@ -17,11 +17,12 @@ class StaticVersioner(BaseVersioner):
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gp_static = parser.add_argument_group("Static Versioner options")
-        gp_static.add_argument("--static-version", dest="static_version", required=True,
+        gp_static.add_argument("--static-version", dest="static_version", default=None,
                                help="The static version string to use.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
-        pass
+        if not args.static_version:
+            raise ErrorMessage("Static versioner requires %s" % highlight("--static-version"))
 
     @property
     def can_read(self) -> bool:

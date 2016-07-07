@@ -21,7 +21,7 @@ class TarGzPacker(BasePacker):
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gp_tgz = parser.add_argument_group("Tar/Gzip Packer options")
-        gp_tgz.add_argument("--targz-basename", dest="targz_basename", required=True,
+        gp_tgz.add_argument("--targz-basename", dest="targz_basename", default=None,
                             help="Each .tar.gz created by each instance of --targz in the parameters will be named "
                                  "[basename]_[ext]-[version].tar.gz where [ext] is specified in --targz and [version] "
                                  "is retrieved from the selected Versioner")
@@ -34,6 +34,9 @@ class TarGzPacker(BasePacker):
                             help="Store relative paths in the .tar.gz archives.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
+        if not args.targz_basename:
+            raise ErrorMessage("The Tar/Gzip Packer requires an archive base name (%s)" % highlight("--targz-basename"))
+
         validate_fns = []  # type: List[str]
         for spec in args.targz:
             if ":" in spec:
