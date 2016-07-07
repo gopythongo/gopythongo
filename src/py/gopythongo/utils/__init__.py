@@ -72,26 +72,37 @@ def flatten(x: Union[Iterable[str], str]) -> List[str]:
     return result
 
 
-def run_process(*args: str, raise_nonzero_exitcode: bool=False) -> str:
+def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: bool=False) -> str:
     actual_args = None  # type: List[str]
     if prepend_exec:
         actual_args = prepend_exec + list(args)
 
     print_debug("Running %s" % str(actual_args))
-    if not debug_donotexecute:
-
+    if debug_donotexecute:
+        return ""
+    else:
         exitcode = 0
-        try:
-            output = subprocess.check_output(actual_args, stderr=subprocess.STDOUT, universal_newlines=True)
-        except subprocess.CalledProcessError as e:
-            if raise_nonzero_exitcode:
+
+        if interactive:
+            try:
+                subprocess.call(actual_args)
+            except subprocess.CalledProcessError as e:
                 raise
-            exitcode = e.returncode
+            return ""
+        else:
+            try:
+                output = subprocess.check_output(actual_args, stderr=subprocess.STDOUT, universal_newlines=True)
+            except subprocess.CalledProcessError as e:
+                if raise_nonzero_exitcode:
+                    raise
+                exitcode = e.returncode
+                output = e.output
 
-        if exitcode != 0:
-            raise ErrorMessage("%s exited with non-zero exit code %s" % (str(args), exitcode), exitcode=exitcode)
+            if exitcode != 0:
+                raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %
+                                   (str(args), exitcode, output), exitcode=exitcode)
 
-        return output.strip().decode("utf-8")
+            return output.strip()
 
 
 def print_error(message: str) -> None:
