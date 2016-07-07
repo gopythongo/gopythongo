@@ -77,6 +77,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     global versioners, version_parsers
 
     collected_actions = set()
+    collected_actions.add("none")
     for vp in version_parsers.values():
         for action in vp.supported_actions:
             collected_actions.add(action)
@@ -86,7 +87,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                             action=versioner_help.VersionerHelpAction)
     gp_version.add_argument("--help-versionparser", choices=version_parsers.keys(), default=None,
                             action=parser_help.VersionParserHelpAction)
-    gp_version.add_argument("--input-versioner", dest="input_versioner", default=None,
+    gp_version.add_argument("--versioner", dest="input_versioner", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
                                  "details. Most versioners take specific additional command-line parameters")
     gp_version.add_argument("--version-parser", dest="version_parser", choices=version_parsers.keys(), default="semver",
