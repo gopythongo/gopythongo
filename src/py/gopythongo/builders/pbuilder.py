@@ -43,6 +43,10 @@ class PbuilderBuilder(BaseBuilder):
                                       "--execute --save-after-exec' after a build environment is created. This allows "
                                       "you to perform additional necessary build configuration, which shouldn't be "
                                       "repeated for each subsequent build (e.g. 'gem install fpm')")
+        gr_pbuilder.add_argument("--pbuilder-reprovision", dest="pbuilder_reprovision", action="store_true",
+                                 default=False,
+                                 help="Run all --run-after-create commands regardless of whether the pbuilder base "
+                                      "environment already exists.")
         gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append", default=[],
                                  help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
                                       "libs for databases so that Python C extensions compile correctly")
@@ -118,42 +122,34 @@ class PbuilderBuilder(BaseBuilder):
 
             run_process(*create_cmdline)
 
-        mounts = ""
-        if args.mounts:
-            mounts += " ".join(args.mounts)
-
-        if the_context.mounts:
-            if mounts:
-                mounts += " "
-            mounts += " ".join(the_context.mounts)
-
         build_args = []  # type: List[str]
         build_args += shlex.split(" ".join(flatten(args.pbuilder_opts)))
         build_args += shlex.split(" ".join(flatten(args.pbuilder_execute_opts)))
-        if mounts:
-            build_args += ["--bindmounts", mounts]
+
+        for mount in args.mounts + list(the_context.mounts):
+            build_args += ["--bindmounts", mount]
 
         if args.basetgz:
             build_args += ["--basetgz", args.basetgz]
 
-        for ix, runspec in enumerate(args.pbuilder_run_after_create):
-            print_info("Running post-creation commands for build environment %s of %s" %
-                       (highlight(str(ix + 1)), highlight(str(len(args.pbuilder_run_after_create)))))
-            if os.path.isfile(os.path.abspath(runspec)):
-                runspec = os.path.abspath(runspec)
-            post_create_cmdline = [args.pbuilder_executable, "--execute"] + build_args + \
-                                  ["--save-after-exec", "--", runspec]
-            run_process(*post_create_cmdline)
+        if do_create or args.pbuilder_reprovision:
+            for ix, runspec in enumerate(args.pbuilder_run_after_create):
+                print_info("Running post-creation commands for build environment %s of %s" %
+                           (highlight(str(ix + 1)), highlight(str(len(args.pbuilder_run_after_create)))))
+                if os.path.isfile(os.path.abspath(runspec)):
+                    runspec = os.path.abspath(runspec)
+                post_create_cmdline = [args.pbuilder_executable, "--execute"] + build_args + \
+                                      ["--save-after-exec", "--", runspec]
+                run_process(*post_create_cmdline)
 
         if args.pbuilder_debug_login:
-            build_cmdline = [args.pbuilder_executable, "--login"]
-            debug_cmdline = build_cmdline + build_args + ["--"] + the_context.gopythongo_cmd + ["--inner"] + \
-                            sys.argv[1:]
+            build_cmdline = [args.pbuilder_executable, "--login"] + build_args
+            debug_cmdline = build_cmdline + ["--"] + the_context.get_gopythongo_inner_commandline()
             debug_cmdline = [x if x != "--login" else "--execute" for x in debug_cmdline]
-            print_debug("Without --login, GoPythonGo would run: %s" % " ".join(debug_cmdline))
+            print_debug("Without --pbuilder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
         else:
             build_cmdline = [args.pbuilder_executable, "--execute"] + build_args
-            build_cmdline += ["--"] + the_context.get_gopythongo_inner_commandline() + sys.argv[1:]
+            build_cmdline += ["--"] + the_context.get_gopythongo_inner_commandline()
 
         run_process(*build_cmdline, interactive=args.pbuilder_debug_login)
 

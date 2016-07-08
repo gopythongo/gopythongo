@@ -24,7 +24,7 @@ class RegexVersionParser(SemVerVersionParser):
 
     @property
     def versionparser_name(self) -> str:
-        return u"regex"
+        return "regex"
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if args.version_parser == self.versionparser_name:

@@ -91,12 +91,14 @@ def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: boo
             return ""
         else:
             try:
-                output = subprocess.check_output(actual_args, stderr=subprocess.STDOUT, universal_newlines=True)
+                # it seems that mypy does not realize that universal_newlines guarantees a str return
+                output = cast(str, subprocess.check_output(actual_args,
+                              stderr=subprocess.STDOUT, universal_newlines=True))
             except subprocess.CalledProcessError as e:
                 if raise_nonzero_exitcode:
                     raise
                 exitcode = e.returncode
-                output = e.output
+                output = e.output.decode("utf-8")  # is this really bytes is universal_newlines=True?
 
             if exitcode != 0:
                 raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %

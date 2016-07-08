@@ -15,7 +15,7 @@ class DebianVersionParser(BaseVersionParser):
 
     @property
     def versionparser_name(self) -> str:
-        return u"debian"
+        return "debian"
 
     @property
     def supported_actions(self) -> List[str]:

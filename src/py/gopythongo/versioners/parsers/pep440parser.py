@@ -15,7 +15,7 @@ class PEP440VersionParser(BaseVersionParser):
 
     @property
     def versionparser_name(self) -> str:
-        return u"pep440"
+        return "pep440"
 
     @property
     def supported_actions(self) -> List[str]:

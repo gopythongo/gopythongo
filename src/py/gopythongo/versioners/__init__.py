@@ -18,17 +18,17 @@ def init_subsystem() -> None:
     from gopythongo.versioners.parsers import regexparser, semverparser, debianparser, pep440parser
 
     versioners = {
-        u"aptly": aptly.versioner_class(),
-        u"pymodule": pymodule.versioner_class(),
-        u"bumpversion": bumpversion.versioner_class(),
-        u"static": static.versioner_class(),
+        "aptly": aptly.versioner_class(),
+        "pymodule": pymodule.versioner_class(),
+        "bumpversion": bumpversion.versioner_class(),
+        "static": static.versioner_class(),
     }
 
     version_parsers = {
-        u"regex": regexparser.versionparser_class(),
-        u"semver": semverparser.versionparser_class(),
-        u"debian": debianparser.versionparser_class(),
-        u"pep440": pep440parser.versionparser_class(),
+        "regex": regexparser.versionparser_class(),
+        "semver": semverparser.versionparser_class(),
+        "debian": debianparser.versionparser_class(),
+        "pep440": pep440parser.versionparser_class(),
     }
 
     plugins.load_plugins("gopythongo.versioners", versioners, "versioner_class", BaseVersioner,
@@ -149,7 +149,9 @@ def version(args: argparse.Namespace) -> None:
         the_context.out_version = version_parsers[args.version_parser].deserialize(args.inner_vout)
     else:
         the_context.read_version = version_parsers[args.version_parser].parse(version_str, args)
-        if args.version_action != "none":
+        if args.version_action == "none":
+            the_context.out_version = the_context.read_version
+        else:
             the_context.out_version = version_parsers[args.version_parser].execute_action(
                 the_context.read_version, args.version_action
             )

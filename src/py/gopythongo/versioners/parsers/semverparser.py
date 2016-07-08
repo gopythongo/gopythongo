@@ -26,7 +26,7 @@ class SemVerVersionParser(BaseVersionParser):
 
     @property
     def versionparser_name(self) -> str:
-        return u"semver"
+        return "semver"
 
     @property
     def supported_actions(self) -> List[str]:

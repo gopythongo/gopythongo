@@ -14,7 +14,7 @@ from typing import List, Any, Iterable, Set
 import gopythongo
 
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
-from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage
+from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug
 
 tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
@@ -107,6 +107,7 @@ def get_parser() -> ArgumentParser:
     parser.add_argument("--inner-vin", dest="inner_vin", default=None, help=argparse.SUPPRESS)
     # serialized version as modified by the output Version Parser outside of the build environment
     parser.add_argument("--inner-vout", dest="inner_vout", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
 
     return parser
 
@@ -192,6 +193,19 @@ def route() -> None:
     for subinit in [initializers.init_subsystem, versioners.init_subsystem, builders.init_subsystem,
                     assemblers.init_subsystem, packers.init_subsystem, stores.init_subsystem]:
         subinit()
+
+    precheck = argparse.ArgumentParser()
+    precheck.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
+    preargs, _ = precheck.parse_known_args()
+
+    if preargs.cwd:
+        if not os.path.exists(preargs.cwd):
+            raise ErrorMessage("GoPythonGo passed the following base path into the build environment %s, but "
+                               "it seems that path doesn't exist now inside the build environment. This path "
+                               "should have been mounted inside the build environment and it should exist on "
+                               "the host. We can only give up." % highlight(preargs.cwd))
+        print_debug("Executing in %s" % preargs.cwd)
+        os.chdir(preargs.cwd)  # This should ensure all relative paths still work (for example to --config)
 
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
