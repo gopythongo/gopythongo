@@ -133,9 +133,15 @@ def validate_args(args: argparse.Namespace) -> None:
             print_warning("Make sure that eatmydata is available *inside* your build environment as well, if you want "
                           "to use it to speed up the build process inside the environment.")
 
-    for subvalidate in [initializers.validate_args, builders.validate_args, versioners.validate_args,
-                        assemblers.validate_args, packers.validate_args, stores.validate_args]:
-        subvalidate(args)
+    if args.is_inner:
+        # once we're in the build environment we don't want to block on features we don't need (like an missing aptly
+        # executable inside
+        assemblers.validate_args(args)
+        packers.validate_args(args)
+    else:
+        for subvalidate in [initializers.validate_args, builders.validate_args, versioners.validate_args,
+                            assemblers.validate_args, packers.validate_args, stores.validate_args]:
+            subvalidate(args)
 
 
 def print_help() -> None:
