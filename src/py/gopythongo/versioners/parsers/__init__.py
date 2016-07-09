@@ -1,9 +1,14 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Tuple, Any, Union, List
+from typing import Tuple, Any, List, Dict
 
-from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper
+from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper, ErrorMessage, highlight
+
+
+def get_version_parsers() -> Dict[str, 'BaseVersionParser']:
+    from gopythongo.versioners import get_version_parsers as gvp
+    return gvp()
 
 
 class UnknownParserName(Exception):
@@ -21,7 +26,7 @@ class VersionContainer(GoPythonGoEnableSuper):
         self.parsed_by = parsed_by  # type: str
 
     def convert_to(self, parsername: str) -> 'VersionContainer':
-        from gopythongo.versioners import version_parsers
+        version_parsers = get_version_parsers()
         if parsername not in version_parsers:
             raise UnknownParserName("Unknown parser name: %s" % parsername)
 
@@ -43,6 +48,32 @@ class VersionContainer(GoPythonGoEnableSuper):
             return version_parsers[parsername].convert_from(self)
 
         raise UnconvertableVersion("No known way to convert version data from %s to %s" % (self.parsed_by, parsername))
+
+    def todict(self) -> Dict[str, str]:
+        """
+        returns a string representation (json) of this VersionContainer
+        :param version: the version to serialize
+        :return: a lossless string representation of the version information
+        """
+        return {
+            "v": str(self.version),
+            "p": self.parsed_by,
+        }
+
+    @staticmethod
+    def fromdict(rep: Dict[str, str]) -> 'VersionContainer':
+        """
+        reads a serialized version string and puts it back into a VersionContainer
+        :param serialized: the serialized version string as created by ``serialize()``
+        :return: a VersionContainer instance containing the deserialized version object
+        """
+        version_parsers = get_version_parsers()
+        if rep["p"] not in version_parsers:
+            raise ErrorMessage("Tried to deserialize a version string that was created by a Version Parser which the "
+                               "running version of GoPythonGo does not support. Does the version inside the build "
+                               "environment differ from the outside version? The serialized string was: %s, the parser "
+                               "id is %s" % (highlight(str(rep)), highlight(rep["p"])))
+        return version_parsers[rep["p"]].deserialize(rep["v"])
 
     def __str__(self) -> str:
         return "VersionContainer(%s, %s)" % (str(self.version), self.parsed_by)
@@ -97,6 +128,15 @@ class BaseVersionParser(CommandLinePlugin):
         """
         raise NotImplementedError("Every Version Parser MUST implement parse()")
 
+    def deserialize(self, version_str: str) -> VersionContainer:
+        """
+        parses a version string back into a container, it should be assumed that ``version_str`` has been created by
+        the parser itself so unlike ``parse()`` this should not rely on command-line arguments.
+        :param version_str: the version string extracted from a previous container
+        :return: A VersionContainer containing ``version_str``
+        """
+        raise NotImplementedError("Every Version Parser MUST implement deserialize()")
+
     def can_convert_from(self, parserid: str) -> Tuple[bool, bool]:
         """
         Is called by GoPythonGo to query whether this Version Parser can read version strings from a certain format.
@@ -150,22 +190,6 @@ class BaseVersionParser(CommandLinePlugin):
         else:
             raise UnconvertableVersion("%s does not know how to convert into %s" %
                                        (self.versionparser_name, parserid))
-
-    def serialize(self, version: VersionContainer) -> str:
-        """
-        should return a string that can be deserialized by ``deserialize`` that represents the exact same version.
-        :param version: the version to serialize
-        :return: a lossless string representation of the version information
-        """
-        raise NotImplementedError("Every Version Parser must implement serialize()")
-
-    def deserialize(self, serialized: str) -> VersionContainer:
-        """
-        reads a serialized version string and puts it back into a VersionContainer
-        :param serialized: the serialized version string as created by ``serialize()``
-        :return: a VersionContainer instance containing the deserialized version object
-        """
-        raise NotImplementedError("Every Version Parser must implement deserialize()")
 
     @property
     def supported_actions(self) -> List[str]:

@@ -107,10 +107,6 @@ class PEP440VersionParser(BaseVersionParser):
 
         return VersionContainer(ver, self.versionparser_name)
 
-    def serialize(self, version: VersionContainer) -> str:
-        v = version.version  # type: Version
-        return str(v)
-
     def deserialize(self, serialized: str) -> VersionContainer:
         return VersionContainer(parse(serialized), self.versionparser_name)
 

@@ -5,7 +5,7 @@ import shlex
 
 import os
 
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Union
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage
@@ -41,7 +41,11 @@ class FPMPacker(BasePacker):
 
     @property
     def packer_name(self) -> str:
-        return u"fpm"
+        return "fpm"
+
+    @property
+    def provides(self) -> List[str]:
+        return ["deb", "rpm"]
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_fpm = parser.add_argument_group("FPM Packer options")
@@ -108,6 +112,21 @@ class FPMPacker(BasePacker):
 
         return self._read_fpm_opts_from_file(thefile, ctx)
 
+    def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
+        ctx = {
+            "basedir": args.build_path,
+            "buildctx": the_context,
+            "debian_version": "FUTURE"  # FPM requires a Debian version for .debs
+        }
+
+        ret = []  # type: List[str]
+        for ix, fpm_opts in enumerate(args.run_fpm):
+            processed_args = self._load_fpm_opts(fpm_opts, ctx)
+            parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
+            ret.append(parsed_args.package_name)
+
+        return ret if len(ret) > 0 else None
+
     def pack(self, args: argparse.Namespace) -> None:
         # TODO: don't use deb here, fpm works universally
         fpm_base = [
@@ -119,14 +138,28 @@ class FPMPacker(BasePacker):
         ctx = {
             "basedir": args.build_path,
             "buildctx": the_context,
-            "debian_version": the_context.out_version.convert_to("debian")  # FPM requires a Debian version for .debs
         }
 
         for ix, fpm_opts in enumerate(args.run_fpm):
             print_info("Running FPM run %s of %s" % (ix + 1, len(args.run_fpm)))
+
+            # hen meet egg. We need to process the fpm_opts template to read the package name to get the actual
+            # version string that we generated before and then rerender the fpm_opts template with the real version
+            # string
+            ctx["debian_version"] = "FUTURE"
+            preparsed_args, _ = self._get_fpm_opts_parser().parse_known_args(self._load_fpm_opts(fpm_opts, ctx))
+
+            if preparsed_args.package_name not in the_context.generated_versions:
+                raise ErrorMessage("FPM was instructed to create a package file in the build environment which was not "
+                                   "in the list of predicted packages outside of the build environment. This should "
+                                   "never happen (unexpected package name: %s, predicted names and versions %s)" %
+                                   (preparsed_args.package_name, str(the_context.generated_versions)))
+
+            ctx["debian_version"] = the_context.generated_versions[preparsed_args.package_name]
             processed_args = self._load_fpm_opts(fpm_opts, ctx)
             parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
 
+            # now let's go create the package
             if parsed_args.package_file:
                 package_file = parsed_args.package_file.strip()
                 if os.path.exists(package_file):

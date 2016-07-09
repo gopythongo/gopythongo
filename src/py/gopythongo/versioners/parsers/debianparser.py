@@ -43,14 +43,7 @@ class DebianVersionParser(BaseVersionParser):
 
     def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
         ver = DebianVersion.fromstring(version.version.tostring())
-
-    def serialize(self, version: VersionContainer) -> str:
-        if version.parsed_by == self.versionparser_name:
-            v = version.version  # type: DebianVersion
-            return v.tostring()
-        else:
-            raise ErrorMessage("DebianVersionParser can't serialize version information created by %s" %
-                               version.parsed_by)
+        # TODO: implement this
 
     def deserialize(self, serialized: str) -> VersionContainer:
         return VersionContainer(DebianVersion.fromstring(serialized), self.versionparser_name)

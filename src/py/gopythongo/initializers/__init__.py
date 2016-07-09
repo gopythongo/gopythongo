@@ -8,19 +8,23 @@ from typing import Dict, TextIO, Sequence, Any
 from gopythongo.initializers.help import InitializerHelpAction
 from gopythongo.utils import plugins, GoPythonGoEnableSuper, highlight, ErrorMessage
 
-initializers = {}  # type: Dict[str, 'BaseInitializer']
+_initializers = {}  # type: Dict[str, 'BaseInitializer']
+
+
+def get_initializers() -> Dict[str, 'BaseInitializer']:
+    return _initializers
 
 
 def init_subsystem() -> None:
-    global initializers
+    global _initializers
 
     from gopythongo.initializers import pbuilder_fpm_aptly, docker_copy_docker
-    initializers = {
+    _initializers = {
         "pbuilder_deb": pbuilder_fpm_aptly.initializer_class(".gopythongo"),
         "docker": docker_copy_docker.initializer_class(".gopythongo"),
     }
 
-    plugins.load_plugins("gopythongo.initializers", initializers, "initializer_class", BaseInitializer,
+    plugins.load_plugins("gopythongo.initializers", _initializers, "initializer_class", BaseInitializer,
                          "initializer_name", [".gopythongo"])
 
 
@@ -29,8 +33,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     gp_init.add_argument("--init", action=InitializerAction, nargs="+", metavar=("BUILDTYPE", "PATH"),
                          help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
                               "is the path of the configuration folder you want to initialize." %
-                              (", ".join(initializers.keys())))
-    gp_init.add_argument("--help-initializer", action=InitializerHelpAction, choices=initializers.keys(), default=None,
+                              (", ".join(_initializers.keys())))
+    gp_init.add_argument("--help-initializer", action=InitializerHelpAction, choices=_initializers.keys(), default=None,
                          help="Get help on individual quick start configuration generators or general help on "
                               "configuration generators.")
 
@@ -113,11 +117,11 @@ class InitializerAction(argparse.Action):
         if len(values) > 2:
             raise ErrorMessage("%s takes 1 or 2 arguments, not more." % highlight("--init"))
 
-        if values[0] not in initializers:
+        if values[0] not in _initializers:
             raise ErrorMessage("Unknown initializer \"%s\". Acceptable values are: %s" %
-                               (highlight(values[0]), highlight(", ".join(initializers.keys()))))
+                               (highlight(values[0]), highlight(", ".join(_initializers.keys()))))
 
-        initializer = initializers[values[0]]
+        initializer = _initializers[values[0]]
 
         if len(values) > 1:
             initializer.configfolder = values[1]  # override config folder if it's not the default

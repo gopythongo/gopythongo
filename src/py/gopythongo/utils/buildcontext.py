@@ -1,8 +1,12 @@
 # =* encoding: utf-8 *-
+import json
 import os
 import sys
 
+import tempfile
+
 from typing import Set, Any, Dict, List
+from typing.io import TextIO
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import GoPythonGoEnableSuper
@@ -41,20 +45,32 @@ class BuildContext(object):
     def __init__(self) -> None:
         self.packs = []  # type: List[str]
         self.read_version = None  # type: VersionContainer
-        self.out_version = None  # type: VersionContainer
+        self.generated_versions = None  # type: Dict[str, VersionContainer]
         self.gopythongo_path = None  # type: str
         self.gopythongo_cmd = None  # type: List[str]
         self.mounts = set()  # type: Set[str]
         self.packer_artifacts = set()  # type: Set[PackerArtifact]
 
-    @staticmethod
-    def _serialize_version(v: VersionContainer) -> str:
-        from gopythongo.versioners import version_parsers
-        return version_parsers[v.parsed_by].serialize(v)
+    def write(self, outf: TextIO) -> None:
+        json.dump({
+            "read_version": self.read_version.todict(),
+            "generated_versions": {key: value.todict() for key, value in self.generated_versions.items()}
+        }, outf)
+
+    def read(self, filename: str) -> None:
+        from gopythongo.versioners.parsers import VersionContainer
+        with open(filename, "rt", encoding="utf-8") as f:
+            state = json.load(f)
+        self.read_version = VersionContainer.fromdict(state["read_version"])
+        self.generated_versions = {key: VersionContainer.fromdict(value) for key, value in state["generated_versions"]}
 
     def get_gopythongo_inner_commandline(self) -> List[str]:
-        return self.gopythongo_cmd + ["--inner"] + ['--inner-vin="%s"' % self._serialize_version(self.read_version)] + \
-               ['--inner-vout="%s"' % self._serialize_version(self.out_version)] + ['--cwd="%s"' % os.getcwd()] + \
+        from gopythongo.main import tempmount
+        fd, ofname = tempfile.mkstemp(dir=tempmount, text=True)
+        with open(fd, mode="wt") as f:
+            self.write(f)
+
+        return self.gopythongo_cmd + ["--inner"] + ['--read-state="%s"' % ofname] + ['--cwd="%s"' % os.getcwd()] + \
                sys.argv[1:]
 
 

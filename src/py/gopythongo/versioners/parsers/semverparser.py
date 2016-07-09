@@ -140,10 +140,6 @@ class SemVerVersionParser(BaseVersionParser):
             return VersionContainer(SemVerVersion.parse(SemVerVersionParser.semver_from_pep440(version.version)),
                                     self.versionparser_name)
 
-    def serialize(self, version: VersionContainer) -> str:
-        v = version.version  # type: SemVerVersion
-        return v.tostring()
-
     def deserialize(self, serialized: str) -> VersionContainer:
         return VersionContainer(SemVerVersion.parse(serialized), self.versionparser_name)
 

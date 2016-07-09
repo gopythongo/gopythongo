@@ -7,18 +7,22 @@ from typing import Dict, Any
 from gopythongo.utils import run_process, create_script_path, print_info, highlight, plugins, \
     CommandLinePlugin, ErrorMessage
 
-assemblers = {}  # type: Dict[str, 'BaseAssembler']
+_assemblers = {}  # type: Dict[str, 'BaseAssembler']
+
+
+def get_assemblers() -> Dict[str, 'BaseAssembler']:
+    return _assemblers
 
 
 def init_subsystem() -> None:
-    global assemblers
+    global _assemblers
 
     from gopythongo.assemblers import django
-    assemblers = {
+    _assemblers = {
         u"django": django.assembler_class(),
     }
 
-    plugins.load_plugins("gopythongo.assemblers", assemblers, "assembler_class", BaseAssembler, "assembler_name")
+    plugins.load_plugins("gopythongo.assemblers", _assemblers, "assembler_class", BaseAssembler, "assembler_name")
 
 
 class BaseAssembler(CommandLinePlugin):
@@ -37,7 +41,7 @@ class BaseAssembler(CommandLinePlugin):
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    global assemblers
+    global _assemblers
 
     gr_pip = parser.add_argument_group("PIP Assembler options")
     gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
@@ -73,7 +77,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.9,<1.10\"")
 
-    for assembler in assemblers.values():
+    for assembler in _assemblers.values():
         assembler.add_args(parser)
 
 
@@ -85,12 +89,19 @@ def validate_args(args: argparse.Namespace) -> None:
         if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
             raise ErrorMessage("Cannot run setup.py in %s, because it does not exist" % highlight(path))
 
+    if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
+        raise ErrorMessage("virtualenv not found in path or not executable (%s).\n"
+                           "You can specify an alternative path with %s" %
+                           (args.virtualenv_binary, highlight("--use-virtualenv")))
+
     for assembler in args.assemblers:
-        if assembler in assemblers.keys():
-            assemblers[assembler].validate_args(args)
+        if assembler in _assemblers.keys():
+            _assemblers[assembler].validate_args(args)
 
 
 def assemble(args: argparse.Namespace) -> None:
+    # TODO: Other assemblers must assemble!
+
     pip_binary = create_script_path(args.build_path, "pip")
     run_pip = [pip_binary, "install"]
     if args.pip_opts:

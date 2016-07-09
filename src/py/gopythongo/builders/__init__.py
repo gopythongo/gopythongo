@@ -12,19 +12,23 @@ from gopythongo.utils import print_info, highlight, create_script_path, print_wa
 from gopythongo.utils.buildcontext import the_context
 
 
-builders = {}  # type: Dict[str, 'BaseBuilder']
+_builders = {}  # type: Dict[str, 'BaseBuilder']
+
+
+def get_builders() -> Dict[str, 'BaseBuilder']:
+    return _builders
 
 
 def init_subsystem() -> None:
-    global builders
+    global _builders
 
     from gopythongo.builders import docker, pbuilder
-    builders = {
+    _builders = {
         u"pbuilder": pbuilder.builder_class(),
         u"docker": docker.builder_class(),
     }
 
-    plugins.load_plugins("gopythongo.builders", builders, "builder_class", BaseBuilder, "builder_name")
+    plugins.load_plugins("gopythongo.builders", _builders, "builder_class", BaseBuilder, "builder_name")
 
 
 class BaseBuilder(CommandLinePlugin):
@@ -43,7 +47,7 @@ class BaseBuilder(CommandLinePlugin):
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    global builders
+    global _builders
 
     gr_bundle = parser.add_argument_group("Bundle settings")
     gr_bundle.add_argument("--mount", dest="mounts", action="append", default=[],
@@ -51,7 +55,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                                 "the builders all paths will be mounted in place, i.e. in the same location where they "
                                 "exist on the host system.")
 
-    for b in builders.values():
+    for b in _builders.values():
         b.add_args(parser)
 
 
@@ -98,13 +102,8 @@ def test_gopythongo(path: str) -> Tuple[str, List[str]]:
 
 def validate_args(args: argparse.Namespace) -> None:
     if args.builder:
-        if args.builder in builders.keys():
-            builders[args.builder].validate_args(args)
-
-    if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
-        raise ErrorMessage("virtualenv not found in path or not executable (%s).\n"
-                           "You can specify an alternative path with %s" %
-                           (args.virtualenv_binary, highlight("--use-virtualenv")))
+        if args.builder in _builders.keys():
+            _builders[args.builder].validate_args(args)
 
     for mount in args.mounts:
         if not os.path.exists(mount):
@@ -128,7 +127,7 @@ def validate_args(args: argparse.Namespace) -> None:
         try:
             the_context.gopythongo_path, the_context.gopythongo_cmd = test_gopythongo(test_path)
         except NoMountableGoPythonGo as e:
-            pass
+            raise ErrorMessage(str(e)) from e
         else:
             print_info("Propagating GoPythonGo to build environment from detected path %s" % (highlight(test_path)))
             the_context.mounts.add(the_context.gopythongo_path)
@@ -139,4 +138,4 @@ def validate_args(args: argparse.Namespace) -> None:
 
 
 def build(args: argparse.Namespace) -> None:
-    builders[args.builder].build(args)
+    _builders[args.builder].build(args)

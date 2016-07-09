@@ -1,9 +1,10 @@
 # -* encoding: utf-8 *-
 import argparse
+
 from argparse import Action
+from typing import Iterable, Any
 
 from gopythongo.utils import highlight
-from typing import Iterable, Any
 
 
 class InitializerHelpAction(Action):
@@ -18,7 +19,8 @@ class InitializerHelpAction(Action):
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
                  values: str, option_string: str=None) -> None:
-        from gopythongo.initializers import initializers
+        from gopythongo.initializers import get_initializers
+        initializers = get_initializers()
         if values in initializers.keys():
             initializers[values].print_help()
         else:

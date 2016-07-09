@@ -38,7 +38,7 @@ class AptlyVersioner(BaseVersioner):
                                    "invocation of aptly by the Aptly Versioner.")
         gr_aptly.add_argument("--aptly-query", dest="aptly_query", default=None,
                               help="Set the query to run on the aptly repo. For example: get the latest revision of a "
-                                   "specific version through --aptly-query='Name ([yourpackage]), Version (>0.9.5), "
+                                   "specific version through --aptly-query='Name ([yourpackage]), $Version (>=0.9.5), "
                                    "Version (<=0.9.6)'). More information on the query syntax can be found on "
                                    "https://aptly.info. To find the overall latest version of GoPythonGo in a repo, "
                                    "you would use --aptly-query='Name (gopythongo)'")
@@ -56,18 +56,21 @@ class AptlyVersioner(BaseVersioner):
         if not args.aptly_query:
             raise ErrorMessage("To use the Aptly Versioner, you must specify --aptly-query.")
 
-    def read(self, args: argparse.Namespace) -> str:
+    def query_repo_versions(self, query: str, args: argparse.Namespace, *,
+                            allow_fallback_version: bool=False) -> List[DebianVersion]:
         cmd = _aptly_args.get_aptly_cmdline(args)
 
         if args.aptly_versioner_opts:
             cmd += args.aptly_versioner_opts
 
-        cmd += ["repo", "search", "-format=\"{{.Version}}\"", args.aptly_repo, args.aptly_query]
-
+        cmd += ["repo", "search", "-format=\"{{.Version}}\"", args.aptly_repo, query]
         output = run_process(*cmd).split("\n")
         if output == "ERROR: no results":
             if args.fallback_version:
-                return args.fallback_version
+                if allow_fallback_version:
+                    return []
+                else:
+                    return [DebianVersion.fromstring(args.fallback_version)]
             else:
                 raise ErrorMessage("The aptly Versioner was unable to find any packages ('ERROR: no results') matching "
                                    "the query %s." % highlight(args.aptly_query))
@@ -84,11 +87,16 @@ class AptlyVersioner(BaseVersioner):
                                    "return value was: %s)" % highlight(line))
             if len(versions) > 0:
                 versions.sort()
-                return str(versions[-1:])
+                return versions
             else:
-                # TODO: should we return args.fallback_version instead? I think it's more useful to know the repo
-                # is broken, right now.
-                raise ErrorMessage("The aptly Versioner did not return a single parseable version string")
+                if allow_fallback_version:
+                    return []
+                else:
+                    return [DebianVersion.fromstring(args.fallback_version)]
+
+    def read(self, args: argparse.Namespace) -> str:
+        versions = self.query_repo_versions(args.aptly_query, args)
+        return str(versions[-1])
 
 
 versioner_class = AptlyVersioner

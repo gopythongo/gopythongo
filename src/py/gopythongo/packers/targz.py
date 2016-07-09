@@ -4,7 +4,7 @@ import shutil
 import tarfile
 import argparse
 
-from typing import Any
+from typing import Any, List, Union
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, highlight, ErrorMessage
@@ -17,7 +17,11 @@ class TarGzPacker(BasePacker):
 
     @property
     def packer_name(self) -> str:
-        return u"targz"
+        return "targz"
+
+    @property
+    def provides(self) -> List[str]:
+        return ["targz"]
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gp_tgz = parser.add_argument_group("Tar/Gzip Packer options")
@@ -77,15 +81,28 @@ class TarGzPacker(BasePacker):
         tf.close()
         f.close()
 
+    def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
+        # TODO: right now I don't know if this implementation will turn out to be more useful than return None
+        ret = []  # type: List[str]
+        for spec in args.targz:
+            if ":" in spec:
+                ext, path = spec.split(":", 1)
+                basename = "%s_%s" % (args.targz_basename, ext)
+            else:
+                basename = args.targz_basename
+
+            ret.append(basename)
+        return ret if len(ret) > 0 else None
+
     def pack(self, args: argparse.Namespace) -> None:
         for spec in args.targz:
             if ":" in spec:
                 ext, path = spec.split(":", 1)
                 fn = "%s_%s-%s.tar.gz" % (args.targz_basename, ext,
-                                          str(the_context.out_version.version))
+                                          str(the_context.read_version.version))
             else:
                 path = spec
-                fn = "%s-%s.tar.gz" % (args.targz_basename, str(the_context.out_version.version))
+                fn = "%s-%s.tar.gz" % (args.targz_basename, str(the_context.read_version.version))
 
             # TODO: find the full path for the resulting file
 

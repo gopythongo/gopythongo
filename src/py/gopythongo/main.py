@@ -1,6 +1,9 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
 import argparse
+import shutil
+
+import tempfile
 import atexit
 import signal
 import sys
@@ -16,7 +19,10 @@ import gopythongo
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug
 
+# the tempmount can be used to create temporary files to pass to the inner GoPythonGo
+tempmount = tempfile.mkdtemp(prefix="gopythongo")  # type: str
 tempfiles = []  # type: List[str]
+
 default_config_files = [".gopythongo/config"]  # type: List[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
@@ -61,20 +67,20 @@ def get_parser() -> ArgumentParser:
     gr_plan = parser.add_argument_group("Execution plan")
     gr_plan.add_argument("--ecosystem", dest="ecosystem", choices=["python"], default="python",
                          help="Choose the ecosystem to build from. (Default and only option right now: Python)")
-    gr_plan.add_argument("--builder", dest="builder", choices=builders.builders.keys(), default=None,
+    gr_plan.add_argument("--builder", dest="builder", choices=builders.get_builders().keys(), default=None,
                          required=True,
                          help="Select the builder used to build the project")
 
     # right now we _always_ run the virtualenv assembler (argparse will always *append* to the default list)
     # because gopythongo does not support non-python ecosystems.
     gr_plan.add_argument("--assembler", dest="assemblers",
-                         choices=assemblers.assemblers.keys(), action="append", default=["virtualenv"],
+                         choices=assemblers.get_assemblers().keys(), action="append", default=["virtualenv"],
                          help="Select one or more assemblers to build the project inside the builder, i.e. install, "
                               "compile, pull all necessary source code and libraries")
 
-    gr_plan.add_argument("--packer", choices=packers.packers.keys(), default=None, required=True,
+    gr_plan.add_argument("--packer", choices=packers.get_packers().keys(), default=None, required=True,
                          help="Select the packer used to pack up the built project")
-    gr_plan.add_argument("--store", choices=stores.stores.keys(), default=None, required=True,
+    gr_plan.add_argument("--store", choices=stores.get_stores().keys(), default=None, required=True,
                          help="Select the store used to store the packed up project")
     gr_plan.add_argument("--gopythongo-path", dest="gopythongo_path", default=None,
                          help="Path to a virtual environment that contains GoPythonGo or a PEX GoPythonGo executable. "
@@ -104,9 +110,7 @@ def get_parser() -> ArgumentParser:
     parser.add_argument("--inner", dest="is_inner", action="store_true", default=False,
                         help=argparse.SUPPRESS)
     # serialized version as read by the Versioner and parsed by the Version Parser outside of the build environment
-    parser.add_argument("--inner-vin", dest="inner_vin", default=None, help=argparse.SUPPRESS)
-    # serialized version as modified by the output Version Parser outside of the build environment
-    parser.add_argument("--inner-vout", dest="inner_vout", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--read-state", dest="read_state", default=None, help=argparse.SUPPRESS)
     parser.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
 
     return parser
@@ -121,10 +125,10 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("You must select a store using --store.")
 
     if args.is_inner:
-        if not args.inner_vin or not args.inner_vout:
+        if not args.read_state or not args.cwd:
             raise ErrorMessage("When GoPythonGo runs inside a build environment, marked by %s, then %s and %s %s also "
-                               "both be present." % (highlight("--inner"), highlight("--inner-vin"),
-                                                     highlight("--inner-vout"), highlight("MUST")))
+                               "both be present." % (highlight("--inner"), highlight("--read-state"),
+                                                     highlight("--cwd"), highlight("MUST")))
 
     if args.eatmydata:
         if not os.path.exists(args.eatmydata_executable) or not os.access(args.eatmydata_executable, os.X_OK):
@@ -167,8 +171,11 @@ def _sigint_handler(sig: int, frame: FrameType) -> None:
 
 
 def _cleanup_tempfiles() -> None:
+    if tempmount:
+        if os.path.exists(tempmount):
+            shutil.rmtree(tempmount)
+
     if tempfiles:
-        print_info("Cleaning up temporary files...")
         for f in tempfiles:
             if os.path.exists(f):
                 os.unlink(f)
@@ -186,6 +193,9 @@ def _find_default_mounts() -> Set[str]:
 
     paths = set()
     paths.add(basepath)
+
+    paths.add(tempmount)
+
     for cfg in args.config:
         if os.path.isfile(cfg):
             paths.add(os.path.abspath(os.path.dirname(cfg)))
@@ -238,6 +248,7 @@ def route() -> None:
             # STEP 3: After the 2nd gopythongo process is finished, we end up here
             stores.store(args)
         else:
+            the_context.read(args.read_state)
             # STEP 2: ... which will land here and execute inside the build environment
             versioners.version(args)
             assemblers.assemble(args)

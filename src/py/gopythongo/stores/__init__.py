@@ -1,23 +1,28 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Dict, Any
+from typing import Dict, Any, Sequence, Union
 
 from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
+from gopythongo.versioners.parsers import VersionContainer
 
-stores = {}  # type: Dict[str, 'BaseStore']
+_stores = {}  # type: Dict[str, 'BaseStore']
+
+
+def get_stores() -> Dict[str, 'BaseStore']:
+    return _stores
 
 
 def init_subsystem() -> None:
-    global stores
+    global _stores
 
     from gopythongo.stores import aptly, docker
-    stores = {
+    _stores = {
         u"aptly": aptly.store_class(),
         u"docker": docker.store_class(),
     }
 
-    plugins.load_plugins("gopythongo.stores", stores, "store_class", BaseStore, "store_name")
+    plugins.load_plugins("gopythongo.stores", _stores, "store_class", BaseStore, "store_name")
 
 
 class BaseStore(CommandLinePlugin):
@@ -35,21 +40,38 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement store_name")
 
+    def add_args(self, parser: argparse.ArgumentParser) -> None:
+        pass
+
+    def validate_args(self, args: argparse.Namespace) -> None:
+        pass
+
+    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
+                                 args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
+        """
+        Takes a list of unique artifact identifiers (e.g. package names) which *will be created by a Packer during the
+        build later* and returns a dict mapping of identifier to version for the Packer to be used during the build
+        or ``None`` if the store can't generate future versions..
+        :param artifact_names: a list of artifact identifiers
+        :param base_version: the base version from which to generate future versions
+        :param args: command-line parameters
+        :return: a mapping of artifact identifiers to version information
+        """
+        return None
+
     def store(self, args: argparse.Namespace) -> None:
         pass
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
-    global stores
-
-    for s in stores.values():
+    for s in _stores.values():
         s.add_args(parser)
 
 
 def validate_args(args: argparse.Namespace) -> None:
-    if args.store in stores.keys():
-        stores[args.store].validate_args(args)
+    if args.store in _stores.keys():
+        _stores[args.store].validate_args(args)
 
 
 def store(args: argparse.Namespace) -> None:
-    stores[args.store].store(args)
+    _stores[args.store].store(args)

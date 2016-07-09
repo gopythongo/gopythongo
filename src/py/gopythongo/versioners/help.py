@@ -2,8 +2,9 @@
 
 import argparse
 
-from gopythongo.utils import highlight
 from typing import Any, Iterable
+
+from gopythongo.utils import highlight
 
 
 class VersionerHelpAction(argparse.Action):
@@ -18,7 +19,8 @@ class VersionerHelpAction(argparse.Action):
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
                  values: str, option_string: str=None) -> None:
-        from gopythongo.versioners import versioners
+        from gopythongo.versioners import get_versioners
+        versioners = get_versioners()
         if values in versioners.keys():
             versioners[values].print_help()
         else:
