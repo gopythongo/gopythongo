@@ -98,7 +98,8 @@ def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: boo
                 if raise_nonzero_exitcode:
                     raise
                 exitcode = e.returncode
-                output = e.output  # is this really bytes is universal_newlines=True?
+                # because universal_newlines = True this will be str, but mypy doesn't know
+                output = cast(str, e.output)
 
             if exitcode != 0:
                 raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %

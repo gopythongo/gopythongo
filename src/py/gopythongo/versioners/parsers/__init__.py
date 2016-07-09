@@ -44,7 +44,7 @@ class VersionContainer(GoPythonGoEnableSuper):
 
         raise UnconvertableVersion("No known way to convert version data from %s to %s" % (self.parsed_by, parsername))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "VersionContainer(%s, %s)" % (str(self.version), self.parsed_by)
 
 
