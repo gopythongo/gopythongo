@@ -3,7 +3,7 @@ import argparse
 
 from typing import Dict, Any
 
-from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
+from gopythongo.utils import plugins, CommandLinePlugin
 
 packers = {}  # type: Dict[str, 'BasePacker']
 
@@ -28,7 +28,7 @@ class BasePacker(CommandLinePlugin):
     def packer_name(self) -> str:
         """
         **@property**
-        
+
         Return the identifier and command-line parameter value for --packer used by this Packer.
         :returns: the identifier
         :rtype: str
