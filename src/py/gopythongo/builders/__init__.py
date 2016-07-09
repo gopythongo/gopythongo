@@ -46,8 +46,6 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     global builders
 
     gr_bundle = parser.add_argument_group("Bundle settings")
-    gr_bundle.add_argument("--use-virtualenv", dest="virtualenv_binary", default="/usr/bin/virtualenv",
-                           help="Set an alternative virtualenv binary to use inside the builder container")
     gr_bundle.add_argument("--mount", dest="mounts", action="append", default=[],
                            help="Additional folders to mount into the build environment. Due to limitations of "
                                 "the builders all paths will be mounted in place, i.e. in the same location where they "
