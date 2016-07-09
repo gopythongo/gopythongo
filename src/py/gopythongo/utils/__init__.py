@@ -98,11 +98,15 @@ def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: boo
                 if raise_nonzero_exitcode:
                     raise
                 exitcode = e.returncode
-                output = e.output.decode("utf-8")  # is this really bytes is universal_newlines=True?
+                output = e.output  # is this really bytes is universal_newlines=True?
 
             if exitcode != 0:
                 raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %
                                    (str(args), exitcode, output), exitcode=exitcode)
+
+            if enable_debug_output:
+                print(highlight("******** Subprocess output follows ********"))
+                print(output)
 
             return output.strip()
 

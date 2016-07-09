@@ -210,8 +210,9 @@ def route() -> None:
                                "it seems that path doesn't exist now inside the build environment. This path "
                                "should have been mounted inside the build environment and it should exist on "
                                "the host. We can only give up." % highlight(preargs.cwd))
-        print_debug("Executing in %s" % preargs.cwd)
+
         os.chdir(preargs.cwd)  # This should ensure all relative paths still work (for example to --config)
+        print_info("Executing in %s" % preargs.cwd)
 
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
@@ -252,6 +253,7 @@ def main() -> None:
     except ErrorMessage as e:
         print_error("%s" % e.ansi_msg)
         if utils.enable_debug_output:
+            print(highlight("********** VERBOSE OUTPUT Full Exception Follows **********"))
             raise
         else:
             sys.exit(e.exitcode)
