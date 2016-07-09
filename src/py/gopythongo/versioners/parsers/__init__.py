@@ -30,19 +30,22 @@ class VersionContainer(GoPythonGoEnableSuper):
 
         target_can_convert, target_losslessly = version_parsers[parsername].can_convert_from(self.parsed_by)
         if target_can_convert and target_losslessly:
-            return version_parsers[parsername].convert_from(self.version)
+            return version_parsers[parsername].convert_from(self)
 
         source_can_convert, source_losslessly = version_parsers[self.parsed_by].can_convert_to(parsername)
         if source_can_convert and source_losslessly:
-            return version_parsers[self.parsed_by].convert_to(self.version, parsername)
+            return version_parsers[self.parsed_by].convert_to(self, parsername)
 
         if target_can_convert:
-            return version_parsers[parsername].convert_from(self.version)
+            return version_parsers[parsername].convert_from(self)
 
         if source_can_convert:
-            return version_parsers[parsername].convert_from(self.version)
+            return version_parsers[parsername].convert_from(self)
 
         raise UnconvertableVersion("No known way to convert version data from %s to %s" % (self.parsed_by, parsername))
+
+    def __str__(self):
+        return "VersionContainer(%s, %s)" % (str(self.version), self.parsed_by)
 
 
 class BaseVersionParser(CommandLinePlugin):
