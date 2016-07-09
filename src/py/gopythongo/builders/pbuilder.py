@@ -34,10 +34,10 @@ class PbuilderBuilder(BaseBuilder):
         gr_pbuilder.add_argument("--no-install-defaults", dest="pbuilder_install_defaults", action="store_false",
                                  default=True,
                                  help="By default GoPythonGo will always install python, python-virtualenv, "
-                                      "python-pip, python-dev and possibly eatmydata. If you set this flag you will "
-                                      "have to install python using --apt-get, or GoPythonGo will not be able to run "
-                                      "inside the container, but this gives you more control about what Python version "
-                                      "runs.")
+                                      "python-pip, python[3]-dev, virtualenv and possibly eatmydata. If you set this "
+                                      "flag you will have to install python using --apt-get, or GoPythonGo will not be "
+                                      "able to run inside the container, but this gives you more control about what "
+                                      "Python version runs.")
         gr_pbuilder.add_argument("--run-after-create", dest="pbuilder_run_after_create", action="append",
                                  help="Specify commands (e.g. shell scripts) which will be run using 'pbuilder "
                                       "--execute --save-after-exec' after a build environment is created. This allows "
@@ -113,7 +113,8 @@ class PbuilderBuilder(BaseBuilder):
                 create_cmdline += ["--basetgz", args.basetgz]
 
             if args.pbuilder_install_defaults:
-                args.build_deps += ["python", "python-pip", "python-dev", "python-virtualenv"]
+                args.build_deps += ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
+                                    "virtualenv"]
                 if args.eatmydata:
                     args.build_deps += ["eatmydata"]
 
