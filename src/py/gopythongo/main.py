@@ -238,6 +238,7 @@ def route() -> None:
             stores.store(args)
         else:
             # STEP 2: ... which will land here and execute inside the build environment
+            versioners.version(args)
             assemblers.assemble(args)
             packers.pack(args)
 
