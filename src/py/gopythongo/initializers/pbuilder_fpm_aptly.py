@@ -59,6 +59,13 @@ fi
 $EATMYDATA gem install fpm
 """
 
+fpm_opts = """
+-p gopythongo-{{debian_version.version}}.deb
+-n gopythongo
+--depends "python3 python-virtualenv python-pip virtualenv"
+{{basedir}
+"""
+
 
 class PbuilderFpmAptlyInitializer(BaseInitializer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
