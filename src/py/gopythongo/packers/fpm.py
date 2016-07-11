@@ -17,11 +17,23 @@ class FPMPacker(BasePacker):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def _get_fpm_opts_parser() -> argparse.ArgumentParser:
+    def _get_fpm_opts_parser(*, i_know_what_im_doing: bool=False) -> argparse.ArgumentParser:
+        """
+        Don't use this directly unless you know what you're doing. Use _parse_fpm_opts instead unless you really need
+        the argparse.ArgumentParser instance. Due to argparse quirks, you really want to remove whitespace from all
+        parsed arguments (else "-n gopythongo" will return args.package_name==" gopythongo").
+        """
+        if not i_know_what_im_doing:
+            raise ValueError("Read the docs for _get_fpm_opts_parser, please")
+
         parser = argparse.ArgumentParser()
         parser.add_argument("-n", "--name", dest="package_name", default="")
         parser.add_argument("-p", "--package", dest="package_file", default="")
         return parser
+
+    def _parse_fpm_opts(self, cmdline: List[str]) -> Dict[str, str]:
+        inp = vars(self._get_fpm_opts_parser(i_know_what_im_doing=True).parse_known_args(cmdline)[0])
+        return {k: v.strip() for k, v in inp.items()}
 
     @staticmethod
     def _convert_hash_to_dict(ruby_hash: str) -> Dict[str, str]:
@@ -101,6 +113,9 @@ class FPMPacker(BasePacker):
                         tplfn.append(template.process_to_tempfile(tpl, ctx))
                     opts[ix] = pswt.format_str.format(*tplfn)
 
+        for ix, line in enumerate(opts):
+            opts[ix] = line.strip()  # remove whitespace and newlines
+
         return opts
 
     def _load_fpm_opts(self, filespec: str, *, process_templates: bool=True,
@@ -112,8 +127,11 @@ class FPMPacker(BasePacker):
         if pswt:
             if len(pswt.templates) > 1:
                 raise ErrorMessage("%s can only take a single file argument, there seem to be multiple templates "
-                                   "specified." % highlight("--fpm-opts"))
-            thefile = template.process_to_tempfile(pswt.templates[0], ctx if ctx else {})
+                                   "specified." % highlight("--run-fpm"))
+            if process_templates:
+                thefile = template.process_to_tempfile(pswt.templates[0], ctx if ctx else {})
+            else:
+                thefile = pswt.templates[0]
         else:
             thefile = filespec
 
@@ -128,8 +146,8 @@ class FPMPacker(BasePacker):
         ret = []  # type: List[str]
         for ix, fpm_opts in enumerate(args.run_fpm):
             processed_args = self._load_fpm_opts(fpm_opts, process_templates=False, ctx=ctx)
-            parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
-            ret.append(parsed_args.package_name)
+            parsed_args = self._parse_fpm_opts(processed_args)
+            ret.append(parsed_args["package_name"])
 
         return ret if len(ret) > 0 else None
 
@@ -152,27 +170,27 @@ class FPMPacker(BasePacker):
             # hen meet egg. We need to process the fpm_opts template to read the package name to get the actual
             # version string that we generated before and then rerender the fpm_opts template with the real version
             # string
-            del ctx["debian_version"]
-            preparsed_args, _ = self._get_fpm_opts_parser().parse_known_args(
+            preparsed_args = self._parse_fpm_opts(
                 self._load_fpm_opts(fpm_opts, process_templates=False, ctx=ctx)
             )
 
-            if preparsed_args.package_name not in the_context.generated_versions:
+            if preparsed_args["package_name"] not in the_context.generated_versions:
                 raise ErrorMessage("FPM was instructed to create a package file in the build environment which was not "
                                    "in the list of predicted packages outside of the build environment. This should "
                                    "never happen (unexpected package name: %s, predicted names and versions %s)" %
-                                   (preparsed_args.package_name, str(the_context.generated_versions)))
+                                   (preparsed_args["package_name"], str(the_context.generated_versions)))
 
-            ctx["debian_version"] = the_context.generated_versions[preparsed_args.package_name]
+            ctx["debian_version"] = the_context.generated_versions[preparsed_args["package_name"]]
+            del preparsed_args  # make sure we don't accidentally use this below
             processed_args = self._load_fpm_opts(fpm_opts, process_templates=True, ctx=ctx)
-            parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
+            parsed_args = self._parse_fpm_opts(processed_args)
 
             # now let's go create the package
-            if parsed_args.package_file:
-                package_file = parsed_args.package_file.strip()
-                if os.path.exists(package_file):
-                    print_info("%s already exists, will be removed and recreated" % (highlight(package_file)))
-                    os.unlink(package_file)
+            if parsed_args["package_file"]:
+                if os.path.exists(parsed_args["package_file"]):
+                    print_info("%s already exists, will be removed and recreated" %
+                               highlight(parsed_args["package_file"]))
+                    os.unlink(parsed_args["package_file"])
 
             run_params = fpm_base
             for argline in processed_args:
@@ -180,11 +198,11 @@ class FPMPacker(BasePacker):
             fpm_out = run_process(*run_params)
 
             out_file = ""
-            if parsed_args.package_file:
-                if not os.path.exists(package_file):
+            if parsed_args["package_file"]:
+                if not os.path.exists(parsed_args["package_file"]):
                     raise ErrorMessage("File not found: %s expected to exist from parsed FPM opts" %
-                                       highlight(parsed_args.package_file))
-                out_file = package_file
+                                       highlight(parsed_args["package_file"]))
+                out_file = parsed_args["package_file"]
             else:
                 parsed_output = self._parse_fpm_output(fpm_out)
                 if "path" in parsed_output:
@@ -202,7 +220,7 @@ class FPMPacker(BasePacker):
             the_context.packer_artifacts.add(PackerArtifact(
                 "deb",
                 out_file,
-                {"package_name": parsed_args.package_name},
+                {"package_name": parsed_args["package_name"]},
                 self,
                 self.packer_name
             ))
