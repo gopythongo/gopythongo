@@ -204,7 +204,7 @@ class FPMPacker(BasePacker):
                                        highlight(parsed_args["package_file"]))
                 out_file = parsed_args["package_file"]
             else:
-                parsed_output = self._parse_fpm_output(fpm_out)
+                parsed_output = self._parse_fpm_output(fpm_out.output)
                 if "path" in parsed_output:
                     if not os.path.exists(parsed_output["path"]):
                         raise ErrorMessage("File not found: %s expected to exist from parsed FPM output (%s)" %

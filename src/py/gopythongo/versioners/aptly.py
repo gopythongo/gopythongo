@@ -64,15 +64,16 @@ class AptlyVersioner(BaseVersioner):
             cmd += args.aptly_versioner_opts
 
         cmd += ["repo", "search", "-format=\"{{.Version}}\"", args.aptly_repo, query]
-        output = run_process(*cmd, allow_nonzero_exitcode=True).split("\n")
-        if "ERROR: no results" in output:
+        ret = run_process(*cmd, allow_nonzero_exitcode=True)
+        # FIXME: add error code handling, because no results is not the only possible error message
+        if ret.exitcode != 0 and "ERROR: no results" in ret.output:
             if allow_fallback_version and args.fallback_version:
                 return [DebianVersion.fromstring(args.fallback_version)]
             else:
                 return []
         else:
             versions = []  # type: List[DebianVersion]
-            for line in output:
+            for line in ret.output.split():
                 line = line.strip()
                 if line:
                     try:
