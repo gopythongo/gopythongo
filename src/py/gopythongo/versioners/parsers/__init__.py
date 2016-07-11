@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Tuple, Any, List, Dict
+from typing import Tuple, Any, List, Dict, TypeVar, Generic
 
 from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper, ErrorMessage, highlight
 
@@ -19,10 +19,13 @@ class UnconvertableVersion(Exception):
     pass
 
 
-class VersionContainer(GoPythonGoEnableSuper):
-    def __init__(self, version: Any, parsed_by: str, *args: Any, **kwargs: Any) -> None:
+T = TypeVar("T")
+
+
+class VersionContainer(Generic[T], GoPythonGoEnableSuper):
+    def __init__(self, version: T, parsed_by: str, *args: Any, **kwargs: Any) -> None:
         super().__init__(version, parsed_by, *args, **kwargs)
-        self.version = version  # type: Any
+        self.version = version  # type: T
         self.parsed_by = parsed_by  # type: str
 
     def convert_to(self, parsername: str) -> 'VersionContainer':
@@ -64,7 +67,7 @@ class VersionContainer(GoPythonGoEnableSuper):
     def fromdict(rep: Dict[str, str]) -> 'VersionContainer':
         """
         reads a serialized version string and puts it back into a VersionContainer
-        :param serialized: the serialized version string as created by ``serialize()``
+        :param rep: the serialized version as created by ``todict``
         :return: a VersionContainer instance containing the deserialized version object
         """
         version_parsers = get_version_parsers()

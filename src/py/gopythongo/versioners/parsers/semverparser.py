@@ -6,13 +6,13 @@ from copy import copy
 from typing import Any, Tuple, List
 
 from semantic_version import Version as SemVerBase
-from packaging.version import Version as Pep440Version
 
 from gopythongo.utils import highlight, ErrorMessage, print_info
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers.pep440parser import PEP440Adapter
 
 
-class SemVerVersion(SemVerBase):
+class SemVerAdapter(SemVerBase):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -41,12 +41,12 @@ class SemVerVersionParser(BaseVersionParser):
                                help="Try really hard to make the input version into something resembling SemVer. Use "
                                     "this with caution.")
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[SemVerAdapter]:
         try:
             if args.semver_coerce:
-                sv = SemVerVersion.coerce(version_str, partial=args.semver_partial)
+                sv = SemVerAdapter.coerce(version_str, partial=args.semver_partial)
             else:
-                sv = SemVerVersion(version_str, partial=args.semver_partial)
+                sv = SemVerAdapter(version_str, partial=args.semver_partial)
         except ValueError as e:
             raise ErrorMessage("%s is not a valid SemVer version string (%s)" % (highlight(version_str), str(e))) from e
 
@@ -72,8 +72,8 @@ class SemVerVersionParser(BaseVersionParser):
             return False
         return True
 
-    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
-        ver = version.version  # type: SemVerVersion
+    def execute_action(self, version: VersionContainer[SemVerAdapter], action: str) -> VersionContainer[SemVerAdapter]:
+        ver = version.version
         if action == "bump-major":
             ver = ver.next_major()
         elif action == "bump-minor":
@@ -98,12 +98,12 @@ class SemVerVersionParser(BaseVersionParser):
                                    "part to increment" % (highlight(action), highlight(str(ver))))
 
             # create a copy of the original object
-            ver = SemVerVersion(str(ver))
+            ver = SemVerAdapter(str(ver))
             ver.prerelease = tuple(newpre)
         return VersionContainer(ver, self.versionparser_name)
 
     @staticmethod
-    def semver_from_pep440(pep440: Pep440Version) -> str:
+    def semver_from_pep440(pep440: PEP440Adapter) -> str:
         semstr = ""
         for ix in range(0, len(pep440._version.release) - 1 if len(pep440._version.release) < 3 else 2):
             semstr = "%s.%s" % (semstr, pep440._version.release[ix])
@@ -131,17 +131,17 @@ class SemVerVersionParser(BaseVersionParser):
                        "release identifiers or epochs. (%s => %s)" % (str(pep440), semstr))
         return semstr
 
-    def convert_from(self, version: VersionContainer) -> VersionContainer:
+    def convert_from(self, version: VersionContainer[Any]) -> VersionContainer[SemVerAdapter]:
         if version.parsed_by == self.versionparser_name:
             return version
         elif version.parsed_by == "regex":
             return VersionContainer(version.version, self.versionparser_name)
         elif version.parsed_by == "pep440":
-            return VersionContainer(SemVerVersion.parse(SemVerVersionParser.semver_from_pep440(version.version)),
+            return VersionContainer(SemVerAdapter.parse(SemVerVersionParser.semver_from_pep440(version.version)),
                                     self.versionparser_name)
 
-    def deserialize(self, serialized: str) -> VersionContainer:
-        return VersionContainer(SemVerVersion.parse(serialized), self.versionparser_name)
+    def deserialize(self, serialized: str) -> VersionContainer[SemVerAdapter]:
+        return VersionContainer(SemVerAdapter.parse(serialized), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"

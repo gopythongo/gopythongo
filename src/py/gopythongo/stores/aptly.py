@@ -6,6 +6,7 @@ from typing import Any, Sequence, Union, Dict, cast
 import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.stores import BaseStore
+from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
 
 
@@ -40,9 +41,9 @@ class AptlyStore(BaseStore):
             new_base = debversions[-1]
             after_action = debvp.execute_action(debvp.deserialize(str(new_base)), args.version_action)
 
-    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
-                                 args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
-        ret = {}  # type: Dict[str, VersionContainer]
+    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer[DebianVersion],
+                                 args: argparse.Namespace) -> Union[Dict[str, VersionContainer[DebianVersion]], None]:
+        ret = {}  # type: Dict[str, VersionContainer[DebianVersion]]
         for package_name in artifact_names:
             next_version = self._find_unused_version(package_name, str(base_version.version), args.version_action, args)
             ret[package_name] = next_version

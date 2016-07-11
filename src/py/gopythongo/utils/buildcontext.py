@@ -44,8 +44,8 @@ class BuildContext(object):
     """
     def __init__(self) -> None:
         self.packs = []  # type: List[str]
-        self.read_version = None  # type: VersionContainer
-        self.generated_versions = None  # type: Dict[str, VersionContainer]
+        self.read_version = None  # type: VersionContainer[Any]
+        self.generated_versions = None  # type: Dict[str, VersionContainer[Any]]
         self.gopythongo_path = None  # type: str
         self.gopythongo_cmd = None  # type: List[str]
         self.mounts = set()  # type: Set[str]

@@ -4,7 +4,7 @@ import re
 
 from typing import Any, Tuple, List
 
-from gopythongo.versioners.parsers.semverparser import SemVerVersion, SemVerVersionParser
+from gopythongo.versioners.parsers.semverparser import SemVerAdapter, SemVerVersionParser
 from gopythongo.versioners.parsers import VersionContainer
 from gopythongo.utils import highlight, ErrorMessage
 
@@ -47,7 +47,7 @@ class RegexVersionParser(SemVerVersionParser):
                                    (highlight("--version-parser=%s" % self.versionparser_name),
                                     highlight("--version-regex")))
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[SemVerAdapter]:
         match = re.match(args.version_regex, version_str)
         if not match:
             raise ErrorMessage("The regular expression '%s' does not match the version read '%s'" %
@@ -67,7 +67,7 @@ class RegexVersionParser(SemVerVersionParser):
         if "metadata" in match.groupdict():
             semver = "%s+%s" % match.group("metadata")
 
-        return VersionContainer(SemVerVersion.parse(semver), self.versionparser_name)
+        return VersionContainer(SemVerAdapter.parse(semver), self.versionparser_name)
 
     def print_help(self) -> None:
         print("%s\n"

@@ -68,7 +68,7 @@ class PEP440VersionParser(BaseVersionParser):
     def validate_args(self, args: argparse.Namespace) -> None:
         pass
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[PEP440Adapter]:
         try:
             version = _adapt(parse(version_str))
         except InvalidVersion as e:

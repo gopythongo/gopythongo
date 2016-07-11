@@ -29,7 +29,7 @@ class DebianVersionParser(BaseVersionParser):
             raise ErrorMessage("Debian Version Parser does not support the selected action (%s). Supported version "
                                "actions are: %s" % (highlight(args.version_action), ", ".join(self.supported_actions)))
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
+    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[DebianVersion]:
         try:
             dv = DebianVersion.fromstring(version_str)
         except InvalidDebianVersionString as e:
@@ -41,7 +41,7 @@ class DebianVersionParser(BaseVersionParser):
         if action in self.supported_actions:
             return True
 
-    def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
+    def execute_action(self, version: VersionContainer[DebianVersion], action: str) -> VersionContainer[DebianVersion]:
         ver = DebianVersion.fromstring(version.version.tostring())
         # TODO: implement this
 
@@ -59,7 +59,7 @@ class DebianVersionParser(BaseVersionParser):
             return True, True  # regex really uses semver under the hood, so it's the same
         return False, False
 
-    def convert_from(self, version: VersionContainer) -> VersionContainer:
+    def convert_from(self, version: VersionContainer[Any]) -> VersionContainer[DebianVersion]:
         if version.parsed_by == self.versionparser_name:
             return version
         elif version.parsed_by in ["semver", "regex"]:
