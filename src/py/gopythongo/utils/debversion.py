@@ -7,7 +7,7 @@ https://github.com/chaos/apt/blob/master/apt/apt-pkg/deb/debversion.cc (see debV
 """
 import re
 
-from typing import List, Tuple, Union, Any, Type
+from typing import List, Tuple, Union, Any, Type, Callable
 
 
 class InvalidDebianVersionString(Exception):
@@ -203,22 +203,43 @@ class DebianVersion(object):
         return str(self)
 
     def __lt__(self, other: 'DebianVersion') -> bool:
+        return self._compare(other, lambda x: x < 0)
+
+    def __le__(self, other: 'DebianVersion') -> bool:
+        return self._compare(other, lambda x: x <= 0)
+
+    def __gt__(self, other: 'DebianVersion') -> bool:
+        return self._compare(other, lambda x: x > 0)
+
+    def __ge__(self, other: 'DebianVersion') -> bool:
+        return self._compare(other, lambda x: x >= 0)
+
+    def _compare(self, other: 'DebianVersion', method: Callable[[int], bool]) -> bool:
+        if not isinstance(other, DebianVersion):
+            return NotImplemented
+
         # special case: zero Epoch is the same as no Epoch
         if self.epoch is not None and other.epoch is not None and \
            int(self.epoch) != int(other.epoch) and int(self.epoch) != 0 and int(other.epoch) != 0:
-            return int(self.epoch) < int(other.epoch)
+            return method(int(other.epoch) - int(self.epoch))
 
         res = debian_versionpart_compare(split_version_parts(self.version, self.version_char_re),
                                          split_version_parts(other.version, self.version_char_re))
-
         if res == 0:
-            return debian_versionpart_compare(split_version_parts(self.revision),
-                                              split_version_parts(other.revision)) < 0
+            return method(debian_versionpart_compare(split_version_parts(self.revision),
+                                                     split_version_parts(other.revision)))
         else:
-            return res < 0
+            return method(res)
 
     def __eq__(self, other: Union['DebianVersion', Any, None]) -> bool:
+        if not isinstance(other, DebianVersion):
+            return NotImplemented
         return repr(self) == repr(other)
+
+    def __ne__(self, other: Union['DebianVersion', Any, None]) -> bool:
+        if not isinstance(other, DebianVersion):
+            return NotImplemented
+        return repr(self) != repr(other)
 
     def as_tuple(self) -> Tuple[str, str, str]:
         return self.epoch, self.version, self.revision
