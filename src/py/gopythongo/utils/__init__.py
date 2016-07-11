@@ -72,7 +72,8 @@ def flatten(x: Union[Iterable[str], str]) -> List[str]:
     return result
 
 
-def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: bool=False) -> str:
+def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_exitcode: bool=False,
+                interactive: bool=False) -> str:
     actual_args = None  # type: List[str]
     if prepend_exec:
         actual_args = prepend_exec + list(args)
@@ -101,7 +102,7 @@ def run_process(*args: str, raise_nonzero_exitcode: bool=False, interactive: boo
                 # because universal_newlines = True this will be str, but mypy doesn't know
                 output = cast(str, e.output)
 
-            if exitcode != 0:
+            if exitcode != 0 and not allow_nonzero_exitcode:
                 raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %
                                    (str(args), exitcode, output), exitcode=exitcode)
 
