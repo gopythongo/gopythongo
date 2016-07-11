@@ -62,7 +62,8 @@ class BuildContext(object):
         with open(filename, "rt", encoding="utf-8") as f:
             state = json.load(f)
         self.read_version = VersionContainer.fromdict(state["read_version"])
-        self.generated_versions = {key: VersionContainer.fromdict(value) for key, value in state["generated_versions"]}
+        self.generated_versions = {key: VersionContainer.fromdict(value)
+                                   for key, value in state["generated_versions"].items()}
 
     def get_gopythongo_inner_commandline(self) -> List[str]:
         from gopythongo.main import tempmount
