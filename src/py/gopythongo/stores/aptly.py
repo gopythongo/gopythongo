@@ -31,7 +31,7 @@ class AptlyStore(BaseStore):
         aptlyv = cast(AptlyVersioner, get_versioners()["aptly"])
         debvp = get_version_parsers()["debian"]
 
-        debversions = aptlyv.query_repo_versions("Name (%s), $Version (= %s)" %
+        debversions = aptlyv.query_repo_versions("Name (%s), $Version (%% *%s*)" %
                                                  (package_name, version), args,
                                                  allow_fallback_version=False)
 
