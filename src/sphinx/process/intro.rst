@@ -5,13 +5,19 @@ Introduction to the process
 
 The problem with Python deployment
 ----------------------------------
-There are many deployment models for Python. A lot of people resort to shipping source code and compiling
-virtual environments on their servers, or installing Python programs in the interpreter shipped with the OS.
-Some people also just push code to their servers using Git... whatever you are currently doing, it's worth
-noting that *it might work for you*.
+You can go to many conferences and watch talks on Youtube about Python deployment that invariably include a slide
+which has a diagram that looks something like this:
 
-Obviously many people also use Docker to isolate their deployment artifacts into easily shippable containers.
-Again, some people build the containers on the hardware where they'll later run.
+.. pre:
+    Developer -push-> GitHub/GitLab/BitBucket -webhook-> SomeBuildServer -magic-> Fabulous cloud stuff
+
+GoPythonGo is a opinionated, extensible, well-structured implementation of the arrow that says "magic".
+
+There are many deployment models for Python. A lot of people resort to shipping source code and compiling
+virtual environments on their servers, or installing Python programs in the interpreter shipped with the OS, or
+they cram their code and a full OS, including build tools, into a Docker container and call it "lightweight".
+Some people even build the containers on the hardware where they'll later run. Some people also just push code to
+their servers using Git... whatever you are currently doing, it's worth noting that *it might work for you*.
 
 We have seen time and time again that given a deployment platform, it's hard to design a deployment process
 that will not at some point involve building code on the deployment platform. Some platforms like Heroku were
@@ -63,9 +69,9 @@ to servers.
 
 Deploying virtual environments
 ------------------------------
-Over the last couple of years virtual environments have become the defacto isolation layer for Python. However one
-of the central problems for copying them between servers, especially between build servers and application servers
-is that they are not easily relocatable. You basically have to build them in the file system location where they
+Over the last couple of years virtual environments have become the defacto lightweight isolation layer for Python.
+However one of the central problems for copying them between servers, especially between build servers and application
+servers is that they are not easily relocatable. You basically have to build them in the file system location where they
 will be used later and obviously, if you copy them between servers, the underlying OS with its libraries and CPU
 architecture has to be the same. `virtualenv` for a while tried to add support for relocating virtual environments
 through the `--relocatable` command line flag, but that was a brittle affair that relied on searching and replacing
