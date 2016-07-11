@@ -167,6 +167,7 @@ def version(args: argparse.Namespace) -> None:
 
         future_versions = get_stores()[args.store].generate_future_versions(
             get_packers()[args.packer].predict_future_artifacts(args),
+            the_context.read_version,
             args
         )
 

@@ -23,14 +23,15 @@ class AptlyStore(BaseStore):
     def validate_args(self, args: argparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
 
-    def _find_unused_version(self, package_name: str, version: str, action: str, args: argparse.Namespace) -> bool:
+    def _find_unused_version(self, package_name: str, version: str, action: str,
+                             args: argparse.Namespace) -> VersionContainer:
         from gopythongo.versioners import get_versioners, get_version_parsers
         from gopythongo.versioners.aptly import AptlyVersioner
         aptlyv = cast(AptlyVersioner, get_versioners()["aptly"])
         debvp = get_version_parsers()["debian"]
 
         debversions = aptlyv.query_repo_versions("Name (%s), $Version (= %s)" %
-                                                 (package_name, version, args),
+                                                 (package_name, version), args,
                                                  allow_fallback_version=False)
 
         if debversions:
@@ -43,7 +44,7 @@ class AptlyStore(BaseStore):
                                  args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
         ret = {}  # type: Dict[str, VersionContainer]
         for package_name in artifact_names:
-            next_version = self._find_unused_version(package_name, base_version, args.version_action, args)
+            next_version = self._find_unused_version(package_name, str(base_version.version), args.version_action, args)
             ret[package_name] = next_version
         return ret
 
