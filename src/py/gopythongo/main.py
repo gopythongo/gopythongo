@@ -20,7 +20,7 @@ from gopythongo import initializers, builders, versioners, assemblers, packers, 
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug
 
 # the tempmount can be used to create temporary files to pass to the inner GoPythonGo
-tempmount = tempfile.mkdtemp(prefix="gopythongo")  # type: str
+tempmount = tempfile.mkdtemp(prefix="gopythongo-")  # type: str
 tempfiles = []  # type: List[str]
 
 default_config_files = [".gopythongo/config"]  # type: List[str]
