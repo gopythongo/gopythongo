@@ -66,23 +66,18 @@ class DebianVersionParser(BaseVersionParser):
             sv = str(version.version)
             if version.version.prerelease:
                 # translate a semver prelease to a Debian prerelease marker
-                sv = sv.replace("-", "~", count=1)
+                sv = sv.replace("-", "~", 1)
             return VersionContainer(DebianVersion.fromstring(sv), self.versionparser_name)
         elif version.parsed_by == "pep440":
             pva = version.version  # type: PEP440Adapter
-            verstr = str(pva)
-            revstr = None
+
+            # translate pep440 "-pre/rc/a" prerelease marker to Debian prerelease (~)
+            verstr = "".join(pva.to_parts(pre_prefix="~", dev_prefix="~"))
             if "!" in verstr:
                 verstr = verstr.split("!", 1)[1]  # remove the epoch, we'll add it later in the constructor
-            if "-" in verstr:
-                if pva.is_prerelease:
-                    # translate pep440 "-pre/rc/a" prerelease marker to Debian prerelease (~)
-                    verstr = "".join(pva.to_parts(pre_prefix="~", dev_prefix="~"))
-                else:
-                    verstr, revstr = verstr.rsplit("-", 1)
 
             try:
-                dv = DebianVersion(pva._version.epoch if pva._version.epoch != 0 else None, verstr, revstr)
+                dv = DebianVersion(pva._version.epoch if pva._version.epoch != 0 else None, verstr, None)
             except InvalidDebianVersionString as e:
                 raise ErrorMessage("Unable to convert PEP440 version string to valid Debian version string: %s" %
                                    highlight(str(pva))) from e
