@@ -7,7 +7,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, run_process, ErrorMessage, print_info
+from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, print_debug
 
 
 class AptlyVersioner(BaseVersioner):
@@ -64,16 +64,12 @@ class AptlyVersioner(BaseVersioner):
             cmd += args.aptly_versioner_opts
 
         cmd += ["repo", "search", "-format=\"{{.Version}}\"", args.aptly_repo, query]
-        output = run_process(*cmd).split("\n")
-        if output == "ERROR: no results":
-            if args.fallback_version:
-                if allow_fallback_version:
-                    return []
-                else:
-                    return [DebianVersion.fromstring(args.fallback_version)]
+        output = run_process(*cmd, allow_nonzero_exitcode=True).split("\n")
+        if "ERROR: no results" in output:
+            if allow_fallback_version and args.fallback_version:
+                return [DebianVersion.fromstring(args.fallback_version)]
             else:
-                raise ErrorMessage("The aptly Versioner was unable to find any packages ('ERROR: no results') matching "
-                                   "the query %s." % highlight(args.aptly_query))
+                return []
         else:
             versions = []  # type: List[DebianVersion]
             for line in output:
@@ -89,10 +85,10 @@ class AptlyVersioner(BaseVersioner):
                 versions.sort()
                 return versions
             else:
-                if allow_fallback_version:
-                    return []
-                else:
+                if allow_fallback_version and args.fallback_version:
                     return [DebianVersion.fromstring(args.fallback_version)]
+                else:
+                    return []
 
     def read(self, args: argparse.Namespace) -> str:
         versions = self.query_repo_versions(args.aptly_query, args)
