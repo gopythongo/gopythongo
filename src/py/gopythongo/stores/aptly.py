@@ -39,13 +39,14 @@ class AptlyStore(BaseStore):
             # we already have a version from the base version
             # create a new one off the highest version we found
             new_base = debversions[-1]
-            after_action = debvp.execute_action(debvp.deserialize(str(new_base)), args.version_action)
+            after_action = debvp.execute_action(debvp.deserialize(str(new_base)), action)
 
-    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer[DebianVersion],
+    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer[Any],
                                  args: argparse.Namespace) -> Union[Dict[str, VersionContainer[DebianVersion]], None]:
         ret = {}  # type: Dict[str, VersionContainer[DebianVersion]]
+        base_debv = base_version.convert_to("debian")
         for package_name in artifact_names:
-            next_version = self._find_unused_version(package_name, str(base_version.version), args.version_action, args)
+            next_version = self._find_unused_version(package_name, str(base_debv.version), args.version_action, args)
             ret[package_name] = next_version
         return ret
 
