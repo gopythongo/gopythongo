@@ -165,13 +165,8 @@ def version(args: argparse.Namespace) -> None:
         #     3. Then save the input and output versions in the buildcontext singleton
         the_context.read_version = _version_parsers[args.version_parser].parse(version_str, args)
 
-        future_versions = get_stores()[args.store].generate_future_versions(
+        the_context.generated_versions = get_stores()[args.store].generate_future_versions(
             get_packers()[args.packer].predict_future_artifacts(args),
             the_context.read_version,
             args
         )
-
-        if future_versions:
-            for ver in future_versions.items():
-                pass
-
