@@ -9,6 +9,8 @@ from gopythongo.stores import BaseStore
 from gopythongo.utils import print_debug, highlight
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
+from gopythongo.versioners.parsers.debianparser import DebianVersionParser
+from gopythongo.versioners.aptly import AptlyVersioner
 
 
 class AptlyStore(BaseStore):
@@ -26,16 +28,16 @@ class AptlyStore(BaseStore):
         _aptly_args.validate_shared_args(args)
 
     @staticmethod
-    def _get_aptly_versioner() -> 'AptlyVersioner':
+    def _get_aptly_versioner() -> AptlyVersioner:
         from gopythongo.versioners import get_versioners
         from gopythongo.versioners.aptly import AptlyVersioner
         aptlyv = cast(AptlyVersioner, get_versioners()["aptly"])
         return aptlyv
 
     @staticmethod
-    def _get_debian_versionparser() -> 'DebianVersionParser':
+    def _get_debian_versionparser() -> DebianVersionParser:
         from gopythongo.versioners import get_version_parsers
-        debvp = get_version_parsers()["debian"]
+        debvp = cast(DebianVersionParser, get_version_parsers()["debian"])
         return debvp
 
     def _check_version_exists(self, package_name: str, version: str, args: argparse.Namespace) -> bool:
@@ -63,7 +65,7 @@ class AptlyStore(BaseStore):
             # create a new one off the highest version we found
             new_base = debversions[-1]
             print_debug("Found existing versions around base version %s. Highest sorted version %s is the new base "
-                        "version for %s" % (highlight(str(new_base)), highlight(package_name)))
+                        "version for %s" % (highlight(version), highlight(str(new_base)), highlight(package_name)))
             after_action = debvp.execute_action(debvp.deserialize(str(new_base)), action)
             if self._check_version_exists(package_name, str(after_action.version), args):
                 print_debug("The new after-action (%s) version %s, based off %s, derived from %s is already taken, so "
