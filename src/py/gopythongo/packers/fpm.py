@@ -83,8 +83,11 @@ class FPMPacker(BasePacker):
                     raise ErrorMessage("It seems that fpm will not be able to read %s under the user id that "
                                        "GoPythonGo is running under." % opts)
 
-    def _read_fpm_opts_from_file(self, optsfile: str, ctx: Dict[str, Any], *,
-                                 process_templates: bool=True) -> List[str]:
+    def _read_fpm_opts_from_file(self, optsfile: str, *, process_templates: bool=True,
+                                 ctx: Union[Dict[str, Any], None]) -> List[str]:
+        if process_templates and ctx is None:
+            raise ValueError("_read_fpm_opts_from_file must be provided with a ctx if process_templates is True")
+
         with open(optsfile, mode="rt", encoding="utf-8") as f:
             opts = f.readlines()
 
@@ -100,28 +103,31 @@ class FPMPacker(BasePacker):
 
         return opts
 
-    def _load_fpm_opts(self, filespec: str, ctx: Dict[str, Any]) -> List[str]:
+    def _load_fpm_opts(self, filespec: str, *, process_templates: bool=True,
+                       ctx: Union[Dict[str, Any], None]) -> List[str]:
+        if process_templates and ctx is None:
+            raise ValueError("_load_fpm_opts must be provided with a ctx if process_templates is True")
+
         pswt = template.parse_template_prefixes(filespec)
         if pswt:
             if len(pswt.templates) > 1:
                 raise ErrorMessage("%s can only take a single file argument, there seem to be multiple templates "
                                    "specified." % highlight("--fpm-opts"))
-            thefile = template.process_to_tempfile(pswt.templates[0], ctx)
+            thefile = template.process_to_tempfile(pswt.templates[0], ctx if ctx else {})
         else:
             thefile = filespec
 
-        return self._read_fpm_opts_from_file(thefile, ctx)
+        return self._read_fpm_opts_from_file(thefile, process_templates=process_templates, ctx=ctx)
 
     def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
         ctx = {
             "basedir": args.build_path,
             "buildctx": the_context,
-            "debian_version": "FUTURE"  # FPM requires a Debian version for .debs
         }
 
         ret = []  # type: List[str]
         for ix, fpm_opts in enumerate(args.run_fpm):
-            processed_args = self._load_fpm_opts(fpm_opts, ctx)
+            processed_args = self._load_fpm_opts(fpm_opts, process_templates=False, ctx=ctx)
             parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
             ret.append(parsed_args.package_name)
 
@@ -146,8 +152,10 @@ class FPMPacker(BasePacker):
             # hen meet egg. We need to process the fpm_opts template to read the package name to get the actual
             # version string that we generated before and then rerender the fpm_opts template with the real version
             # string
-            ctx["debian_version"] = "FUTURE"
-            preparsed_args, _ = self._get_fpm_opts_parser().parse_known_args(self._load_fpm_opts(fpm_opts, ctx))
+            del ctx["debian_version"]
+            preparsed_args, _ = self._get_fpm_opts_parser().parse_known_args(
+                self._load_fpm_opts(fpm_opts, process_templates=False, ctx=ctx)
+            )
 
             if preparsed_args.package_name not in the_context.generated_versions:
                 raise ErrorMessage("FPM was instructed to create a package file in the build environment which was not "
@@ -156,7 +164,7 @@ class FPMPacker(BasePacker):
                                    (preparsed_args.package_name, str(the_context.generated_versions)))
 
             ctx["debian_version"] = the_context.generated_versions[preparsed_args.package_name]
-            processed_args = self._load_fpm_opts(fpm_opts, ctx)
+            processed_args = self._load_fpm_opts(fpm_opts, process_templates=True, ctx=ctx)
             parsed_args, _ = self._get_fpm_opts_parser().parse_known_args(processed_args)
 
             # now let's go create the package
