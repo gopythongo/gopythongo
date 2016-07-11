@@ -72,15 +72,21 @@ def flatten(x: Union[Iterable[str], str]) -> List[str]:
     return result
 
 
+class ProcessOutput(object):
+    def __init__(self, output: str, exitcode: int) -> None:
+        self.output = output
+        self.exitcode = exitcode
+
+
 def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_exitcode: bool=False,
-                interactive: bool=False) -> str:
+                interactive: bool=False) -> ProcessOutput:
     actual_args = None  # type: List[str]
     if prepend_exec:
         actual_args = prepend_exec + list(args)
 
     print_debug("Running %s" % str(actual_args))
     if debug_donotexecute:
-        return ""
+        return ProcessOutput("", 0)
     else:
         exitcode = 0
 
@@ -89,7 +95,7 @@ def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_ex
                 subprocess.call(actual_args)
             except subprocess.CalledProcessError as e:
                 raise
-            return ""
+            return ProcessOutput("", 0)
         else:
             try:
                 # it seems that mypy does not realize that universal_newlines guarantees a str return
@@ -110,7 +116,7 @@ def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_ex
                 print(highlight("******** Subprocess output follows ********"))
                 print(output)
 
-            return output.strip()
+            return ProcessOutput(output.strip(), exitcode)
 
 
 def print_error(message: str) -> None:
