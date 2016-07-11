@@ -2,11 +2,11 @@
 import argparse
 
 from typing import Any, Tuple, List
-from packaging.version import Version as Pep440Version
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers.pep440parser import PEP440Adapter
 
 
 class DebianVersionParser(BaseVersionParser):
@@ -63,15 +63,23 @@ class DebianVersionParser(BaseVersionParser):
         if version.parsed_by == self.versionparser_name:
             return version
         elif version.parsed_by in ["semver", "regex"]:
-            return VersionContainer(DebianVersion.fromstring(str(version.version)), self.versionparser_name)
+            v = str(version.version)
+            if version.version.prerelease:
+                # translate a semver prelease to a Debian prerelease marker
+                v = v.replace("-", "~", count=1)
+            return VersionContainer(DebianVersion.fromstring(v), self.versionparser_name)
         elif version.parsed_by == "pep440":
-            v = version.version  # type: Pep440Version
+            v = version.version  # type: PEP440Adapter
             verstr = str(v)
             revstr = None
             if "!" in verstr:
                 verstr = verstr.split("!", 1)[1]  # remove the epoch, we'll add it later in the constructor
             if "-" in verstr:
-                verstr, revstr = verstr.split("-", 1)
+                if v.is_prerelease:
+                    # translate pep440 "-pre/rc/a" prerelease marker to Debian prerelease (~)
+                    verstr = "".join(v.to_parts(pre_prefix="~", dev_prefix="~"))
+                else:
+                    verstr, revstr = verstr.rsplit("-", 1)
 
             try:
                 dv = DebianVersion(v._version.epoch if v._version.epoch != 0 else None, verstr, revstr)

@@ -9,6 +9,46 @@ from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
 from packaging.version import parse, InvalidVersion, Version, _Version
 
 
+class PEP440Adapter(Version):
+    """
+    provides some extra utility methods for GoPythonGo
+    """
+    def to_parts(self, *, epoch_suffix: str="!", release_sep: str=".", pre_prefix: str="", pre_sep: str="",
+                 post_prefix: str=".", dev_prefix: str=".", local_prefix: str="+", local_sep: str=".") -> List[str]:
+        parts = []  # type:List[str]
+
+        # Epoch
+        if self._version.epoch != 0:
+            parts.append("{0}{1}".format(self._version.epoch, epoch_suffix))
+
+        # Release segment
+        parts.append(release_sep.join(str(x) for x in self._version.release))
+
+        # Pre-release
+        if self._version.pre is not None:
+            parts.append("{1}{0}".format(pre_sep.join(str(x) for x in self._version.pre), pre_prefix))
+
+        # Post-release
+        if self._version.post is not None:
+            parts.append("{1}post{0}".format(self._version.post[1], post_prefix))
+
+        # Development release
+        if self._version.dev is not None:
+            parts.append("{1}dev{0}".format(self._version.dev[1], dev_prefix))
+
+        # Local version segment
+        if self._version.local is not None:
+            parts.append(
+                "{1}{0}".format(local_sep.join(str(x) for x in self._version.local), local_prefix)
+            )
+
+        return parts
+
+
+def _adapt(v: Version) -> PEP440Adapter:
+    return PEP440Adapter(str(v))
+
+
 class PEP440VersionParser(BaseVersionParser):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
@@ -30,7 +70,7 @@ class PEP440VersionParser(BaseVersionParser):
 
     def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
         try:
-            version = parse(version_str)
+            version = _adapt(parse(version_str))
         except InvalidVersion as e:
             raise ErrorMessage("%s is not a valid PEP-440 version string: %s" %
                                (highlight(version_str), str(e))) from e
@@ -38,7 +78,7 @@ class PEP440VersionParser(BaseVersionParser):
         return VersionContainer(version, self.versionparser_name)
 
     # mad hackz ahead
-    def _patch_version(self, version: Version, *, epoch: int=None, release: Tuple[int, ...]=None,
+    def _patch_version(self, version: PEP440Adapter, *, epoch: int=None, release: Tuple[int, ...]=None,
                        pre: Tuple[str, int]=None, dev: Tuple[str, int]=None, post: Tuple[str, int]=None,
                        local: Tuple[Union[str, int], ...]=None) -> None:
         version._version = _Version(
@@ -62,7 +102,7 @@ class PEP440VersionParser(BaseVersionParser):
             return True
 
     def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
-        ver = copy(version.version)  # type: Version
+        ver = copy(version.version)  # type: PEP440Adapter
 
         cmdindex = ["bump-major", "bump-minor", "bump-patch"]
 
