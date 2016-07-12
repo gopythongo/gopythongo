@@ -123,7 +123,7 @@ def debian_versionpart_compare(mine: List[str], theirs: List[str]) -> int:
 
 
 class DebianVersion(object):
-    def __init__(self, epoch: str, version: str, revision: str) -> None:
+    def __init__(self, epoch: Union[str, None], version: str, revision: Union[str, None]) -> None:
         self.epoch = epoch  # type: str
         self.version = version  # type: str
         self.revision = revision  # type: str
