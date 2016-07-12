@@ -1,3 +1,5 @@
 # -* encoding: utf-8 *-
 
-from . import debversion, template
+from .debversion import *
+from .template import *
+from .version_conversion import *
