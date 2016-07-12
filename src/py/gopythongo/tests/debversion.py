@@ -24,6 +24,8 @@ class DebianVersionTests(TestCase):
         self.assertTrue(DebianVersion.fromstring("1.0-2") > DebianVersion.fromstring("1.0-1"))
         self.assertTrue(DebianVersion.fromstring("1.0") == DebianVersion.fromstring("1.0"))
         self.assertTrue(DebianVersion.fromstring("0:1.0") == DebianVersion.fromstring("1.0"))
+        self.assertTrue(DebianVersion.fromstring("3:1.0") > DebianVersion.fromstring("2:1.0"))
+        self.assertTrue(DebianVersion.fromstring("1.1") > DebianVersion.fromstring("1.0"))
 
     def test_split_version_parts(self) -> None:
         self.assertListEqual(split_version_parts("a67bhgs89"), ["a", "67", "bhgs", "89"])
