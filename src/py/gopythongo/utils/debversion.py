@@ -221,7 +221,7 @@ class DebianVersion(object):
         # special case: zero Epoch is the same as no Epoch
         if self.epoch is not None and other.epoch is not None and \
            int(self.epoch) != int(other.epoch) and int(self.epoch) != 0 and int(other.epoch) != 0:
-            return method(int(other.epoch) - int(self.epoch))
+            return method(int(self.epoch) - int(other.epoch))
 
         res = debian_versionpart_compare(split_version_parts(self.version, self.version_char_re),
                                          split_version_parts(other.version, self.version_char_re))
