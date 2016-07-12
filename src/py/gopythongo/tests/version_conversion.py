@@ -2,10 +2,8 @@
 import argparse
 from unittest.case import TestCase
 from collections import namedtuple
-from typing import List, Any, cast
+from typing import Any, cast
 
-from gopythongo.utils.debversion import DebianVersion
-from gopythongo.versioners.parsers import VersionContainer
 from gopythongo.versioners.parsers.debianparser import DebianVersionParser
 from gopythongo.versioners.parsers.pep440parser import PEP440VersionParser, PEP440Adapter
 from gopythongo.versioners.parsers.semverparser import SemVerVersionParser, SemVerAdapter
@@ -25,7 +23,7 @@ class VersionConversionTests(TestCase):
             self.assertLess(a, b)
             ix += 1
 
-    def test_semver_debian(self):
+    def test_semver_debian(self) -> None:
         dvp = DebianVersionParser()
         svp = SemVerVersionParser()
 
@@ -37,7 +35,7 @@ class VersionConversionTests(TestCase):
                            svp.parse("1.2.3-1.1", args).version,
                            svp.parse("1.2.3", args).version)
 
-    def test_pep440_debian(self):
+    def test_pep440_debian(self) -> None:
         dvp = DebianVersionParser()
         pvp = PEP440VersionParser()
         self._testeachless(
