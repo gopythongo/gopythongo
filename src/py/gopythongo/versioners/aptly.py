@@ -31,10 +31,10 @@ class AptlyVersioner(BaseVersioner):
         gr_aptly = parser.add_argument_group("Aptly Versioner options")
         gr_aptly.add_argument("--fallback-version", dest="aptly_fallback_version", default=None,
                               help="If the APT repository does not yet contain a package with the name specified by "
-                                   "--aptly-query, the Aptly versioner can return a fallback value. This is useful "
+                                   "--aptly-query, the Aptly Versioner can return a fallback value. This is useful "
                                    "for fresh repositories.")
-        gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default=[],
-                              help="Specify additional command-line parameters which will be appened to every "
+        gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default=[], action="append",
+                              help="Specify additional command-line parameters which will be appended to every "
                                    "invocation of aptly by the Aptly Versioner.")
         gr_aptly.add_argument("--aptly-query", dest="aptly_query", default=None,
                               help="Set the query to run on the aptly repo. For example: get the latest revision of a "
@@ -58,12 +58,12 @@ class AptlyVersioner(BaseVersioner):
 
     def query_repo_versions(self, query: str, args: argparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:
-        cmd = _aptly_args.get_aptly_cmdline(args)
+        cmd = _aptly_args.get_aptly_cmdline(args) + ["repo", "search"]
 
         if args.aptly_versioner_opts:
             cmd += args.aptly_versioner_opts
 
-        cmd += ["repo", "search", "-format=\"{{.Version}}\"", args.aptly_repo, query]
+        cmd += ["-format=\"{{.Version}}\"", args.aptly_repo, query]
         ret = run_process(*cmd, allow_nonzero_exitcode=True)
         # FIXME: add error code handling, because no results is not the only possible error message
         if ret.exitcode != 0 and "ERROR: no results" in ret.output:
