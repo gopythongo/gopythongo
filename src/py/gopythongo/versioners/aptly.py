@@ -1,5 +1,6 @@
 # -* encoding: utf-8 *-
 import argparse
+import shlex
 
 from typing import List, Any
 
@@ -7,7 +8,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, run_process, ErrorMessage, print_info
+from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, flatten
 
 
 class AptlyVersioner(BaseVersioner):
@@ -33,7 +34,7 @@ class AptlyVersioner(BaseVersioner):
                               help="If the APT repository does not yet contain a package with the name specified by "
                                    "--aptly-query, the Aptly Versioner can return a fallback value. This is useful "
                                    "for fresh repositories.")
-        gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default=[], action="append",
+        gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default="",
                               help="Specify additional command-line parameters which will be appended to every "
                                    "invocation of aptly by the Aptly Versioner.")
         gr_aptly.add_argument("--aptly-query", dest="aptly_query", default=None,
@@ -59,9 +60,7 @@ class AptlyVersioner(BaseVersioner):
     def query_repo_versions(self, query: str, args: argparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:
         cmd = _aptly_args.get_aptly_cmdline(args) + ["repo", "search"]
-
-        if args.aptly_versioner_opts:
-            cmd += args.aptly_versioner_opts
+        cmd += shlex.split(args.aptly_versioner_opts)
 
         cmd += ["-format=\"{{.Version}}\"", args.aptly_repo, query]
         ret = run_process(*cmd, allow_nonzero_exitcode=True)

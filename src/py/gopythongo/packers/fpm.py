@@ -7,7 +7,7 @@ import os
 from typing import Any, List, Dict, Union
 
 from gopythongo.packers import BasePacker
-from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage
+from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage, flatten
 from gopythongo.utils.buildcontext import the_context, PackerArtifact
 
 
@@ -74,7 +74,7 @@ class FPMPacker(BasePacker):
         gr_opts = parser.add_argument_group("FPM related options (can also be used in OPTS_FILE):")
         gr_opts.add_argument("--fpm-format", dest="fpm_format", choices=["deb"], default="deb",
                              help="Output package format. Only 'deb' is supported for now")
-        gr_opts.add_argument("--fpm-opts", dest="fpm_extra_opts", action="append", default=[],
+        gr_opts.add_argument("--fpm-opts", dest="fpm_extra_opts", default="",
                              help="Any string specified here will be directly appended to the FPM command-line when it "
                                   "is invoked, allowing you to specify arbitrary extra command-line parameters. Make "
                                   "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
@@ -156,7 +156,8 @@ class FPMPacker(BasePacker):
             args.fpm, "-t", "deb", "-s", "dir",
         ]
 
-        fpm_base += args.fpm_extra_opts
+        if args.fpm_extra_opts:
+            fpm_base += shlex.split(" ".join(flatten(args.fpm_extra_opts)))
 
         ctx = {
             "basedir": args.build_path,

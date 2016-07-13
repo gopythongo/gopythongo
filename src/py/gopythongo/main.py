@@ -32,7 +32,7 @@ class DebugConfigAction(argparse.Action):
                  help: str="Show all configuration keys and where they were loaded from, i.e. from the command-line, "
                            "a configuration file, or the environment") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default,
-                         nargs="?", choices=choices, help=help)
+                         nargs=0, choices=choices, help=help)
 
     def __call__(self, parser: ArgumentParser, namespace: argparse.Namespace,
                  values: str, option_string: str=None) -> None:

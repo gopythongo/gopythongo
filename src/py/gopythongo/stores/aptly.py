@@ -1,5 +1,6 @@
 # -* encoding: utf-8 *-
 import argparse
+import shlex
 
 from typing import Any, Sequence, Union, Dict, cast
 
@@ -7,7 +8,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.stores import BaseStore
-from gopythongo.utils import print_debug, highlight, print_info, run_process
+from gopythongo.utils import print_debug, highlight, print_info, run_process, flatten
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
@@ -27,10 +28,10 @@ class AptlyStore(BaseStore):
         _aptly_args.add_shared_args(parser)
 
         gp_ast = parser.add_argument_group("Aptly Store options")
-        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default=[], action="append",
+        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default="",
                             help="Specify additional command-line parameters which will be appended to every "
                                  "'aptly repo' command executed by the Aptly Store.")
-        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default=[], action="append",
+        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default="",
                             help="Specify additional command-line parameters which will be appended to every "
                                  "'aptly publish' command executed by the Aptly Store.")
         gp_ast.add_argument("--aptly-publish-endpoint", dest="aptly_publish_endpoint", metavar="ENDPOINT", default=None,
@@ -112,9 +113,7 @@ class AptlyStore(BaseStore):
         for pkg in the_context.packer_artifacts:
             print_info("Adding %s to repo %s..." % (pkg.artifact_filename, args.aptly_repo))
             cmdline = get_aptly_cmdline(args)
-
-            if args.aptly_repo_opts:
-                cmdline += args.aptly_repo_opts
+            cmdline += shlex.split(args.aptly_repo_opts)
 
             cmdline += ["repo", "add", args.aptly_repo, pkg.artifact_filename]
             run_process(*cmdline)
@@ -122,9 +121,7 @@ class AptlyStore(BaseStore):
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" % (args.aptly_repo, args.aptly_publish_endpoint))
             cmdline = get_aptly_cmdline(args) + ["publish", "repo"]
-
-            if args.aptly_publish_opts:
-                cmdline += args.aptly_publish_opts
+            cmdline += shlex.split(args.aptly_publish_opts)
 
             cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
             run_process(*cmdline)

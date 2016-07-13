@@ -50,12 +50,12 @@ class PbuilderBuilder(BaseBuilder):
         gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append", default=[],
                                  help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
                                       "libs for databases so that Python C extensions compile correctly")
-        gr_pbuilder.add_argument("--pbuilder-opts", dest="pbuilder_opts", action="append", default=[],
+        gr_pbuilder.add_argument("--pbuilder-opts", dest="pbuilder_opts", default="",
                                  help="Options which will be put into every pbuilder command-line executed by "
                                       "GoPythonGo")
-        gr_pbuilder.add_argument("--pbuilder-create-opts", dest="pbuilder_create_opts", action="append", default=[],
+        gr_pbuilder.add_argument("--pbuilder-create-opts", dest="pbuilder_create_opts", default="",
                                  help="Options which will be appended to the pbuilder --create command-line")
-        gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", action="append", default=[],
+        gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", default="",
                                  help="Options which will be appended to the pbuilder --execute command-line")
 
     def validate_args(self, args: argparse.Namespace) -> None:
@@ -100,8 +100,8 @@ class PbuilderBuilder(BaseBuilder):
 
         if do_create:
             create_cmdline = [args.pbuilder_executable, "--create"]
-            create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_opts)))
-            create_cmdline += shlex.split(" ".join(flatten(args.pbuilder_create_opts)))
+            create_cmdline += shlex.split(args.pbuilder_opts)
+            create_cmdline += shlex.split(args.pbuilder_create_opts)
             if args.pbuilder_distribution:
                 create_cmdline += ["--distribution", args.pbuilder_distribution]
 
@@ -120,8 +120,8 @@ class PbuilderBuilder(BaseBuilder):
             run_process(*create_cmdline)
 
         build_args = []  # type: List[str]
-        build_args += shlex.split(" ".join(flatten(args.pbuilder_opts)))
-        build_args += shlex.split(" ".join(flatten(args.pbuilder_execute_opts)))
+        build_args += shlex.split(args.pbuilder_opts)
+        build_args += shlex.split(args.pbuilder_execute_opts)
 
         for mount in args.mounts + list(the_context.mounts):
             build_args += ["--bindmounts", mount]
