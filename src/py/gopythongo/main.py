@@ -19,10 +19,7 @@ import gopythongo
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug
 
-# the tempmount can be used to create temporary files to pass to the inner GoPythonGo
-tempmount = tempfile.mkdtemp(prefix="gopythongo-")  # type: str
 tempfiles = []  # type: List[str]
-
 default_config_files = [".gopythongo/config"]  # type: List[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
@@ -170,10 +167,10 @@ def _sigint_handler(sig: int, frame: FrameType) -> None:
     sys.exit(1)
 
 
-def _cleanup_tempfiles() -> None:
-    if tempmount:
-        if os.path.exists(tempmount):
-            shutil.rmtree(tempmount)
+def _cleanup_tempfiles(args: argparse.Namespace) -> None:
+    if the_context.tempmount and not args.is_inner:
+        if os.path.exists(the_context.tempmount):
+            shutil.rmtree(the_context.tempmount)
 
     if tempfiles:
         for f in tempfiles:
@@ -193,9 +190,6 @@ def _find_default_mounts() -> Set[str]:
 
     paths = set()
     paths.add(basepath)
-
-    paths.add(tempmount)
-
     for cfg in args.config:
         if os.path.isfile(cfg):
             paths.add(os.path.abspath(os.path.dirname(cfg)))
@@ -203,7 +197,6 @@ def _find_default_mounts() -> Set[str]:
 
 
 def route() -> None:
-    atexit.register(_cleanup_tempfiles)
     signal.signal(signal.SIGINT, _sigint_handler)
 
     for subinit in [initializers.init_subsystem, versioners.init_subsystem, builders.init_subsystem,
@@ -226,6 +219,7 @@ def route() -> None:
 
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
+        atexit.register(_cleanup_tempfiles, args)
         init_color(args.no_color)
 
         validate_args(args)
@@ -243,17 +237,24 @@ def route() -> None:
         if not args.is_inner:
             # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2
             versioners.version(args)
+            the_context.save_state()
             builders.build(args)
 
             # STEP 3: After the 2nd gopythongo process is finished, we end up here
+            print_debug("Reading state from %s in outer shell" % highlight(the_context.state_file))
+            the_context.load_state()
             stores.store(args)
         else:
+            # we can't use .load_state() here because the_context doesn't know the state_file's path yet
             the_context.read(args.read_state)
             # STEP 2: ... which will land here and execute inside the build environment
             versioners.version(args)
             assemblers.assemble(args)
             packers.pack(args)
-
+            # write the state to be read in STEP 3 above
+            print_debug("Writing state to %s before returning from build environment" %
+                        highlight(the_context.state_file))
+            the_context.save_state()
     else:
         print_help()
 

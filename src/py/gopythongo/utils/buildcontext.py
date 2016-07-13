@@ -5,10 +5,10 @@ import sys
 
 import tempfile
 
-from typing import Set, Any, Dict, List
+from typing import Set, Any, Dict, List, Union, cast
 from typing.io import TextIO
 
-from gopythongo.packers import BasePacker
+from gopythongo.packers import BasePacker, get_packers
 from gopythongo.utils import GoPythonGoEnableSuper
 from gopythongo.versioners.parsers import VersionContainer
 
@@ -24,12 +24,27 @@ class PackerArtifact(GoPythonGoEnableSuper):
     """
     def __init__(self, typedesignator: str, artifact_filename: str, artifact_metadata: Dict[str, str],
                  created_by: BasePacker, created_by_packername: str, *args: Any, **kwargs: Any) -> None:
-        self.typedesignator = typedesignator
-        self.artifact_filename = artifact_filename
-        self.artifact_metadata = artifact_metadata,
-        self.created_by = created_by
-        self.created_by_packername = created_by_packername
+        self.typedesignator = typedesignator  # type: str
+        self.artifact_filename = artifact_filename  # type: str
+        self.artifact_metadata = artifact_metadata  # type: Dict[str, str]
+        self.created_by = created_by  # type: BasePacker
+        self.created_by_packername = created_by_packername  # type: str
         super().__init__(typedesignator, artifact_filename, artifact_metadata, created_by, *args, **kwargs)
+
+    def todict(self) -> Dict[str, Union[Dict[str, str], str]]:
+        return {
+            "t": self.typedesignator,
+            "af": self.artifact_filename,
+            "am": self.artifact_metadata,
+            "cbp": self.created_by_packername,
+        }
+
+    @staticmethod
+    def fromdict(dic: Dict[str, Union[str, Dict[str, str]]]) -> 'PackerArtifact':
+        bp = get_packers()[cast(str, dic["cbp"])]
+        return PackerArtifact(
+            cast(str, dic["t"]), cast(str, dic["af"]), cast(Dict[str, str], dic["am"]), bp, cast(str, dic["cbp"])
+        )
 
 
 class BuildContext(object):
@@ -43,36 +58,52 @@ class BuildContext(object):
         >>> the_context.mounts.add("path/to/my/stuff")  # makes your stuff available to your code during the build
     """
     def __init__(self) -> None:
-        self.packs = []  # type: List[str]
         self.read_version = None  # type: VersionContainer[Any]
         self.generated_versions = None  # type: Dict[str, VersionContainer[Any]]
         self.gopythongo_path = None  # type: str
         self.gopythongo_cmd = None  # type: List[str]
         self.mounts = set()  # type: Set[str]
         self.packer_artifacts = set()  # type: Set[PackerArtifact]
+        # the tempmount can be used to create temporary files to pass to the inner GoPythonGo
+        self.tempmount = tempfile.mkdtemp(prefix="gopythongo-")  # type: str
+        fd, self.state_file = tempfile.mkstemp(dir=self.tempmount, text=True)  # type: str
+        os.close(fd)
+        self.mounts.add(self.tempmount)
 
     def write(self, outf: TextIO) -> None:
         json.dump({
             "read_version": self.read_version.todict(),
-            "generated_versions": {key: value.todict() for key, value in self.generated_versions.items()}
+            "generated_versions": {key: value.todict() for key, value in self.generated_versions.items()},
+            "packer_artifacts": [value.todict() for value in self.packer_artifacts],
+            "tempmount": self.tempmount,
+            "state_file": self.state_file
         }, outf)
 
-    def read(self, filename: str) -> None:
+    def parse_state(self, statestr: str) -> None:
         from gopythongo.versioners.parsers import VersionContainer
-        with open(filename, "rt", encoding="utf-8") as f:
-            state = json.load(f)
+        state = json.loads(statestr)
         self.read_version = VersionContainer.fromdict(state["read_version"])
         self.generated_versions = {key: VersionContainer.fromdict(value)
                                    for key, value in state["generated_versions"].items()}
+        self.packer_artifacts = set([PackerArtifact.fromdict(value) for value in state["packer_artifacts"]])
+        self.tempmount = state["tempmount"]
+        self.state_file = state["state_file"]
 
-    def get_gopythongo_inner_commandline(self) -> List[str]:
-        from gopythongo.main import tempmount
-        fd, ofname = tempfile.mkstemp(dir=tempmount, text=True)
-        with open(fd, mode="wt") as f:
+    def read(self, filename: str) -> None:
+        with open(filename, "rt", encoding="utf-8") as f:
+            state = f.read()
+        self.parse_state(state)
+
+    def save_state(self):
+        with open(self.state_file, "wt", encoding="utf-8") as f:
             self.write(f)
 
-        return self.gopythongo_cmd + ["--inner"] + ['--read-state="%s"' % ofname] + ['--cwd="%s"' % os.getcwd()] + \
-               sys.argv[1:]
+    def load_state(self):
+        self.read(self.state_file)
+
+    def get_gopythongo_inner_commandline(self) -> List[str]:
+        return self.gopythongo_cmd + ["--inner"] + ['--read-state="%s"' % self.state_file] + \
+               ['--cwd="%s"' % os.getcwd()] + sys.argv[1:]
 
 
 the_context = BuildContext()  # type: BuildContext

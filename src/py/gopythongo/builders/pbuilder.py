@@ -1,8 +1,8 @@
 # -* encoding: utf-8 *-
 import argparse
+import tempfile
 
 import os
-import sys
 import shlex
 
 from typing import Any
@@ -57,10 +57,6 @@ class PbuilderBuilder(BaseBuilder):
                                  help="Options which will be appended to the pbuilder --create command-line")
         gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", action="append", default=[],
                                  help="Options which will be appended to the pbuilder --execute command-line")
-        gr_pbuilder.add_argument("--pbuilder-debug-login", dest="pbuilder_debug_login", action="store_true",
-                                 default=False,
-                                 help="Instead of executing the '--inner' build, run pbuilder with '--login' to spawn "
-                                      "a debug shell inside the chroot")
 
     def validate_args(self, args: argparse.Namespace) -> None:
         if args.is_inner:
@@ -143,16 +139,26 @@ class PbuilderBuilder(BaseBuilder):
                                       ["--save-after-exec", "--", runspec]
                 run_process(*post_create_cmdline)
 
-        if args.pbuilder_debug_login:
+        if args.builder_debug_login:
             build_cmdline = [args.pbuilder_executable, "--login"] + build_args
             debug_cmdline = build_cmdline + ["--"] + the_context.get_gopythongo_inner_commandline()
             debug_cmdline = [x if x != "--login" else "--execute" for x in debug_cmdline]
-            print_debug("Without --pbuilder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
+            print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
         else:
-            build_cmdline = [args.pbuilder_executable, "--execute"] + build_args
-            build_cmdline += ["--"] + the_context.get_gopythongo_inner_commandline()
+            # pbuilder COPIES the first argument after "--" to the chroot and executes it, so we can't reference
+            # the GoPythonGo python interpreter directly. Instead we need to create a intermediary script file
+            from gopythongo.main import tempfiles
+            build_cmdline = [args.pbuilder_executable, "--execute"] + build_args + ["--"]
+            scriptfd, scriptfn = tempfile.mkstemp()
+            tempfiles.append(scriptfn)
+            with open(scriptfd, "wt", encoding="utf-8") as f:
+                print("#!/bin/sh", file=f)
+                print(" ".join(the_context.get_gopythongo_inner_commandline()), file=f)
+            print_debug("Running the following command inside the build environment: %s" %
+                        " ".join(the_context.get_gopythongo_inner_commandline()))
+            build_cmdline += [scriptfn]
 
-        run_process(*build_cmdline, interactive=args.pbuilder_debug_login)
+        run_process(*build_cmdline, interactive=args.builder_debug_login)
 
 
 builder_class = PbuilderBuilder

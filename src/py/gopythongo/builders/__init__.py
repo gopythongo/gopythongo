@@ -43,17 +43,29 @@ class BaseBuilder(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
 
     def build(self, args: argparse.Namespace) -> None:
-        pass
+        """
+        Run a build environment while making sure that:
+          * all folders listed in args.mounts and the_context.mounts are available inside the build environment
+          * then run the command returned by the_context.get_gopythongo_inner_cmdline(args) inside the build
+            environment
+        :param args: the command-line arguments as parsed by GoPythonGo
+        """
+        raise NotImplementedError("Each subclass of BaseBuilder MUST implement build")
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     global _builders
 
-    gr_bundle = parser.add_argument_group("Bundle settings")
-    gr_bundle.add_argument("--mount", dest="mounts", action="append", default=[],
-                           help="Additional folders to mount into the build environment. Due to limitations of "
-                                "the builders all paths will be mounted in place, i.e. in the same location where they "
-                                "exist on the host system.")
+    gr_builder = parser.add_argument_group("Common Builder options")
+    gr_builder.add_argument("--mount", dest="mounts", action="append", default=[],
+                            help="Additional folders to mount into the build environment. Due to limitations of "
+                                 "the builders all paths will be mounted in place, i.e. in the same location where they "
+                                 "exist on the host system.")
+    gr_builder.add_argument("--builder-debug-login", dest="builder_debug_login", action="store_true",
+                            default=False,
+                            help="Instead of executing the '--inner' build, if the Builder supports it, run an "
+                                 "interactive shell inside the build environment for debug purposes")
+
 
     for b in _builders.values():
         b.add_args(parser)
