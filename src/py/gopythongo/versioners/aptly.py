@@ -7,7 +7,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, print_debug
+from gopythongo.utils import highlight, run_process, ErrorMessage, print_info
 
 
 class AptlyVersioner(BaseVersioner):

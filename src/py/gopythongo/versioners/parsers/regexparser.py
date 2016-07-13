@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any, Tuple, List
+from typing import Any
 
 from gopythongo.versioners.parsers.semverparser import SemVerAdapter, SemVerVersionParser
 from gopythongo.versioners.parsers import VersionContainer

@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
-import sys
-from typing import List, Dict, Type, Any
+
+from typing import Dict, Any
 
 from gopythongo.packers import get_packers
 from gopythongo.stores import get_stores

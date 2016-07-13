@@ -1,12 +1,13 @@
 # -* encoding: utf-8 *-
 import argparse
+
 from unittest.case import TestCase
 from collections import namedtuple
 from typing import Any, cast
 
 from gopythongo.versioners.parsers.debianparser import DebianVersionParser
-from gopythongo.versioners.parsers.pep440parser import PEP440VersionParser, PEP440Adapter
-from gopythongo.versioners.parsers.semverparser import SemVerVersionParser, SemVerAdapter
+from gopythongo.versioners.parsers.pep440parser import PEP440VersionParser
+from gopythongo.versioners.parsers.semverparser import SemVerVersionParser
 
 
 _Args = namedtuple("_Args", ["semver_partial", "semver_coerce"])

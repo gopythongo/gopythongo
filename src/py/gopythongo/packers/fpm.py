@@ -1,8 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
-import json
 import shlex
-
+import json
 import os
 
 from typing import Any, List, Dict, Union

@@ -3,7 +3,6 @@
 import argparse
 import shutil
 
-import tempfile
 import atexit
 import signal
 import sys

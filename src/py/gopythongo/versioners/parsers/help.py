@@ -1,5 +1,4 @@
 # -* encoding: utf-8 *-
-
 import argparse
 
 from typing import Any, Iterable

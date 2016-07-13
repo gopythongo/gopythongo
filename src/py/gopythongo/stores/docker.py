@@ -3,7 +3,7 @@ import argparse
 
 from typing import Any
 
-import gopythongo.shared.docker_args
+import gopythongo.shared.docker_args as _docker_args
 
 from gopythongo.stores import BaseStore
 
@@ -17,7 +17,7 @@ class DockerStore(BaseStore):
         return u"docker"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
-        gopythongo.shared.docker_args.add_shared_args(parser)
+        _docker_args.add_shared_args(parser)
 
     def validate_args(self, args: argparse.Namespace) -> None:
         pass

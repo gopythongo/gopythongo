@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
-import os
 import argparse
+import os
 
 from gopythongo.utils import highlight, ErrorMessage
 

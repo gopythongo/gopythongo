@@ -1,8 +1,7 @@
 # -* encoding: utf-8 *-
-import os
 import tempfile
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List
 
 import jinja2
 

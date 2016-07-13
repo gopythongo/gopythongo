@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
-from typing import Dict, Union, Iterable, Any, Type, TypeVar
-
 import pkg_resources
+
+from typing import Dict, Union, Iterable, Any, Type, TypeVar
 
 
 T = TypeVar("T")

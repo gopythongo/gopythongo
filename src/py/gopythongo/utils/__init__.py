@@ -8,7 +8,7 @@ import os
 from typing import List, Iterable, Union, Any, cast
 
 import colorama
-from colorama import Fore, Style
+from colorama import Fore
 
 
 success_color = Fore.LIGHTGREEN_EX  # type: str

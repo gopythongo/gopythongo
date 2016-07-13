@@ -1,13 +1,12 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from argparse import Action
 from typing import Iterable, Any
 
 from gopythongo.utils import highlight
 
 
-class InitializerHelpAction(Action):
+class InitializerHelpAction(argparse.Action):
     def __init__(self,
                  option_strings: str,
                  dest: str,

@@ -4,8 +4,8 @@ import argparse
 from typing import Any, Sequence, Union, Dict, cast
 
 import gopythongo.shared.aptly_args as _aptly_args
-from gopythongo.shared.aptly_args import get_aptly_cmdline
 
+from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.stores import BaseStore
 from gopythongo.utils import print_debug, highlight, print_info, run_process
 from gopythongo.utils.buildcontext import the_context

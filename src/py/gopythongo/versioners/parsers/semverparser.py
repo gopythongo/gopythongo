@@ -2,9 +2,7 @@
 import argparse
 import re
 
-from copy import copy
 from typing import Any, Tuple, List
-
 from semantic_version import Version as SemVerBase
 
 from gopythongo.utils import highlight, ErrorMessage, print_info
