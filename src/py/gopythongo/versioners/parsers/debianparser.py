@@ -56,7 +56,7 @@ class DebianVersionParser(BaseVersionParser):
                 matches = re.search("([0-9]+)", ver.revision)
                 if matches:
                     # replace the first occurrence
-                    ver.revision.replace(matches.group(1), str(int(matches.group(1)) + 1), 1)
+                    ver.revision = ver.revision.replace(matches.group(1), str(int(matches.group(1)) + 1), 1)
                 else:
                     raise ErrorMessage("Version Action is '%s', but the revision string of %s (revision=%s) does not "
                                        "contain an incrementable integer number" %
