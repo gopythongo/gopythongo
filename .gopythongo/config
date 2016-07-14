@@ -1,0 +1,20 @@
+builder=pbuilder
+distribution=jessie
+pbuilder-create-opts=--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian
+run-after-create=[.gopythongo/install_fpm.sh]
+packer=fpm
+store=aptly
+repo=gopythongo
+aptly-publish-opts=-distribution=jessie -architectures=amd64 -keyring=/root/gopythongo_sign.gpg -gpg-key=84BEC887FD2B8F2A6F073DC4D0F0F4B5DC236955 -passphrase-file=/root/gopythongo_dev_passphrase.txt
+aptly-publish-endpoint=s3:gopythongo:debian/
+versioner=pymodule
+pymodule-read=gopythongo.version
+version-parser=pep440
+version-action=bump-revision
+#pbuilder-debug-login
+use-fpm=/usr/local/bin/fpm
+run-fpm=template:.gopythongo/fpm_opts
+copy-out=/home/vagrant/test/build
+eatmydata
+eatmydata-path=/usr/bin/eatmydata
+
