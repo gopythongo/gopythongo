@@ -17,22 +17,31 @@ distribution=jessie
 #   gpg --no-default-keyring --keyring /etc/apt/trusted.gpg --import \
 #   /usr/share/keyrings/debian-archive-keyring.gpg
 #
-# The following MUST be on one line:
-# pbuilder-create-opts=[--keyring /etc/apt/trusted.gpg, --debootstrapopts --keyring=/etc/apt/trusted.gpg, --mirror http://fileserver.maurusnet.test/debian]
+# The following MUST be on one line. You also probably want to put this into
+# the PBUILDER_CREATE_OPTS environment variable on your build server.
+# pbuilder-create-opts=--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian
 run-after-create=[.gopythongo/install_fpm.sh]
-pbuilder-debug-login
-
 packer=fpm
+
 store=aptly
+repo=gopythongo
+# To sign your own packages and publish them on your own APT repository, you
+# should create a signing keypair, like this:
+#   gpg --no-default-keyring --keyring /root/gopythongo_sign.gpg --gen-key
+#
+# The following MUST be on oen line. You MOST LIKELY don't want to keep this
+# information in your source control, but really want to set the
+# APTLY_PUBLISH_OPTS environment variable on your build server instead.
+# aptly-publish-opts=-distribution=jessie -architectures=amd64 -keyring=/root/gopythongo_sign.gpg -gpg-key=84BEC887FD2B8F2A6F073DC4D0F0F4B5DC236955 -passphrase-file=/root/gopythongo_dev_passphrase.txt
+aptly-publish-endpoint=s3:gopythongo:debian/
 
 versioner=pymodule
 pymodule-read=gopythongo.version
-
 version-parser=pep440
-version-action=none
+version-action=bump-revision
 
 use-fpm=/usr/local/bin/fpm
-run-fpm=fpm_opts
+run-fpm=template:.gopythongo/fpm_opts
 copy-out=/home/vagrant/test/build
 
 eatmydata
@@ -62,8 +71,12 @@ $EATMYDATA gem install fpm
 fpm_opts = """
 -p gopythongo-{{debian_version.version}}.deb
 -n gopythongo
+-v "{{debian_version.version}}"
+-m "Jonas Maurus <jonas@gopythongo.com>"
+-d "python3 python3-pip python3-virtualenv virtualenv"
+--deb-suggests "gnupg pbuilder aptly ruby ruby-dev"
 --depends "python3 python-virtualenv python-pip virtualenv"
-{{basedir}
+{{basedir}}
 """
 
 
@@ -94,7 +107,9 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
               "        echo deb http://repo.aptly.info/ squeeze main \\\n"
               "          > /etc/apt/sources.list.d/aptly.info\n"
               "        apt-get update\n"
-              "        apt-get --no-install-recommends install pbuilder ruby ruby-dev aptly\n"
+              "        apt-get --no-install-recommends install pbuilder ruby ruby-dev aptly \\\n"
+              "            eatmydata\n"
+              "        gem install fpm\n"
               "\n"
               "You can find more information at the following URLs:\n"
               "    http://gopythongo.com/\n"
