@@ -40,12 +40,6 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement store_name")
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
-        pass
-
-    def validate_args(self, args: argparse.Namespace) -> None:
-        pass
-
     def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
                                  args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
         """
@@ -60,7 +54,7 @@ class BaseStore(CommandLinePlugin):
         return None
 
     def store(self, args: argparse.Namespace) -> None:
-        pass
+        raise NotImplementedError("Each subclass of BaseStore MUST implement store")
 
 
 def add_args(parser: argparse.ArgumentParser) -> None:
