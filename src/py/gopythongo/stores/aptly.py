@@ -102,7 +102,8 @@ class AptlyStore(BaseStore):
         aptlyv = self._get_aptly_versioner()
         debvp = self._get_debian_versionparser()
 
-        debversions = aptlyv.query_repo_versions("Name (%s)" % package_name, args, allow_fallback_version=False)
+        debversions = aptlyv.query_repo_versions("Name (%s), $Version (%% *%s*)" %
+                                                 (package_name, version.version), args, allow_fallback_version=False)
 
         if debversions:
             # we already have a version in the repo
