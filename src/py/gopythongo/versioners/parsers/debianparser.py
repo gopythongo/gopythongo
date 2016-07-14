@@ -1,5 +1,6 @@
 # -* encoding: utf-8 *-
 import argparse
+import re
 
 from typing import Any, Tuple, List
 
@@ -42,8 +43,27 @@ class DebianVersionParser(BaseVersionParser):
             return True
 
     def execute_action(self, version: VersionContainer[DebianVersion], action: str) -> VersionContainer[DebianVersion]:
+        # make a copy of the DebianVersion object
         ver = DebianVersion.fromstring(version.version.tostring())
-        # TODO: implement this
+        if action == "bump-epoch":
+            if ver.epoch:
+                ver.epoch = str(int(ver.epoch) + 1)
+            else:
+                ver.epoch = "1"
+        elif action == "bump-revision":
+            # find the first number group in revision and increment it
+            if ver.revision:
+                matches = re.search("([0-9]+)", ver.revision)
+                if matches:
+                    # replace the first occurrence
+                    ver.revision.replace(matches.group(1), str(int(matches.group(1)) + 1), 1)
+                else:
+                    raise ErrorMessage("Version Action is '%s', but the revision string of %s (revision=%s) does not "
+                                       "contain an incrementable integer number" %
+                                       (highlight(action), highlight(str(ver)), highlight(ver.revision)))
+            else:
+                ver.revision = "1"
+        return VersionContainer(ver, self.versionparser_name)
 
     def deserialize(self, serialized: str) -> VersionContainer:
         return VersionContainer(DebianVersion.fromstring(serialized), self.versionparser_name)
