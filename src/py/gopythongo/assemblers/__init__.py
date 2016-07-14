@@ -73,4 +73,4 @@ def validate_args(args: argparse.Namespace) -> None:
 
 def assemble(args: argparse.Namespace) -> None:
     for asm in args.assemblers:
-        _assemblers[asm].build(args)
+        _assemblers[asm].assemble(args)
