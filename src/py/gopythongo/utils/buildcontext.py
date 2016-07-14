@@ -5,7 +5,7 @@ import sys
 
 import tempfile
 
-from typing import Set, Any, Dict, List, Union, cast
+from typing import Set, Any, Dict, List, Union, cast, Tuple
 from typing.io import TextIO
 
 from gopythongo.packers import BasePacker, get_packers
@@ -58,15 +58,15 @@ class BuildContext(object):
         >>> the_context.mounts.add("path/to/my/stuff")  # makes your stuff available to your code during the build
     """
     def __init__(self) -> None:
+        self.packer_artifacts = set()  # type: Set[PackerArtifact]
         self.read_version = None  # type: VersionContainer[Any]
         self.generated_versions = None  # type: Dict[str, VersionContainer[Any]]
         self.gopythongo_path = None  # type: str
         self.gopythongo_cmd = None  # type: List[str]
         self.mounts = set()  # type: Set[str]
-        self.packer_artifacts = set()  # type: Set[PackerArtifact]
         # the tempmount can be used to create temporary files to pass to the inner GoPythonGo
         self.tempmount = tempfile.mkdtemp(prefix="gopythongo-")  # type: str
-        fd, self.state_file = tempfile.mkstemp(dir=self.tempmount, text=True)  # type: str
+        fd, self.state_file = tempfile.mkstemp(dir=self.tempmount, text=True)  # type: Tuple[int, str]
         os.close(fd)
         self.mounts.add(self.tempmount)
 
@@ -94,11 +94,11 @@ class BuildContext(object):
             state = f.read()
         self.parse_state(state)
 
-    def save_state(self):
+    def save_state(self) -> None:
         with open(self.state_file, "wt", encoding="utf-8") as f:
             self.write(f)
 
-    def load_state(self):
+    def load_state(self) -> None:
         self.read(self.state_file)
 
     def get_gopythongo_inner_commandline(self) -> List[str]:
