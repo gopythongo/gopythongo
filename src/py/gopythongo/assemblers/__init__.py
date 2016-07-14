@@ -59,14 +59,18 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
 
 def validate_args(args: argparse.Namespace) -> None:
+    if args.assemblers:
+        for asm in args.assemblers:
+            if asm in _assemblers.keys():
+                _assemblers[asm].validate_args(args)
+            else:
+                raise ErrorMessage("Unknown assembler: %s. Known assemblers are: %s" %
+                                   (highlight(asm), highlight(", ".join(_assemblers.keys()))))
+
     if not os.path.isabs(args.build_path):
         raise ErrorMessage("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
 
-    for assembler in args.assemblers:
-        if assembler in _assemblers.keys():
-            _assemblers[assembler].validate_args(args)
-
 
 def assemble(args: argparse.Namespace) -> None:
-    for assembler in _assemblers.values():
-        assembler.assemble(args)
+    for asm in args.assemblers:
+        _assemblers[asm].build(args)
