@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -* encoding: utf-8 *-
-
+import re
 import sys
 
 from distutils.core import setup
@@ -9,8 +9,16 @@ from setuptools import find_packages
 _package_root = "src/py"
 _root_package = 'gopythongo'
 
-import time  # noqa
-_version = "1.0.dev%s" % int(time.time())
+
+with open("src/py/gopythongo/__init__.py", "rt", encoding="utf-8") as vf:
+    lines = vf.readlines()
+
+_version = "0.0.0+local"
+for l in lines:
+    m = re.match("version = \"(.*?)\"", l)
+    if m:
+        _version = m.group(1)
+
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 _requirements = [
