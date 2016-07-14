@@ -107,10 +107,10 @@ class AptlyStore(BaseStore):
         if debversions:
             # we already have a version in the repo
             new_base = debversions[-1]
-            print_debug("Found existing an version %s for package %s" %
+            print_debug("Found an existing version %s for package %s" %
                         (highlight(str(new_base)), highlight(package_name)))
-            after_action = debvp.execute_action(version, action)
-            if after_action.version <= version.version:
+            after_action = debvp.execute_action(debvp.deserialize(str(new_base)), action)
+            if after_action.version < version.version:
                 if args.aptly_overwrite_newer:
                     print_info("Will overwrite same or newer version in repo with older version (existing: %s, "
                                "new: %s)" % (highlight(str(version.version)), highlight(str(after_action.version))))
@@ -123,13 +123,13 @@ class AptlyStore(BaseStore):
             if self._check_version_exists(package_name, str(after_action.version), args):
                 print_debug("The new after-action (%s) version %s, based off %s, derived from %s is already taken, so "
                             "we now recursively search for an unused version string for %s" %
-                            (action, highlight(str(after_action)), highlight(str(new_base)),
+                            (action, highlight(str(after_action.version)), highlight(str(new_base)),
                              highlight(str(version.version)), highlight(package_name)))
                 self._find_new_version(package_name, after_action, action, args)
             else:
                 print_info("After executing action %s, the selected next version for %s is %s" %
-                            (highlight(action), highlight(package_name), highlight(str(after_action))))
-                return debvp.deserialize(str(after_action))
+                            (highlight(action), highlight(package_name), highlight(str(after_action.version))))
+                return after_action
         else:
             print_info("%s seems to be as yet unused" % highlight(str(version.version)))
             return version
@@ -151,6 +151,8 @@ class AptlyStore(BaseStore):
                                (highlight(pkg.artifact_metadata["package_name"]), args.aptly_repo))
                     cmdline = get_aptly_cmdline(args)
                     cmdline += ["repo", "remove", args.aptly_repo, pkg.artifact_metadata["package_name"]]
+                    run_process(*cmdline)
+
             print_info("Adding %s to repo %s..." % (pkg.artifact_filename, args.aptly_repo))
             cmdline = get_aptly_cmdline(args)
             cmdline += shlex.split(args.aptly_repo_opts)
