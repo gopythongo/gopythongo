@@ -62,7 +62,7 @@ class AptlyVersioner(BaseVersioner):
         cmd = _aptly_args.get_aptly_cmdline(args) + ["repo", "search"]
         cmd += shlex.split(args.aptly_versioner_opts)
 
-        cmd += ["-format=\"{{.Version}}\"", args.aptly_repo, query]
+        cmd += ["-format", "{{.Version}}", args.aptly_repo, query]
         ret = run_process(*cmd, allow_nonzero_exitcode=True)
         # FIXME: add error code handling, because no results is not the only possible error message
         # FIXME: There can only be one instance of a package in an APT repo
@@ -71,6 +71,9 @@ class AptlyVersioner(BaseVersioner):
                 return [DebianVersion.fromstring(args.fallback_version)]
             else:
                 return []
+        elif ret.exitcode != 0:
+            # we must have run into a problem
+            raise ErrorMessage("Aptly reported an unknown problem with exit code %s" % ret.exitcode)
         else:
             versions = []  # type: List[DebianVersion]
             for line in ret.output.split():
