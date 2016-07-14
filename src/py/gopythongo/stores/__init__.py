@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Dict, Any, Sequence, Union
+from typing import Dict, Any, Sequence, Union, List
 
 from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
 from gopythongo.versioners.parsers import VersionContainer
@@ -40,18 +40,29 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement store_name")
 
+    @property
+    def supported_version_parsers(self) -> List[str]:
+        """
+        **@property**
+        :return: a list of one or more supported version parsers
+        """
+        raise NotImplementedError("Each subclass of BaseStore MUST implement supported_version_parsers")
+
     def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
-                                 args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
+                                 action: str, args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
         """
         Takes a list of unique artifact identifiers (e.g. package names) which *will be created by a Packer during the
         build later* and returns a dict mapping of identifier to version for the Packer to be used during the build
-        or ``None`` if the store can't generate future versions..
+        or ``None`` if the store can't generate future versions. The store should use ``action`` to generate the
+        version strings for all artifacts.
+
         :param artifact_names: a list of artifact identifiers
         :param base_version: the base version from which to generate future versions
+        :param action: the version action selected by the user to generate future versions
         :param args: command-line parameters
         :return: a mapping of artifact identifiers to version information
         """
-        return None
+        raise NotImplementedError("Each subclass of BaseStore MUST implement generate_future_versions")
 
     def store(self, args: argparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseStore MUST implement store")

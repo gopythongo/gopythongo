@@ -65,6 +65,7 @@ class AptlyVersioner(BaseVersioner):
         cmd += ["-format=\"{{.Version}}\"", args.aptly_repo, query]
         ret = run_process(*cmd, allow_nonzero_exitcode=True)
         # FIXME: add error code handling, because no results is not the only possible error message
+        # FIXME: There can only be one instance of a package in an APT repo
         if ret.exitcode != 0 and "ERROR: no results" in ret.output:
             if allow_fallback_version and args.fallback_version:
                 return [DebianVersion.fromstring(args.fallback_version)]

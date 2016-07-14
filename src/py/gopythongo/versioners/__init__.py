@@ -137,11 +137,29 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("%s is not a valid Version Parser for parsing version numbers. Valid options are %s" %
                            (highlight(args.version_parser), ", ".join(_version_parsers.keys())))
 
-    if args.version_action != "none" and args.version_action not in \
-            _version_parsers[args.version_parser].supported_actions:
-        raise ErrorMessage("Version Parser %s does not support action '%s'. Valid choices are: %s." %
-                           (highlight(args.version_parser), args.version_action,
-                            ", ".join(_version_parsers[args.version_parser].supported_actions)))
+    # TODO: this can be much improved, for example by searching for lossless conversion paths
+    if args.version_action != "none":
+        from gopythongo.stores import get_stores
+        used_parser = args.version_parser
+        available_parsers = get_stores()[args.store].supported_version_parsers
+        if used_parser not in available_parsers:
+            for parser in available_parsers:
+                if (get_version_parsers()[parser].can_convert_from(used_parser)[1] or
+                        get_version_parsers()[used_parser].can_convert_to(parser)[1]):
+                    used_parser = parser
+                    break
+            if used_parser not in available_parsers:
+                raise ErrorMessage("User-selected Version Parser %s is not supported by the selected Store %s and the "
+                                   "Store does not support any versioning systems which can losslessly convert "
+                                   "from %s. Supported Version Parsers are: %s" %
+                                   (highlight(args.version_parser), highlight(args.store),
+                                    highlight(args.version_parser),
+                                    ", ".join(get_stores()[args.store].supported_version_parsers)))
+
+        if args.version_action not in _version_parsers[used_parser].supported_actions:
+            raise ErrorMessage("Version Parser %s does not support action '%s'. Valid choices are: %s." %
+                               (highlight(args.version_parser), args.version_action,
+                                ", ".join(_version_parsers[args.version_parser].supported_actions)))
 
 
 def version(args: argparse.Namespace) -> None:
@@ -168,5 +186,6 @@ def version(args: argparse.Namespace) -> None:
         the_context.generated_versions = get_stores()[args.store].generate_future_versions(
             get_packers()[args.packer].predict_future_artifacts(args),
             the_context.read_version,
+            args.version_action,
             args
         )
