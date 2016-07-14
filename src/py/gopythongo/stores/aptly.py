@@ -196,7 +196,11 @@ class AptlyStore(BaseStore):
             if cmd == "repo":
                 cmdline += shlex.split(args.aptly_publish_opts)
                 cmdline += ["-distribution", args.aptly_distribution]
-            cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
+                cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
+            else:
+                cmdline += shlex.split(args.aptly_publish_opts)
+                cmdline += [args.aptly_distribution, args.aptly_publish_endpoint]
+                
             run_process(*cmdline)
 
 
