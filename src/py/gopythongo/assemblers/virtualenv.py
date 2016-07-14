@@ -13,7 +13,7 @@ class VirtualEnvAssembler(BaseAssembler):
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_pip = parser.add_argument_group("PIP Assembler options")
-        gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[],
+        gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[], env_var="PIP_OPTS",
                             help="Any string specified here will be directly appended to all pip command-lines when it "
                                  "is invoked, allowing you to specify arbitrary extra command-line parameters, like "
                                  "--extra-index. Make sure that you use an equals sign, i.e. --pip-opts='' to avoid "
