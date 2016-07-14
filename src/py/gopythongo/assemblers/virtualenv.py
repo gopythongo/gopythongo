@@ -8,7 +8,7 @@ from gopythongo.utils import ErrorMessage, highlight, run_process, print_info, c
 
 class VirtualEnvAssembler(BaseAssembler):
     @property
-    def assembler_name(self):
+    def assembler_name(self) -> str:
         return "virtualenv"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
