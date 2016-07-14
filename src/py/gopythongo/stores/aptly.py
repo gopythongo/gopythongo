@@ -8,7 +8,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.stores import BaseStore
-from gopythongo.utils import print_debug, highlight, print_info, run_process, flatten, ErrorMessage
+from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
@@ -32,13 +32,16 @@ class AptlyStore(BaseStore):
         _aptly_args.add_shared_args(parser)
 
         gp_ast = parser.add_argument_group("Aptly Store options")
-        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default="",
+        gp_ast.add_argument("--aptly-distribution", dest="aptly_distribution", default="", env_var="APTLY_DISTRIBUTION",
+                            help="Set the target distribution for aptly builds.")
+        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default="", env_var="APTLY_REPO_OPTS",
                             help="Specify additional command-line parameters which will be appended to every "
                                  "'aptly repo' command executed by the Aptly Store.")
-        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default="",
+        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default="", env_var="APTLY_PUBLISH_OPTS",
                             help="Specify additional command-line parameters which will be appended to every "
                                  "'aptly publish' command executed by the Aptly Store.")
         gp_ast.add_argument("--aptly-publish-endpoint", dest="aptly_publish_endpoint", metavar="ENDPOINT", default=None,
+                            env_var="APTLY_PUBLISH_ENDPOINT",
                             help="Publish the Aply repo to the specified endpoint after generated packages have been "
                                  "added to the repo. Please note that you will have to add additional configuration to "
                                  "the aptly config file, for example when you want to publish to S3. It's also likely "
@@ -47,10 +50,12 @@ class AptlyStore(BaseStore):
                                  "want to set these arguments using environment variables on your build server if "
                                  "you're using a CI environment.")
         gp_ast.add_argument("--aptly-dont-remove", dest="aptly_dont_remove", action="store_true", default=False,
+                            env_var="APTLY_DONT_REMOVE",
                             help="By default, if a created package already exists in the repo specified by --repo, "
                                  "the aptly store will overwrite it. Setting --aptly-dont-remove will instead lead "
                                  "to an error if the package already exists.")
         gp_ast.add_argument("--aptly-overwrite-newer", dest="aptly_overwrite_newer", action="store_true", default=False,
+                            env_var="APTLY_OVERWRITE_NEWER",
                             help="If set, the aptly Store will store newly generated packages in the repo which are "
                                  "older than the packages already there. By default, it will raise an error message "
                                  "instead.")
@@ -66,6 +71,12 @@ class AptlyStore(BaseStore):
                                "It only supports: %s." %
                                (highlight(args.version_action), highlight(args.version_action),
                                 highlight(", ".join(debvp.supported_actions))))
+
+        if "-distribution" in args.aptly_publish_opts:
+            print_warning("You are using %s in your Aptly Store options. You should use the %s GoPythonGo argument "
+                          "instead, since using -distribution in the aptly command line is invalid when GoPythonGo "
+                          "tries to update a published repo." %
+                          (highlight("-distribution"), highlight("--aptly-distribution")))
 
     @staticmethod
     def _get_aptly_versioner() -> AptlyVersioner:
@@ -163,9 +174,28 @@ class AptlyStore(BaseStore):
 
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" % (args.aptly_repo, args.aptly_publish_endpoint))
-            cmdline = get_aptly_cmdline(args) + ["publish", "repo"]
-            cmdline += shlex.split(args.aptly_publish_opts)
+            cmdline = get_aptly_cmdline(args) + ["publish"]
 
+            # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
+            # execute "aptly publish update" instead of "aptly publish repo"
+            query_publish = cmdline + ["list", "-raw"]
+            out = run_process(*query_publish)
+            cmd = "repo"
+            if out.output:
+                lines = out.output.split("\n")  # type: List[str]
+                for l in lines:
+                    if l.strip() != "":
+                        endpoint, dist = l.split(" ", 1)
+                        if endpoint == args.aptly_publish_endpoint:
+                            print_info("Publishing endpoint %s already in use. Executing update..." %
+                                       highlight(args.aptly_publish_endpoint))
+                            cmd = "update"
+
+            cmdline += [cmd]
+
+            if cmd == "repo":
+                cmdline += shlex.split(args.aptly_publish_opts)
+                cmdline += ["-distribution", args.aptly_distribution]
             cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
             run_process(*cmdline)
 
