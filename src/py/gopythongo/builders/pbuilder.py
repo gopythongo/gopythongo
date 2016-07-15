@@ -18,7 +18,7 @@ class PbuilderBuilder(BaseBuilder):
 
     @property
     def builder_name(self) -> str:
-        return u"pbuilder"
+        return "pbuilder"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
