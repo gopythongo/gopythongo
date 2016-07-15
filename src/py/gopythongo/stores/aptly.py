@@ -165,7 +165,7 @@ class AptlyStore(BaseStore):
                     cmdline += ["repo", "remove", args.aptly_repo, pkg.artifact_metadata["package_name"]]
                     run_process(*cmdline)
 
-            print_info("Adding %s to repo %s..." % (pkg.artifact_filename, args.aptly_repo))
+            print_info("Adding %s to repo %s" % (highlight(pkg.artifact_filename), highlight(args.aptly_repo)))
             cmdline = get_aptly_cmdline(args)
             cmdline += shlex.split(args.aptly_repo_opts)
 
@@ -173,7 +173,8 @@ class AptlyStore(BaseStore):
             run_process(*cmdline)
 
         if args.aptly_publish_endpoint:
-            print_info("Publishing repo %s to endpoint %s" % (args.aptly_repo, args.aptly_publish_endpoint))
+            print_info("Publishing repo %s to endpoint %s" %
+                       (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
             cmdline = get_aptly_cmdline(args) + ["publish"]
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
@@ -200,7 +201,7 @@ class AptlyStore(BaseStore):
             else:
                 cmdline += shlex.split(args.aptly_publish_opts)
                 cmdline += [args.aptly_distribution, args.aptly_publish_endpoint]
-                
+
             run_process(*cmdline)
 
 

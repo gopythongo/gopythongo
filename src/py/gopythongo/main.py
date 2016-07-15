@@ -16,7 +16,8 @@ from typing import List, Any, Iterable, Set
 import gopythongo
 
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
-from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug
+from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug, \
+    success
 
 tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
@@ -254,6 +255,8 @@ def route() -> None:
             print_debug("Writing state to %s before returning from build environment" %
                         highlight(the_context.state_file))
             the_context.save_state()
+
+        success("%s COMPLETE." % highlight("BUILD: "))
     else:
         print_help()
 
