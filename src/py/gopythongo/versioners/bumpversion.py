@@ -14,7 +14,7 @@ class BumpVersioner(BaseVersioner):
 
     @property
     def versioner_name(self) -> str:
-        return u"bumpversion"
+        return "bumpversion"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gr_bv = parser.add_argument_group("Bumpversion Versioner options")
@@ -25,7 +25,7 @@ class BumpVersioner(BaseVersioner):
                            help="Select the part of the version string that you want to bump.")
         gr_bv.add_argument("--bumpversion-file", dest="bumpversion_file", action="append", default=[],
                            help="List the files that bumpversion should modify.")
-        gr_bv.add_argument("--bumpversion-opts", dest="bumpversion_opts", action="append", default=[],
+        gr_bv.add_argument("--bumpversion-opts", dest="bumpversion_opts", default="",
                            help="Additional arbitrary command-line options to pass to bumpversion.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
