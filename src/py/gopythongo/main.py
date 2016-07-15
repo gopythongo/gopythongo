@@ -256,7 +256,7 @@ def route() -> None:
                         highlight(the_context.state_file))
             the_context.save_state()
 
-        success("%s COMPLETE." % highlight("BUILD: "))
+        success("***** SUCCESS *****")
     else:
         print_help()
 
