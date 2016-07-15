@@ -203,7 +203,7 @@ def route() -> None:
                     assemblers.init_subsystem, packers.init_subsystem, stores.init_subsystem]:
         subinit()
 
-    precheck = argparse.ArgumentParser()
+    precheck = argparse.ArgumentParser(add_help=False)
     precheck.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
     preargs, _ = precheck.parse_known_args()
 
