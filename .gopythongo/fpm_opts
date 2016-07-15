@@ -2,7 +2,14 @@
 -n gopythongo
 -v "{{debian_version.version}}"
 -m "Jonas Maurus <jonas@gopythongo.com>"
--d "python3 python3-pip python3-virtualenv virtualenv"
---deb-suggests "gnupg pbuilder aptly"
---depends "python3 python-virtualenv python-pip virtualenv"
+-d python3
+-d python3-pip
+-d python3-virtualenv
+-d virtualenv
+--deb-suggests gnupg
+--deb-suggests pbuilder
+--deb-suggests aptly
+--vendor gopythongo.com
+--url http://gopythongo.com/
+--description "GoPythonGo is a toolkit to build a Python virtualenv deployment artifact."
 {{basedir}}
