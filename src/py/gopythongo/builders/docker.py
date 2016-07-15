@@ -14,10 +14,20 @@ class DockerBuilder(BaseBuilder):
 
     @property
     def builder_name(self) -> str:
-        return u"docker"
+        return "docker"
 
     def add_args(self, parser: argparse.ArgumentParser) -> None:
         gopythongo.shared.docker_args.add_shared_args(parser)
+
+        gp_docker = parser.add_argument_group("Docker Builder options")
+        gp_docker.add_argument("--docker-buildfile", dest="docker_buildfile", default=None,
+                               help="Specify a Dockerfile to build the the build environment. The build commands will "
+                                    "then be executed inside the resulting container.")
+        gp_docker.add_argument("--docker-leave-containers", dest="docker_leave_containers", action="store_true",
+                               default=False, env_var="DOCKER_LEAVE_CONTAINERS",
+                               help="After creating a build environment and a runtime container, if this option is "
+                                    "used, GoPythonGo will not use 'docker rm' and 'docker rmi' to clean up the "
+                                    "resulting containers.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
         gopythongo.shared.docker_args.validate_shared_args(args)
