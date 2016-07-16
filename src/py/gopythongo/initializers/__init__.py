@@ -87,7 +87,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
         :param filename: the name of the file in the generated config folder
         :return: an open file descriptor (``TextIO``) object that the *caller must call `.close()` on*
         """
-        if os.path.isabs(filename):
+        if os.path.isfile(filename):
             raise InvalidArgumentException("Call create_file_in_config_folder with a filename, not a path")
 
         self.ensure_config_folder()
@@ -102,6 +102,10 @@ class BaseInitializer(GoPythonGoEnableSuper):
         raise NotImplementedError("Subclasses of BaseInitializer must override initializer_name")
 
     def build_config(self) -> None:
+        """
+        The implementation of this method should create all necessary configuration files for the quick start
+        config provided by this Initializer and output useful information about how to use it.
+        """
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
     def print_help(self) -> None:
@@ -125,5 +129,9 @@ class InitializerAction(argparse.Action):
 
         if len(values) > 1:
             initializer.configfolder = values[1]  # override config folder if it's not the default
+
+        if os.path.exists(initializer.configfolder):
+            raise ErrorMessage("%s already exists. If you want to overwrite it, remove it first." %
+                               initializer.configfolder)
 
         initializer.build_config()

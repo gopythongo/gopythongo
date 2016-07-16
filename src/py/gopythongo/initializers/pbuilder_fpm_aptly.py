@@ -4,8 +4,7 @@ import sys
 from typing import Any
 
 from gopythongo.initializers import BaseInitializer
-from gopythongo.utils import highlight
-
+from gopythongo.utils import highlight, success
 
 configtpl = """
 builder=pbuilder
@@ -19,30 +18,41 @@ distribution=jessie
 #
 # The following MUST be on one line. You also probably want to put this into
 # the PBUILDER_CREATE_OPTS environment variable on your build server.
+# Again, use this if you use your own local Debian mirror, otherwise it's
+# unnecessary.
 # pbuilder-create-opts=--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian
-run-after-create=[.gopythongo/install_fpm.sh]
+run-after-create=[CONFIGFOLDER/install_fpm.sh]
 packer=fpm
 
 store=aptly
 repo=gopythongo
 # To sign your own packages and publish them on your own APT repository, you
 # should create a signing keypair, like this:
-#   gpg --no-default-keyring --keyring /root/gopythongo_sign.gpg --gen-key
+#   gpg --no-default-keyring --keyring /root/mypackage_sign.gpg --gen-key
 #
-# The following MUST be on oen line. You MOST LIKELY don't want to keep this
+# Then note the key's ID and the passphrase you protected it with. Put the
+# passphrase in a text file on your build server readable only by the build
+# server itself. Put your key's ID and the passphrase file location in the
+# config line below.
+#
+# The following MUST be on one line. You MOST LIKELY don't want to keep this
 # information in your source control, but really want to set the
 # APTLY_PUBLISH_OPTS environment variable on your build server instead.
-# aptly-publish-opts=-distribution=jessie -architectures=amd64 -keyring=/root/gopythongo_sign.gpg -gpg-key=84BEC887FD2B8F2A6F073DC4D0F0F4B5DC236955 -passphrase-file=/root/gopythongo_dev_passphrase.txt
-aptly-publish-endpoint=s3:gopythongo:debian/
+# aptly-publish-opts=-distribution=jessie -architectures=amd64 -keyring=/root/mypackage_sign.gpg -gpg-key=KEY_ID_HERE -passphrase-file=/root/mypackage_passphrase.txt
 
+# If you want to publish to S3, you must configure aptly with a AWS Key ID and
+# secret key in aptly.conf.
+# aptly-publish-endpoint=s3:aptlyrepo:debian/
+
+# Change the lines below to read your project's version from somewhere else
+# if you want to.
 versioner=pymodule
-pymodule-read=gopythongo.version
+pymodule-read=mypackage.version
 version-parser=pep440
 version-action=bump-revision
 
 use-fpm=/usr/local/bin/fpm
-run-fpm=template:.gopythongo/fpm_opts
-copy-out=/home/vagrant/test/build
+run-fpm=template:CONFIGFOLDER/fpm_opts
 
 eatmydata
 eatmydata-path=/usr/bin/eatmydata
@@ -50,6 +60,9 @@ eatmydata-path=/usr/bin/eatmydata
 
 installfpm = """
 #!/bin/bash
+
+# This script is used to create a pbuilder build environment that has FPM
+# installed so GoPythonGo can create a .deb package of your project
 
 # do nothing if fpm already exists
 test -e /usr/local/bin/fpm && exit 0
@@ -69,13 +82,11 @@ $EATMYDATA gem install fpm
 """
 
 fpm_opts = """
--p gopythongo-{{debian_version.version}}.deb
--n gopythongo
+-p PACKAGENAME-{{debian_version.version}}.deb
+-n PACKAGENAME
 -v "{{debian_version.version}}"
--m "Jonas Maurus <jonas@gopythongo.com>"
--d "python3 python3-pip python3-virtualenv virtualenv"
---deb-suggests "gnupg pbuilder aptly ruby ruby-dev"
---depends "python3 python-virtualenv python-pip virtualenv"
+-m "Your Name <youremail@example.com>"
+-d "python3 python3-pip python3-virtualenv"
 {{basedir}}
 """
 
@@ -89,7 +100,26 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
         return "pbuilder_deb"
 
     def build_config(self) -> None:
-        pass
+        cf = self.create_file_in_config_folder("config")
+        cf.write(configtpl.replace("CONFIGFOLDER", self.configfolder))
+        cf.close()
+
+        instf = self.create_file_in_config_folder("install_fpm.sh")
+        instf.write(installfpm)
+        instf.close()
+
+        fpm = self.create_file_in_config_folder("fpm_opts")
+        fpm.write(fpm_opts)
+        fpm.close()
+
+        success("***** SUCCESS *****")
+        print("GoPythonGo created the following files for you:\n"
+              "\n"
+              "  %s/config\n"
+              "  %s/install_fpm.sh\n"
+              "  %s/fpm_opts\n"
+              "\n"
+              "Please make sure to edit and adapt them as necessary to your project.\n")
 
     def print_help(self) -> None:
         print("Pbuilder and .deb quick start\n"
