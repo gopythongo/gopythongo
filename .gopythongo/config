@@ -11,7 +11,7 @@ store=aptly
 repo=gopythongo
 aptly-distribution=jessie
 # reference for build server
-aptly-publish-opts=-architectures=amd64 -keyring=/root/gopythongo_sign.gpg -gpg-key=84BEC887FD2B8F2A6F073DC4D0F0F4B5DC236955 -passphrase-file=/root/gopythongo_dev_passphrase.txt
+aptly-publish-opts=-architectures=amd64 -keyring=/root/gopythongo_sign_pub.gpg -secret-keyring=/root/gopythongo_sign_secret.gpg -gpg-key=84BEC887FD2B8F2A6F073DC4D0F0F4B5DC236955 -passphrase-file=/root/gopythongo_dev_passphrase.txt
 aptly-publish-endpoint=s3:gopythongo:debian
 
 versioner=pymodule

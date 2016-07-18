@@ -29,7 +29,7 @@ repo=mypackage
 aptly-distribution=jessie
 # To sign your own packages and publish them on your own APT repository, you
 # should create a signing keypair, like this:
-#   gpg --no-default-keyring --keyring /root/mypackage_sign.gpg --gen-key
+#   gpg --no-default-keyring --keyring /root/mypackage_sign_pub.gpg --secret-keyring /root/mypackage_sign_secret.gpg --gen-key
 #
 # Then note the key's ID and the passphrase you protected it with. Put the
 # passphrase in a text file on your build server readable only by the build
@@ -39,11 +39,11 @@ aptly-distribution=jessie
 # The following MUST be on one line. You MOST LIKELY don't want to keep this
 # information in your source control, but really want to set the
 # APTLY_PUBLISH_OPTS environment variable on your build server instead.
-# aptly-publish-opts=-architectures=amd64 -keyring=/root/mypackage_sign.gpg -gpg-key=KEY_ID_HERE -passphrase-file=/root/mypackage_passphrase.txt
+# aptly-publish-opts=-architectures=amd64 -keyring=/root/mypackage_sign_pub.gpg -secret-keyring=/root/mypackage_sign_secret.gpg -gpg-key=KEY_ID_HERE -passphrase-file=/root/mypackage_passphrase.txt
 
 # If you want to publish to S3, you must configure aptly with a AWS Key ID and
 # secret key in aptly.conf.
-# aptly-publish-endpoint=s3:aptlyrepo:debian/
+# aptly-publish-endpoint=s3:aptlyrepo:debian
 
 # Change the lines below to read your project's version from somewhere else
 # if you want to.
