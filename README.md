@@ -14,7 +14,7 @@ On Debian:
     echo "deb http://gopythongo.s3-website.eu-central-1.amazonaws.com/debian jessie main" > /etc/apt/sources.list.d/gopythongo.list
     echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
     apt-get update
-    apt-get install gopythongo aptly
+    apt-get install gopythongo aptly 
     
   2. create a simple example project:
   
@@ -38,6 +38,11 @@ On Debian:
             name='helloworld',
             version="1.0",
             packages=["helloworld",],
+            entry_points={
+                "console_scripts": [
+                    "helloworld = helloworld:main"
+                ]
+            },
         )
         EOF
 
