@@ -35,7 +35,7 @@ efforts:
   * make it easy to depend on forks and branches of in-development code during development while also making it easy
     to pin exact dependencies for testing and release builds
   * the components needed to run the process can easily be swapped out and customized
-  * it produces shippable binary artifacts which can be deployed and upgraded independently and are versioned
+  * it produces shippable binary artifacts which can be deployed and upgraded independently and can be versioned
     separately from your source code
   * the deployment process for release builds, release candidates and cutting-edge development builds is exactly the
     same
@@ -94,9 +94,10 @@ smart people. In particular:
 GoPythonGo also uses a variety of supporting software to reach its goals:
 
   * GitHub, of course, but really any source code repository host which can send webhooks
-  * The Jenkins build server, the go.cd build pipeline (or TravisCI or CircleCI or whatever else you want to use)
+  * Concourse.ci, the go.cd build pipeline or even the Jenkins build server (or TravisCI or CircleCI or whatever
+    else you want to use)
   * pbuilder, a chroot-based build automation tool from the Debian project
-  * The GoPythonGo bulld helper tools
+  * The GoPythonGo build helper tools
   * DjangoPyPi2, a pypi compatible server for serving Python packages
   * The docker registry project to keep pre-built Docker containers
   * Aptly, the excellent Debian repository management tool by @xxx

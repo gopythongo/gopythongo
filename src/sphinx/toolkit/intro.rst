@@ -12,5 +12,5 @@ artifacts. That means that it should run:
 
   * In a chroot, using a tool like pbuilder or
   * in a dedicated build VM or container (like it's the case on TravisCI or
-    CircleCI.
+    CircleCI).
 
