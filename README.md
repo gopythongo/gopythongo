@@ -19,28 +19,28 @@ On Debian:
   2. create a simple example project:
   
     ```
-        mkdir -p /tmp/helloworld/helloworld
-        cat > /tmp/helloworld/helloworld/__init__.py << EOF
-    # -* encoding: utf-8
-    
-    def main():
-        print("hello world!")
+            mkdir -p /tmp/helloworld/helloworld
+            cat > /tmp/helloworld/helloworld/__init__.py << EOF
+        # -* encoding: utf-8
         
-    if __name__ == "__main__":
-        main()
-    EOF
-    
-        cat > /tmp/helloworld/setup.py << EOF
-    #!/usr/bin/env python -u
-    import os
-    from setuptools import setup
-    
-    setup(
-        name='helloworld',
-        version="1.0",
-        packages=["helloworld",],
-    )
-    EOF
+        def main():
+            print("hello world!")
+            
+        if __name__ == "__main__":
+            main()
+        EOF
+        
+            cat > /tmp/helloworld/setup.py << EOF
+        #!/usr/bin/env python -u
+        import os
+        from setuptools import setup
+        
+        setup(
+            name='helloworld',
+            version="1.0",
+            packages=["helloworld",],
+        )
+        EOF
     ```
 
   3. Create a GoPythonGo configuration:
