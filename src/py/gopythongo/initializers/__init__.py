@@ -3,7 +3,7 @@ import argparse
 import io
 import os
 
-from typing import Dict, TextIO, Sequence, Any
+from typing import Dict, TextIO, Sequence, Any, cast
 
 from gopythongo.initializers.help import InitializerHelpAction
 from gopythongo.utils import plugins, GoPythonGoEnableSuper, highlight, ErrorMessage
@@ -91,8 +91,8 @@ class BaseInitializer(GoPythonGoEnableSuper):
             raise InvalidArgumentException("Call create_file_in_config_folder with a filename, not a path")
 
         self.ensure_config_folder()
-        f = io.open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8")
-        return io.TextIOWrapper(f)
+        f = cast(TextIO, io.open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8"))
+        return f
 
     @property
     def initializer_name(self) -> str:
@@ -128,7 +128,6 @@ class InitializerAction(argparse.Action):
         initializer = _initializers[values[0]]
 
         if len(values) > 1:
-            print(values)
             initializer.configfolder = values[1]  # override config folder if it's not the default
 
         if os.path.exists(initializer.configfolder):
@@ -136,3 +135,4 @@ class InitializerAction(argparse.Action):
                                initializer.configfolder)
 
         initializer.build_config()
+        parser.exit(0)

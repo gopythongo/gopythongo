@@ -119,7 +119,8 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
               "  %s/install_fpm.sh\n"
               "  %s/fpm_opts\n"
               "\n"
-              "Please make sure to edit and adapt them as necessary to your project.\n")
+              "Please make sure to edit and adapt them as necessary to your project.\n" %
+              (self.configfolder, self.configfolder, self.configfolder))
 
     def print_help(self) -> None:
         print("Pbuilder and .deb quick start\n"
