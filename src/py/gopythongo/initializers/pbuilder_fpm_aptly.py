@@ -26,6 +26,7 @@ packer=fpm
 
 store=aptly
 repo=mypackage
+aptly-distribution=jessie
 # To sign your own packages and publish them on your own APT repository, you
 # should create a signing keypair, like this:
 #   gpg --no-default-keyring --keyring /root/mypackage_sign.gpg --gen-key
@@ -38,7 +39,7 @@ repo=mypackage
 # The following MUST be on one line. You MOST LIKELY don't want to keep this
 # information in your source control, but really want to set the
 # APTLY_PUBLISH_OPTS environment variable on your build server instead.
-# aptly-publish-opts=-distribution=jessie -architectures=amd64 -keyring=/root/mypackage_sign.gpg -gpg-key=KEY_ID_HERE -passphrase-file=/root/mypackage_passphrase.txt
+# aptly-publish-opts=-architectures=amd64 -keyring=/root/mypackage_sign.gpg -gpg-key=KEY_ID_HERE -passphrase-file=/root/mypackage_passphrase.txt
 
 # If you want to publish to S3, you must configure aptly with a AWS Key ID and
 # secret key in aptly.conf.
@@ -82,11 +83,15 @@ $EATMYDATA gem install fpm
 """
 
 fpm_opts = """
--p PACKAGENAME-{{debian_version.version}}.deb
+-p PACKAGENAME_{{debian_version.version}}.deb
 -n PACKAGENAME
+--provides PACKAGENAME
 -v "{{debian_version.version}}"
 -m "Your Name <youremail@example.com>"
--d "python3 python3-pip python3-virtualenv"
+-d python3
+-d python3-pip
+-d python3-virtualenv
+--directories {{basedir}}
 {{basedir}}
 """
 
