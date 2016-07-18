@@ -70,13 +70,13 @@ class BaseInitializer(GoPythonGoEnableSuper):
                 return True
             else:
                 raise ErrorMessage("Apparently GoPythonGo has no write access to %s" %
-                                   highlight(self.configfolder))
+                                   os.path.abspath(highlight(self.configfolder)))
         else:
-            if os.access(os.path.dirname(self.configfolder), os.W_OK & os.X_OK):
+            if os.access(os.path.dirname(self.configfolder) or ".", os.W_OK & os.X_OK):
                 return True
             else:
                 raise ErrorMessage("Apparently GoPythonGo has no write access to %s " %
-                                   highlight(os.path.dirname(self.configfolder)))
+                                   highlight(os.path.abspath(os.path.dirname(self.configfolder) or ".")))
 
     def ensure_config_folder(self) -> None:
         if self._check_rights() and not os.path.exists(self.configfolder):
@@ -128,6 +128,7 @@ class InitializerAction(argparse.Action):
         initializer = _initializers[values[0]]
 
         if len(values) > 1:
+            print(values)
             initializer.configfolder = values[1]  # override config folder if it's not the default
 
         if os.path.exists(initializer.configfolder):
