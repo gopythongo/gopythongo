@@ -42,7 +42,7 @@ setup(
     package_dir={
         '': _package_root,
     },
-    entry_points = {
+    entry_points={
         "console_scripts": [
             "gopythongo = gopythongo.main:main"
         ]
