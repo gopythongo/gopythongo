@@ -1,6 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 import shlex
+import tempfile
 
 from typing import Any, Sequence, Union, Dict, cast, List
 
@@ -59,6 +60,13 @@ class AptlyStore(BaseStore):
                             help="If set, the aptly Store will store newly generated packages in the repo which are "
                                  "older than the packages already there. By default, it will raise an error message "
                                  "instead.")
+        gp_ast.add_argument("--aptly-passphrase", dest="aptly_passphrase", env_var="APTLY_PASSPHRASE", default=None,
+                            help="Set this to pass the GPG signing passphrase to the aptly Store. This is primarily "
+                                 "useful when you use the environment variable. This way your build server can read "
+                                 "the passphrase from secure storage it pass it to GoPythonGo with a modicum of "
+                                 "protection. Using the command-line parameter however will expose the passphrase to "
+                                 "every user on the system. You're better of passing --passphrase-file to aptly via "
+                                 "--aptly-publish-opts in that case.")
 
     def validate_args(self, args: argparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
@@ -198,6 +206,17 @@ class AptlyStore(BaseStore):
                             cmd = "update"
 
             cmdline += [cmd, "-batch=true"]  # -batch=true enables gpg to run without an attached TTY on a build server
+
+            if args.aptly_publish_passphrase:
+                # save the passphrase to a temporary file for aptly to read so we don't expose the passphrase on
+                # the process list
+                import gopythongo.main
+                tfd, tfn = tempfile.mkstemp()
+                gopythongo.main.tempfiles.append(tfn)
+                with open(tfd, "wt", encoding="utf-8") as tf:
+                    tf.write(args.aptly_publish_passphrase)
+
+                cmdline += ["-passphrase-file", tfn]
 
             # when publishing the repo for the first time we need to add the -distribution flag
             if cmd == "repo":
