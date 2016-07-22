@@ -11,7 +11,7 @@ import os
 from configargparse import ArgParser as ArgumentParser
 from gopythongo.utils.buildcontext import the_context
 from types import FrameType
-from typing import List, Any, Iterable, Set
+from typing import List, Any, Iterable, Set, Sequence, Union
 
 import gopythongo
 
@@ -36,7 +36,7 @@ class DebugConfigAction(argparse.Action):
                          nargs=0, choices=choices, help=help)
 
     def __call__(self, parser: ArgumentParser, namespace: argparse.Namespace,
-                 values: List[Any], option_string: str=None) -> None:
+                 values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         parser.print_values()
         parser.exit(0)
 

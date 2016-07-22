@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, Iterable, List
+from typing import Any, Iterable, Sequence, Union
 
 from gopythongo.utils import highlight
 
@@ -17,7 +17,7 @@ class VersionerHelpAction(argparse.Action):
                          choices=choices, help=help)
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
-                 values: List[Any], option_string: str=None) -> None:
+                 values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         from gopythongo.versioners import get_versioners
         versioners = get_versioners()
         if values[0] in versioners.keys():
