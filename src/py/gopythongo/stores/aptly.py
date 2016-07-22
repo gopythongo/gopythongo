@@ -109,6 +109,9 @@ class AptlyStore(BaseStore):
 
     def _find_new_version(self, package_name: str, version: VersionContainer[DebianVersion], action: str,
                           args: argparse.Namespace) -> VersionContainer[DebianVersion]:
+        """
+        Find the next version given `action` in the target repo for `package_name`.
+        """
         print_debug("Finding a version string in the aptly store for package %s" % highlight(package_name))
         aptlyv = self._get_aptly_versioner()
         debvp = self._get_debian_versionparser()
@@ -156,6 +159,7 @@ class AptlyStore(BaseStore):
         return ret
 
     def store(self, args: argparse.Namespace) -> None:
+        # add each package to the repo
         for pkg in the_context.packer_artifacts:
             if not args.aptly_dont_remove:  # aptly DO remove
                 if self._check_package_exists(pkg.artifact_metadata["package_name"], args):
@@ -172,6 +176,7 @@ class AptlyStore(BaseStore):
             cmdline += ["repo", "add", args.aptly_repo, pkg.artifact_filename]
             run_process(*cmdline)
 
+        # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
@@ -192,8 +197,9 @@ class AptlyStore(BaseStore):
                                        highlight(args.aptly_publish_endpoint))
                             cmd = "update"
 
-            cmdline += [cmd]
+            cmdline += [cmd, "-batch=true"]  # -batch=true enables gpg to run without an attached TTY on a build server
 
+            # when publishing the repo for the first time we need to add the -distribution flag
             if cmd == "repo":
                 cmdline += shlex.split(args.aptly_publish_opts)
                 cmdline += ["-distribution", args.aptly_distribution]
