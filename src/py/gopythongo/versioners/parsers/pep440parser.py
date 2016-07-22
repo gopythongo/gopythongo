@@ -2,7 +2,7 @@
 import argparse
 
 from copy import copy
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Tuple, Union, Type
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners.parsers import BaseVersionParser, VersionContainer
@@ -164,4 +164,4 @@ class PEP440VersionParser(BaseVersionParser):
               (highlight("PEP440 Version Parser"), highlight("pep440")))
 
 
-versionparser_class = PEP440VersionParser
+versionparser_class = PEP440VersionParser  # type: Type[PEP440VersionParser]

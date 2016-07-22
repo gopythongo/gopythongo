@@ -1,14 +1,14 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, Iterable
+from typing import Any, Iterable, List
 
 from gopythongo.utils import highlight
 
 
 class VersionerHelpAction(argparse.Action):
     def __init__(self,
-                 option_strings: str,
+                 option_strings: List[str],
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
@@ -17,11 +17,11 @@ class VersionerHelpAction(argparse.Action):
                          choices=choices, help=help)
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
-                 values: str, option_string: str=None) -> None:
+                 values: List[Any], option_string: str=None) -> None:
         from gopythongo.versioners import get_versioners
         versioners = get_versioners()
-        if values in versioners.keys():
-            versioners[values].print_help()
+        if values[0] in versioners.keys():
+            versioners[values[0]].print_help()
         else:
             print("Versioners\n"
                   "==========\n"

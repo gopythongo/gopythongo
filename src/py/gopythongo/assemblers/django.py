@@ -3,7 +3,7 @@ import argparse
 import shutil
 import os
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo import utils
 from gopythongo.assemblers import BaseAssembler
@@ -61,4 +61,4 @@ class DjangoAssembler(BaseAssembler):
             raise ErrorMessage("%s should now exist, but it doesn't" % args.static_root)
 
 
-assembler_class = DjangoAssembler
+assembler_class = DjangoAssembler  # type: Type[DjangoAssembler]

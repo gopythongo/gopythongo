@@ -1,14 +1,13 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import tempfile
-
-import os
 import shlex
+import os
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.builders import BaseBuilder
-from gopythongo.utils import print_info, highlight, run_process, flatten, print_debug, ErrorMessage
+from gopythongo.utils import print_info, highlight, run_process, print_debug, ErrorMessage
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -20,7 +19,7 @@ class PbuilderBuilder(BaseBuilder):
     def builder_name(self) -> str:
         return "pbuilder"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable")
@@ -60,7 +59,7 @@ class PbuilderBuilder(BaseBuilder):
                                  env_var="PBUILDER_EXECUTE_OPTS",
                                  help="Options which will be appended to the pbuilder --execute command-line")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if args.is_inner:
             pass
         else:
@@ -90,7 +89,7 @@ class PbuilderBuilder(BaseBuilder):
                                            "executable" % highlight(runspec))
                     the_context.mounts.add(os.path.abspath(os.path.dirname(runspec)))
 
-    def build(self, args: argparse.Namespace) -> None:
+    def build(self, args: configargparse.Namespace) -> None:
         print_info("Building with %s" % highlight("pbuilder"))
 
         do_create = True
@@ -163,4 +162,4 @@ class PbuilderBuilder(BaseBuilder):
         run_process(*build_cmdline, interactive=args.builder_debug_login)
 
 
-builder_class = PbuilderBuilder
+builder_class = PbuilderBuilder  # type: Type[PbuilderBuilder]

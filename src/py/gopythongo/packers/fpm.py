@@ -1,10 +1,10 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import shlex
 import json
 import os
 
-from typing import Any, List, Dict, Union
+from typing import Any, List, Dict, Union, Type
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage, flatten
@@ -16,7 +16,7 @@ class FPMPacker(BasePacker):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def _get_fpm_opts_parser(*, i_know_what_im_doing: bool=False) -> argparse.ArgumentParser:
+    def _get_fpm_opts_parser(*, i_know_what_im_doing: bool=False) -> configargparse.ArgumentParser:
         """
         Don't use this directly unless you know what you're doing. Use _parse_fpm_opts instead unless you really need
         the argparse.ArgumentParser instance. Due to argparse quirks, you really want to remove whitespace from all
@@ -25,7 +25,7 @@ class FPMPacker(BasePacker):
         if not i_know_what_im_doing:
             raise ValueError("Read the docs for _get_fpm_opts_parser, please")
 
-        parser = argparse.ArgumentParser()
+        parser = configargparse.ArgumentParser()
         parser.add_argument("-n", "--name", dest="package_name", default="")
         parser.add_argument("-p", "--package", dest="package_file", default="")
         return parser
@@ -58,7 +58,7 @@ class FPMPacker(BasePacker):
     def provides(self) -> List[str]:
         return ["deb", "rpm"]
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_fpm = parser.add_argument_group("FPM Packer options")
         gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
                             help="The full path to the fpm executable to use")
@@ -80,7 +80,7 @@ class FPMPacker(BasePacker):
                                   "sure that you use an equals sign, i.e. --fpm-opts='' to avoid 'Unknown parameter' "
                                   "errors! (http://bugs.python.org/issue9334).")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
             raise ErrorMessage("fpm not found in path or not executable (%s).\n"
                                "You can specify an alternative executable using %s" %
@@ -136,7 +136,7 @@ class FPMPacker(BasePacker):
 
         return self._read_fpm_opts_from_file(thefile, process_templates=process_templates, ctx=ctx)
 
-    def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
+    def predict_future_artifacts(self, args: configargparse.Namespace) -> Union[List[str], None]:
         ctx = {
             "basedir": args.build_path,
             "buildctx": the_context,
@@ -150,7 +150,7 @@ class FPMPacker(BasePacker):
 
         return ret if len(ret) > 0 else None
 
-    def pack(self, args: argparse.Namespace) -> None:
+    def pack(self, args: configargparse.Namespace) -> None:
         # TODO: don't use deb here, fpm works universally
         fpm_base = [
             args.fpm, "-t", "deb", "-s", "dir",
@@ -226,4 +226,4 @@ class FPMPacker(BasePacker):
             ))
 
 
-packer_class = FPMPacker
+packer_class = FPMPacker  # type: Type[FPMPacker]

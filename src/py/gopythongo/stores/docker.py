@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any
+from typing import Any, Type
 
 import gopythongo.shared.docker_args as _docker_args
 
@@ -26,4 +26,4 @@ class DockerStore(BaseStore):
         pass
 
 
-store_class = DockerStore
+store_class = DockerStore  # type: Type[DockerStore]

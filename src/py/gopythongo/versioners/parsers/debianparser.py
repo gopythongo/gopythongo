@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Type
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
@@ -121,4 +121,4 @@ class DebianVersionParser(BaseVersionParser):
               (highlight("Debian Version Parser"), highlight("debian")))
 
 
-versionparser_class = DebianVersionParser
+versionparser_class = DebianVersionParser  # type: Type[DebianVersionParser]

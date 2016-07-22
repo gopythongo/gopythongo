@@ -2,7 +2,7 @@
 import os
 import argparse
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners import BaseVersioner
@@ -65,4 +65,4 @@ class BumpVersioner(BaseVersioner):
               "  http://kylepurdon.com/blog/a-python-versioning-workflow-with-bumpversion.html\n")
 
 
-versioner_class = BumpVersioner
+versioner_class = BumpVersioner  # type: Type[BumpVersioner]

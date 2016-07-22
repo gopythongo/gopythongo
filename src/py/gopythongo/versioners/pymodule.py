@@ -1,11 +1,11 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any
+from importlib import import_module
+from typing import Any, Type
 
 import gopythongo.versioners as _versioners
 
-from importlib import import_module
 from gopythongo.utils import highlight, ErrorMessage
 
 
@@ -76,4 +76,4 @@ class PymoduleVersioner(_versioners.BaseVersioner):
               "          --versioner='pymodule' --pymodule-read='a.deeper.module.get_version'\n")
 
 
-versioner_class = PymoduleVersioner
+versioner_class = PymoduleVersioner  # type: Type[PymoduleVersioner]

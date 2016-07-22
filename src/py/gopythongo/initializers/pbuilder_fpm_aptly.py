@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import sys
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.initializers import BaseInitializer
 from gopythongo.utils import highlight, success
@@ -155,4 +155,4 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
         sys.exit(0)
 
 
-initializer_class = PbuilderFpmAptlyInitializer
+initializer_class = PbuilderFpmAptlyInitializer  # type: Type[PbuilderFpmAptlyInitializer]

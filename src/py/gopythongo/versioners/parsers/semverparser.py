@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any, Tuple, List
+from typing import Any, Tuple, List, Type
 from semantic_version import Version as SemVerBase
 
 from gopythongo.utils import highlight, ErrorMessage, print_info
@@ -157,4 +157,4 @@ class SemVerVersionParser(BaseVersionParser):
               (highlight("SemVer Version Parser"), highlight("semver")))
 
 
-versionparser_class = SemVerVersionParser
+versionparser_class = SemVerVersionParser  # type: Type[SemVerVersionParser]

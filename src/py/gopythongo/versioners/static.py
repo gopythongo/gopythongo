@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.versioners import BaseVersioner
@@ -39,4 +39,4 @@ class StaticVersioner(BaseVersioner):
               "parameter %s.\n" % highlight("--static-version"))
 
 
-versioner_class = StaticVersioner
+versioner_class = StaticVersioner  # type: Type[StaticVersioner]

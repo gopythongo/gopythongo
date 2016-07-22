@@ -26,7 +26,7 @@ args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
 class DebugConfigAction(argparse.Action):
     def __init__(self,
-                 option_strings: str,
+                 option_strings: List[str],
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
@@ -36,7 +36,7 @@ class DebugConfigAction(argparse.Action):
                          nargs=0, choices=choices, help=help)
 
     def __call__(self, parser: ArgumentParser, namespace: argparse.Namespace,
-                 values: str, option_string: str=None) -> None:
+                 values: List[Any], option_string: str=None) -> None:
         parser.print_values()
         parser.exit(0)
 
@@ -185,7 +185,8 @@ def _find_default_mounts() -> Set[str]:
                             default=[])
     args, _ = miniparser.parse_known_args()
 
-    if not args.config:
+    # type: ignore, because mypy doesn't parse add_argument above correctly
+    if not args.config:  # type: ignore
         args.config = default_config_files
 
     paths = set()

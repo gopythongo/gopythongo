@@ -1,6 +1,8 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import os
+
+from typing import Type
 
 from gopythongo.assemblers import BaseAssembler
 from gopythongo.utils import ErrorMessage, highlight, run_process, print_info, create_script_path
@@ -11,7 +13,7 @@ class VirtualEnvAssembler(BaseAssembler):
     def assembler_name(self) -> str:
         return "virtualenv"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_pip = parser.add_argument_group("PIP Assembler options")
         gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[], env_var="PIP_OPTS",
                             help="Any string specified here will be directly appended to all pip command-lines when it "
@@ -36,7 +38,7 @@ class VirtualEnvAssembler(BaseAssembler):
                                     "be passed to virtualenv's -p parameter. You must change this if you want to build "
                                     "and ship Python 2.x virtual environments.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         for path in args.setuppy_install:
             if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
                 raise ErrorMessage("Cannot run setup.py in %s, because it does not exist" % highlight(path))
@@ -46,7 +48,7 @@ class VirtualEnvAssembler(BaseAssembler):
                                "You can specify an alternative path with %s" %
                                (args.virtualenv_binary, highlight("--use-virtualenv")))
 
-    def assemble(self, args: argparse.Namespace) -> None:
+    def assemble(self, args: configargparse.Namespace) -> None:
         pip_binary = create_script_path(args.build_path, "pip")
         run_pip = [pip_binary, "install"]
         if args.pip_opts:
@@ -78,4 +80,4 @@ class VirtualEnvAssembler(BaseAssembler):
                 run_process(*run_spy)
 
 
-assembler_class = VirtualEnvAssembler
+assembler_class = VirtualEnvAssembler  # type: Type[VirtualEnvAssembler]

@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import os
 
 from typing import List
@@ -10,7 +10,7 @@ from gopythongo.utils import highlight, ErrorMessage
 _aptly_shared_args_added = False  # type: bool
 
 
-def add_shared_args(parser: argparse.ArgumentParser) -> None:
+def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     global _aptly_shared_args_added
 
     if not _aptly_shared_args_added:
@@ -25,7 +25,7 @@ def add_shared_args(parser: argparse.ArgumentParser) -> None:
     _aptly_shared_args_added = True
 
 
-def validate_shared_args(args: argparse.Namespace) -> None:
+def validate_shared_args(args: configargparse.Namespace) -> None:
     if not os.path.exists(args.aptly_executable) or not os.access(args.aptly_executable, os.X_OK):
         raise ErrorMessage("aptly not found in path or not executable (%s). You can specify "
                            "an alternative path using %s" %
@@ -36,7 +36,7 @@ def validate_shared_args(args: argparse.Namespace) -> None:
                            "operate on via %s" % highlight("--repo"))
 
 
-def get_aptly_cmdline(args: argparse.Namespace) -> List[str]:
+def get_aptly_cmdline(args: configargparse.Namespace) -> List[str]:
     cmdline = [args.aptly_executable]
 
     if args.aptly_config:

@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import sys
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.initializers import BaseInitializer
 from gopythongo.utils import highlight
@@ -31,4 +31,4 @@ class DockerCopyDockerInitializer(BaseInitializer):
         sys.exit(0)
 
 
-initializer_class = DockerCopyDockerInitializer
+initializer_class = DockerCopyDockerInitializer  # type: Type[DockerCopyDockerInitializer]

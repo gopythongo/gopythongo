@@ -2,7 +2,7 @@
 import argparse
 import re
 
-from typing import Any
+from typing import Any, Type
 
 from gopythongo.versioners.parsers.semverparser import SemVerAdapter, SemVerVersionParser
 from gopythongo.versioners.parsers import VersionContainer
@@ -91,4 +91,4 @@ class RegexVersionParser(SemVerVersionParser):
                highlight("prerelease"), highlight("metadata")))
 
 
-versionparser_class = RegexVersionParser
+versionparser_class = RegexVersionParser  # type: Type[RegexVersionParser]

@@ -1,9 +1,9 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import shlex
 import tempfile
 
-from typing import Any, Sequence, Union, Dict, cast, List
+from typing import Any, Sequence, Union, Dict, cast, List, Type
 
 import gopythongo.shared.aptly_args as _aptly_args
 
@@ -29,7 +29,7 @@ class AptlyStore(BaseStore):
     def supported_version_parsers(self) -> List[str]:
         return ["debian"]
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
 
         gp_ast = parser.add_argument_group("Aptly Store options")
@@ -68,7 +68,7 @@ class AptlyStore(BaseStore):
                                  "every user on the system. You're better of passing --passphrase-file to aptly via "
                                  "--aptly-publish-opts in that case.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
 
         from gopythongo.versioners import get_version_parsers
@@ -99,7 +99,7 @@ class AptlyStore(BaseStore):
         debvp = cast(DebianVersionParser, get_version_parsers()["debian"])
         return debvp
 
-    def _check_version_exists(self, package_name: str, version: str, args: argparse.Namespace) -> bool:
+    def _check_version_exists(self, package_name: str, version: str, args: configargparse.Namespace) -> bool:
         aptlyv = self._get_aptly_versioner()
         if aptlyv.query_repo_versions("Name (%s), $Version (= %s)" %
                                       (package_name, version), args,
@@ -108,7 +108,7 @@ class AptlyStore(BaseStore):
         else:
             return False
 
-    def _check_package_exists(self, package_name: str, args: argparse.Namespace) -> bool:
+    def _check_package_exists(self, package_name: str, args: configargparse.Namespace) -> bool:
         aptlyv = self._get_aptly_versioner()
         if aptlyv.query_repo_versions("Name (%s)" % package_name, args, allow_fallback_version=False):
             return True
@@ -116,7 +116,7 @@ class AptlyStore(BaseStore):
             return False
 
     def _find_new_version(self, package_name: str, version: VersionContainer[DebianVersion], action: str,
-                          args: argparse.Namespace) -> VersionContainer[DebianVersion]:
+                          args: configargparse.Namespace) -> VersionContainer[DebianVersion]:
         """
         Find the next version given `action` in the target repo for `package_name`.
         """
@@ -158,7 +158,8 @@ class AptlyStore(BaseStore):
             return version
 
     def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer[Any], action: str,
-                                 args: argparse.Namespace) -> Union[Dict[str, VersionContainer[DebianVersion]], None]:
+                                 args: configargparse.Namespace) -> Union[Dict[str, VersionContainer[DebianVersion]],
+                                                                          None]:
         ret = {}  # type: Dict[str, VersionContainer[DebianVersion]]
         base_debv = base_version.convert_to("debian")
         for package_name in artifact_names:
@@ -166,7 +167,7 @@ class AptlyStore(BaseStore):
             ret[package_name] = next_version
         return ret
 
-    def store(self, args: argparse.Namespace) -> None:
+    def store(self, args: configargparse.Namespace) -> None:
         # add each package to the repo
         for pkg in the_context.packer_artifacts:
             if not args.aptly_dont_remove:  # aptly DO remove
@@ -230,4 +231,4 @@ class AptlyStore(BaseStore):
             run_process(*cmdline)
 
 
-store_class = AptlyStore
+store_class = AptlyStore  # type: Type[AptlyStore]

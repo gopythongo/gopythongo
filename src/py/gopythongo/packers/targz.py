@@ -3,7 +3,7 @@ import argparse
 import tarfile
 import os
 
-from typing import Any, List, Union
+from typing import Any, List, Union, Type
 
 from gopythongo.packers import BasePacker
 from gopythongo.utils import print_info, highlight, ErrorMessage
@@ -117,4 +117,4 @@ class TarGzPacker(BasePacker):
             ))
 
 
-packer_class = TarGzPacker
+packer_class = TarGzPacker  # type: Type[TarGzPacker]

@@ -1,11 +1,12 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
+
+from typing import Any, Type
 
 import gopythongo.shared.docker_args
 
 from gopythongo.utils import print_info, highlight
 from gopythongo.builders import BaseBuilder
-from typing import Any
 
 
 class DockerBuilder(BaseBuilder):
@@ -16,7 +17,7 @@ class DockerBuilder(BaseBuilder):
     def builder_name(self) -> str:
         return "docker"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gopythongo.shared.docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
@@ -29,11 +30,11 @@ class DockerBuilder(BaseBuilder):
                                     "used, GoPythonGo will not use 'docker rm' and 'docker rmi' to clean up the "
                                     "resulting containers.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         gopythongo.shared.docker_args.validate_shared_args(args)
 
-    def build(self, args: argparse.Namespace) -> None:
+    def build(self, args: configargparse.Namespace) -> None:
         print_info("Building with %s" % highlight("docker"))
 
 
-builder_class = DockerBuilder
+builder_class = DockerBuilder  # type: Type[DockerBuilder]

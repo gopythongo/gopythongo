@@ -2,7 +2,7 @@
 import argparse
 import shlex
 
-from typing import List, Any
+from typing import List, Any, Type
 
 import gopythongo.shared.aptly_args as _aptly_args
 
@@ -99,4 +99,4 @@ class AptlyVersioner(BaseVersioner):
         return str(versions[-1])
 
 
-versioner_class = AptlyVersioner
+versioner_class = AptlyVersioner  # type: Type[AptlyVersioner]

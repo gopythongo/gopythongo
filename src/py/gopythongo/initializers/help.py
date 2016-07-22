@@ -1,14 +1,14 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Iterable, Any
+from typing import Iterable, Any, List
 
 from gopythongo.utils import highlight
 
 
 class InitializerHelpAction(argparse.Action):
     def __init__(self,
-                 option_strings: str,
+                 option_strings: List[str],
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
@@ -17,11 +17,11 @@ class InitializerHelpAction(argparse.Action):
                          choices=choices, help=help)
 
     def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
-                 values: str, option_string: str=None) -> None:
+                 values: List[Any], option_string: str=None) -> None:
         from gopythongo.initializers import get_initializers
         initializers = get_initializers()
-        if values in initializers.keys():
-            initializers[values].print_help()
+        if values[0] in initializers.keys():
+            initializers[values[0]].print_help()
         else:
             print("Quick start configuration generators\n"
                   "====================================\n"
