@@ -1,6 +1,6 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import shutil
 
 import atexit
@@ -8,7 +8,6 @@ import signal
 import sys
 import os
 
-from configargparse import ArgParser as ArgumentParser
 from gopythongo.utils.buildcontext import the_context
 from types import FrameType
 from typing import List, Any, Iterable, Set, Sequence, Union
@@ -24,7 +23,7 @@ default_config_files = [".gopythongo/config"]  # type: List[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
 
-class DebugConfigAction(argparse.Action):
+class DebugConfigAction(configargparse.Action):
     def __init__(self,
                  option_strings: List[str],
                  dest: str,
@@ -35,27 +34,26 @@ class DebugConfigAction(argparse.Action):
         super().__init__(option_strings=option_strings, dest=dest, default=default,
                          nargs=0, choices=choices, help=help)
 
-    def __call__(self, parser: ArgumentParser, namespace: argparse.Namespace,
+    def __call__(self, parser: configargparse.ArgumentParser, namespace: configargparse.Namespace,
                  values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         parser.print_values()
         parser.exit(0)
 
 
-def get_parser() -> ArgumentParser:
-    parser = ArgumentParser(description="Build a Python virtualenv deployment artifact and collect "
-                                        "a Django project's static content if needed. The created "
-                                        "virtualenv is packaged and ready to be deployed to a server. "
-                                        "This tool is designed to be used with pbuilder or docker so it can build a "
-                                        "virtual environment in the path where it will be deployed. "
-                                        "Parameters that start with '--' (eg. --builder) can "
-                                        "also be set in a config file (e.g. .gopythongo/config) by using .ini or "
-                                        ".yaml-style syntax (e.g. mode=value). If a parameter is specified in more "
-                                        "than one place, then command-line values override config file values which "
-                                        "override defaults. More information at http://gopythongo.com/.",
-                            prog="gopythongo.main",
-                            args_for_setting_config_path=args_for_setting_config_path,
-                            config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
-                            default_config_files=default_config_files)
+def get_parser() -> configargparse.ArgumentParser:
+    parser = configargparse.ArgumentParser(
+        description="Build a Python virtualenv deployment artifact and collect a Django project's static content if "
+                    "needed. The created virtualenv is packaged and ready to be deployed to a server. This tool is "
+                    "designed to be used with pbuilder or docker so it can build a virtual environment in the path "
+                    "where it will be deployed. Parameters that start with '--' (eg. --builder) can also be set in a "
+                    "config file (e.g. .gopythongo/config) by using .ini or .yaml-style syntax (e.g. mode=value). If a "
+                    "parameter is specified in more than one place, then command-line values override config file "
+                    "values which override defaults. More information at http://gopythongo.com/.",
+        prog="gopythongo.main",
+        args_for_setting_config_path=args_for_setting_config_path,
+        config_arg_help_message="Use this path instead of the default (.gopythongo/config)",
+        default_config_files=default_config_files
+    )
 
     for subargs in [initializers.add_args, builders.add_args, versioners.add_args, assemblers.add_args,
                     packers.add_args, stores.add_args]:
@@ -105,15 +103,15 @@ def get_parser() -> ArgumentParser:
     # you will likely never have to use this parameter yourself. It is used by GoPythonGo
     # internally
     parser.add_argument("--inner", dest="is_inner", action="store_true", default=False,
-                        help=argparse.SUPPRESS)
+                        help=configargparse.SUPPRESS)
     # serialized version as read by the Versioner and parsed by the Version Parser outside of the build environment
-    parser.add_argument("--read-state", dest="read_state", default=None, help=argparse.SUPPRESS)
-    parser.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--read-state", dest="read_state", default=None, help=configargparse.SUPPRESS)
+    parser.add_argument("--cwd", dest="cwd", default=None, help=configargparse.SUPPRESS)
 
     return parser
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if not args.builder:
         raise ErrorMessage("You must select a builder using --builder.")
     if not args.packer:
@@ -167,7 +165,7 @@ def _sigint_handler(sig: int, frame: FrameType) -> None:
     sys.exit(1)
 
 
-def _cleanup_tempfiles(args: argparse.Namespace) -> None:
+def _cleanup_tempfiles(args: configargparse.Namespace) -> None:
     if the_context.tempmount and not args.is_inner:
         if os.path.exists(the_context.tempmount):
             shutil.rmtree(the_context.tempmount)
@@ -180,13 +178,13 @@ def _cleanup_tempfiles(args: argparse.Namespace) -> None:
 
 def _find_default_mounts() -> Set[str]:
     basepath = os.getcwd()
-    miniparser = argparse.ArgumentParser()
+    miniparser = configargparse.ArgumentParser()
     miniparser.add_argument(*args_for_setting_config_path, dest="config", action="append",
                             default=[])
     args, _ = miniparser.parse_known_args()
 
     # type: ignore, because mypy doesn't parse add_argument above correctly
-    if not args.config:  # type: ignore
+    if not args.config:
         args.config = default_config_files
 
     paths = set()
@@ -204,8 +202,8 @@ def route() -> None:
                     assemblers.init_subsystem, packers.init_subsystem, stores.init_subsystem]:
         subinit()
 
-    precheck = argparse.ArgumentParser(add_help=False)
-    precheck.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
+    precheck = configargparse.ArgumentParser(add_help=False)
+    precheck.add_argument("--cwd", dest="cwd", default=None, help=configargparse.SUPPRESS)
     preargs, _ = precheck.parse_known_args()
 
     if preargs.cwd:
