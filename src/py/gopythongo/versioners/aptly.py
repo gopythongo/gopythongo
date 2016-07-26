@@ -73,7 +73,8 @@ class AptlyVersioner(BaseVersioner):
                 return []
         elif ret.exitcode != 0:
             # we must have run into a problem
-            raise ErrorMessage("Aptly reported an unknown problem with exit code %s" % ret.exitcode)
+            raise ErrorMessage("Aptly reported an unknown problem with exit code %s\n*** Output follows:\n%s" %
+                               (ret.exitcode, highlight(ret.output) if ret.output else "no output"))
         else:
             versions = []  # type: List[DebianVersion]
             for line in ret.output.split():
