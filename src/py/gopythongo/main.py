@@ -1,5 +1,7 @@
 #!/usr/bin/python -u
 # -* encoding: utf-8 *-
+import argparse
+
 import configargparse
 import shutil
 
@@ -103,10 +105,10 @@ def get_parser() -> configargparse.ArgumentParser:
     # you will likely never have to use this parameter yourself. It is used by GoPythonGo
     # internally
     parser.add_argument("--inner", dest="is_inner", action="store_true", default=False,
-                        help=configargparse.SUPPRESS)
+                        help=argparse.SUPPRESS)
     # serialized version as read by the Versioner and parsed by the Version Parser outside of the build environment
-    parser.add_argument("--read-state", dest="read_state", default=None, help=configargparse.SUPPRESS)
-    parser.add_argument("--cwd", dest="cwd", default=None, help=configargparse.SUPPRESS)
+    parser.add_argument("--read-state", dest="read_state", default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
 
     return parser
 
@@ -203,7 +205,7 @@ def route() -> None:
         subinit()
 
     precheck = configargparse.ArgumentParser(add_help=False)
-    precheck.add_argument("--cwd", dest="cwd", default=None, help=configargparse.SUPPRESS)
+    precheck.add_argument("--cwd", dest="cwd", default=None, help=argparse.SUPPRESS)
     preargs, _ = precheck.parse_known_args()
 
     if preargs.cwd:
