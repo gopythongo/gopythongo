@@ -80,9 +80,10 @@ class ProcessOutput(object):
 
 def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_exitcode: bool=False,
                 interactive: bool=False) -> ProcessOutput:
-    actual_args = None  # type: List[str]
     if prepend_exec:
-        actual_args = prepend_exec + list(args)
+        actual_args = prepend_exec + list(args)  # type: List[str]
+    else:
+        actual_args = list(args)  # type: List[str]
 
     print_debug("Running %s" % str(actual_args))
     if debug_donotexecute:
