@@ -1,14 +1,14 @@
 # -* encoding: utf-8 *-
 import argparse
 
-from typing import Any, Iterable, Union, Sequence
+from typing import Any, Iterable, Union, Sequence, cast
 
 from gopythongo.utils import highlight
 
 
 class VersionParserHelpAction(argparse.Action):
     def __init__(self,
-                 option_strings: List[str],
+                 option_strings: Sequence[str],
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
@@ -20,8 +20,8 @@ class VersionParserHelpAction(argparse.Action):
                  values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         from gopythongo.versioners import get_version_parsers
         version_parsers = get_version_parsers()
-        if values[0] in version_parsers.keys():
-            version_parsers[values[0]].print_help()
+        if values in version_parsers.keys():
+            version_parsers[cast(str, values)].print_help()
         else:
             print("Version Parsers\n"
                   "===============\n"
