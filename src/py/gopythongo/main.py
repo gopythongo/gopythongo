@@ -196,7 +196,7 @@ def _find_default_mounts() -> Set[str]:
     for cfg in args.config:
         if os.path.isfile(cfg):
             paths.add(os.path.abspath(os.path.dirname(cfg)))
-            config_paths.add(os.path.dirname(cfg))
+            config_paths.add(os.path.abspath(os.path.dirname(cfg)))
     return paths
 
 

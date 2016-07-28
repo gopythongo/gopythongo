@@ -4,8 +4,9 @@ import configargparse
 
 from typing import Any, Type
 
+from gopythongo import utils
 from gopythongo.shared import docker_args as _docker_args
-from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug
+from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug, targz
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
 
@@ -32,6 +33,9 @@ class DockerBuilder(BaseBuilder):
                                help="After creating a build environment and a runtime container, if this option is "
                                     "used, GoPythonGo will not use 'docker rm' and 'docker rmi' to clean up the "
                                     "resulting containers.")
+        gp_docker.add_argument("--docker-debug-savecontext", dest="docker_debug_save_context", default=None,
+                               help="Set this to a filename to save the .tar.gz that GoPythonGo assembles as a "
+                                    "Docker context to build the build environment container using 'docker build'.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _docker_args.validate_shared_args(args)
@@ -56,10 +60,18 @@ class DockerBuilder(BaseBuilder):
         # then run GoPythonGo in the resulting container with all folders mounted
 
         from gopythongo.main import config_paths
-        print_debug("Using first found config path as Docker build context: %s" % highlight(list(config_paths)[0]))
-        build_cmdline = ["docker", "build", "-f", dockerfile]
+        memtgz = targz.create_targzip(filename=None,
+                                      paths=list(config_paths) + [dockerfile],
+                                      verbose=utils.enable_debug_output)
+
+        if args.docker_debug_save_context:
+            with open(args.docker_debug_save_context, "wb") as f:
+                print_info("Saving Docker context to %s" % highlight(args.docker_debug_save_context))
+                f.write(memtgz.getvalue())
+
+        build_cmdline = ["docker", "build", "-"]
         print_debug("Running Docker build from %s" % highlight(dockerfile))
-        res = run_process(*build_cmdline)
+        res = run_process(*build_cmdline, send_to_stdin=memtgz.getvalue())
 
         gpg_cmdline = ["docker", "run"]
 

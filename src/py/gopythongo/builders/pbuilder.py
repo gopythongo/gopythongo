@@ -72,7 +72,7 @@ class PbuilderBuilder(BaseBuilder):
                 raise ErrorMessage("pbuilder distribution unfortunately defaults to %s, so you must explicitly set it "
                                    "using the parameter %s" %
                                    (highlight("sid (unstable)"), highlight("--distribution")))
-            elif ("debian/%s" % args.pbuilder_distribution) not in _builder_args.get_dependencies() \
+            elif ("debian/%s" % args.pbuilder_distribution) not in get_dependencies() \
                     and args.install_defaults:
                 raise ErrorMessage("GoPythonGo does not have stored package dependencies for distribution %s. You can "
                                    "set %s to ignore this error." %

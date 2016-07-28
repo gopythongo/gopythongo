@@ -77,7 +77,7 @@ class TarGzPacker(BasePacker):
             # TODO: find the full path for the resulting file
 
             print_info("Creating bundle tarball of %s in %s" % (highlight(path), highlight(fn)))
-            targz.create_targzip(fn, path, args.targz_relative)
+            targz.create_targzip(filename=fn, paths=[path], make_paths_relative=args.targz_relative)
 
             the_context.packer_artifacts.add(PackerArtifact(
                 "targz",

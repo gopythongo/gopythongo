@@ -5,7 +5,7 @@ import argparse
 import sys
 import os
 
-from typing import List, Iterable, Union, Any, cast
+from typing import List, Iterable, Union, Any, cast, IO
 
 import colorama
 from colorama import Fore
@@ -79,11 +79,11 @@ class ProcessOutput(object):
 
 
 def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_exitcode: bool=False,
-                interactive: bool=False) -> ProcessOutput:
+                interactive: bool=False, send_to_stdin: IO=None) -> ProcessOutput:
     if prepend_exec:
         actual_args = prepend_exec + list(args)  # type: List[str]
     else:
-        actual_args = list(args)  # type: List[str]
+        actual_args = list(args)
 
     print_debug("Running %s" % str(actual_args))
     if debug_donotexecute:
@@ -99,15 +99,22 @@ def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_ex
             return ProcessOutput("", 0)
         else:
             try:
-                # it seems that mypy does not realize that universal_newlines guarantees a str return
-                output = cast(str, subprocess.check_output(actual_args,
-                              stderr=subprocess.STDOUT, universal_newlines=True))
+                if send_to_stdin:
+                    output = subprocess.check_output(actual_args, stderr=subprocess.STDOUT,
+                                                     input=send_to_stdin).decode("utf-8")
+                else:
+                    # it seems that mypy does not realize that universal_newlines guarantees a str return
+                    output = cast(str, subprocess.check_output(actual_args,
+                                  stderr=subprocess.STDOUT, universal_newlines=True))
             except subprocess.CalledProcessError as e:
                 if raise_nonzero_exitcode:
                     raise
                 exitcode = e.returncode
-                # because universal_newlines = True this will be str, but mypy doesn't know
-                output = cast(str, e.output)
+                if send_to_stdin:
+                    output = e.output.decode("utf-8")
+                else:
+                    # because universal_newlines = True this will be str, but mypy doesn't know
+                    output = cast(str, e.output)
 
             if exitcode != 0 and not allow_nonzero_exitcode:
                 raise ErrorMessage("%s exited with non-zero exit code %s. Output was:\n%s" %
