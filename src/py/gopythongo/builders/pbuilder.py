@@ -153,5 +153,14 @@ class PbuilderBuilder(BaseBuilder):
 
         run_process(*build_cmdline, interactive=args.builder_debug_login)
 
+    def print_help(self) -> None:
+        print("Pbuilder Builder\n"
+              "================\n"
+              "\n"
+              "Builds virtualenvs in a chroot using Debian's pbuilder. This has the drawback,\n"
+              "that GoPythonGo needs to run as root to utilize pbuilder correctly, as it needs\n"
+              "chroot privileges (you might be able to do something using fakeroot and setcap\n"
+              "cap_sys_chroot, but that's untested).\n")
+
 
 builder_class = PbuilderBuilder  # type: Type[PbuilderBuilder]

@@ -7,9 +7,11 @@ import os
 from typing import Dict, List, Tuple, Any
 
 import gopythongo
+
 from gopythongo.utils import print_info, highlight, create_script_path, print_warning, plugins, \
                              CommandLinePlugin, ErrorMessage
 from gopythongo.utils.buildcontext import the_context
+from gopythongo.builders import help as _builder_help
 
 
 _builders = {}  # type: Dict[str, 'BaseBuilder']
@@ -52,6 +54,9 @@ class BaseBuilder(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement build")
 
+    def print_help(self) -> None:
+        raise NotImplementedError("Each subclass of BaseBuilder MUST implement print_help")
+
 
 def add_args(parser: argparse.ArgumentParser) -> None:
     global _builders
@@ -65,6 +70,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                             default=False,
                             help="Instead of executing the '--inner' build, if the Builder supports it, run an "
                                  "interactive shell inside the build environment for debug purposes")
+    gr_builder.add_argument("--help-builder", choices=_builders.keys(), default=None,
+                            action=_builder_help.BuilderHelpAction)
 
     for b in _builders.values():
         b.add_args(parser)
