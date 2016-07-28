@@ -2,6 +2,8 @@
 import configargparse
 import os
 
+from typing import Dict, List
+
 from gopythongo.utils import ErrorMessage, highlight
 from gopythongo.utils.buildcontext import the_context
 
@@ -10,7 +12,22 @@ _args_added = False
 _args_validated = False
 
 
-def add_args(parser: configargparse.ArgumentParser) -> None:
+_dependencies = {
+    "debian/jessie": ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
+                      "virtualenv"]
+}  # type: Dict[str, List[str]]
+
+
+def get_dependencies() -> Dict[str, List[str]]:
+    return _dependencies
+
+
+def add_dependencies(key: str, deps: List[str]) -> None:
+    global _dependencies
+    _dependencies[key] = deps
+
+
+def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     global _args_added
     if _args_added:
         return
@@ -25,7 +42,7 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
                             "build (e.g. 'gem install fpm')")
 
 
-def validate_args(args: configargparse.Namespace) -> None:
+def validate_shared_args(args: configargparse.Namespace) -> None:
     global _args_validated
     if _args_validated:
         return

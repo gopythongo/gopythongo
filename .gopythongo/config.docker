@@ -1,0 +1,21 @@
+builder=docker
+
+run-after-create=[.gopythongo/install_fpm.sh]
+packer=fpm
+
+store=aptly
+repo=gopythongo
+aptly-distribution=jessie
+# reference for build server
+aptly-publish-opts=-architectures=amd64 -keyring=/root/package_signing_authority_public.gpg -secret-keyring=/root/package_signing_authority_secret.gpg -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF -passphrase-file=/root/gopythongo_dev_passphrase.txt
+aptly-publish-endpoint=s3:gopythongo:debian
+
+versioner=pymodule
+pymodule-read=gopythongo.version
+version-parser=pep440
+version-action=bump-revision
+
+use-fpm=/usr/local/bin/fpm
+run-fpm=template:.gopythongo/fpm_opts
+copy-out=/home/vagrant/test/build
+

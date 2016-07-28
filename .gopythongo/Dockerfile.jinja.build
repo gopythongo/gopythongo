@@ -1,0 +1,8 @@
+FROM debian:jessie
+
+RUN apt-get install {{dependencies["debian/jessie"]}}
+{% for cmd in run_after_create %}
+RUN {{cmd}}
+{% endfor %}
+RUN {{gopythongo}}
+CMD /bin/bash

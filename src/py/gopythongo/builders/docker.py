@@ -1,12 +1,13 @@
 # -* encoding: utf-8 *-
+import os
 import configargparse
 
 from typing import Any, Type
 
-import gopythongo.shared.docker_args
-
-from gopythongo.utils import print_info, highlight
+from gopythongo.shared import builder_args as _builder_args, docker_args as _docker_args
+from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process
 from gopythongo.builders import BaseBuilder
+from gopythongo.utils.buildcontext import the_context
 
 
 class DockerBuilder(BaseBuilder):
@@ -18,12 +19,15 @@ class DockerBuilder(BaseBuilder):
         return "docker"
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        gopythongo.shared.docker_args.add_shared_args(parser)
+        _builder_args.add_shared_args(parser)
+        _docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
         gp_docker.add_argument("--docker-buildfile", dest="docker_buildfile", default=None,
                                help="Specify a Dockerfile to build the the build environment. The build commands will "
-                                    "then be executed inside the resulting container. You can use templating here. ")
+                                    "then be executed inside the resulting container. The file is always processed as "
+                                    "a Jinja template and must contain certain variable placeholders. Read "
+                                    "--help-builder=docker for more information.")
         gp_docker.add_argument("--docker-leave-containers", dest="docker_leave_containers", action="store_true",
                                default=False, env_var="DOCKER_LEAVE_CONTAINERS",
                                help="After creating a build environment and a runtime container, if this option is "
@@ -31,10 +35,31 @@ class DockerBuilder(BaseBuilder):
                                     "resulting containers.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        gopythongo.shared.docker_args.validate_shared_args(args)
+        _builder_args.validate_shared_args(args)
+        _docker_args.validate_shared_args(args)
+
+        if not args.docker_buildfile:
+            raise ErrorMessage("Using the docker builder requires you to pass --docker-buildfile and specify a "
+                               "Dockerfile template.")
+
+        if not os.path.exists(args.docker_buildfile) or not os.access(args.docker_buildfile, os.R_OK):
+            raise ErrorMessage("It seems that GoPythonGo can't find or isn't allowed to read %s" %
+                               highlight(args.docker_buildfile))
 
     def build(self, args: configargparse.Namespace) -> None:
         print_info("Building with %s" % highlight("docker"))
+        ctx = {
+            "gopythongo": the_context.get_gopythongo_inner_commandline(),
+            "dependencies": _builder_args.get_dependencies()
+        }
+        dockerfile = template.process_to_tempfile(args.docker_buildfile, ctx)
+
+        # TODO: figure out how to copy in config files from .gopythongo and other paths from the docker build context
+
+        build_cmdline = ["docker", "build", "-f", dockerfile]
+        print_info("Running Docker build with inner command-line: %s" % ctx["gopythongo"])
+        res = run_process(*build_cmdline)
+
 
     def print_help(self) -> None:
         print("Docker Builder\n"
@@ -52,8 +77,26 @@ class DockerBuilder(BaseBuilder):
               "The build Dockerfile template must contain the following variables that\n"
               "GoPythonGo relies on to execute itself inside the build container:\n"
               "\n"
-              "    {{mounts}}   - will resolve to a number of MOUNT instructions\n"
-              "    {{commands}} - will be replaced by the GoPythonGo build commands\n")
+              "    {{gopythongo}} - will be replaced by the GoPythonGo build commands\n"
+              "    {{run_after_create}} - is a list of commands to run via the RUN directive\n"
+              "                           of the Dockerfile. Include it in your Dockerfile\n"
+              "                           template like this:\n"
+              "                               {%% for cmd in run_after_create %%}\n"
+              "                               RUN {{cmd}}\n"
+              "                               {%% endfor %%}\n"
+              "\n"
+              "You can optionally use the following variables in the template:\n"
+              "\n"
+              "    {{dependencies}} - resolves to a dictionary of distribution names to lists\n"
+              "                       of package names that are common dependencies required\n"
+              "                       to build virtualenvs for each platform. Distribution\n"
+              "                       names have the form 'debian/jessie'. This is just for\n"
+              "                       convenience.\n"
+              "                       For example: {{dependencies['debian/jessie']}} will\n"
+              "                       resolve to:\n"
+              "%s\n" %
+              (",\n".join(["                           %s" % x for x in
+                          _builder_args.get_dependencies()["debian/jessie"]])))
 
 
 builder_class = DockerBuilder  # type: Type[DockerBuilder]

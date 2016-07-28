@@ -22,7 +22,7 @@ class PbuilderBuilder(BaseBuilder):
         return "pbuilder"
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _builder_args.add_args(parser)
+        _builder_args.add_shared_args(parser)
         gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable")
@@ -58,7 +58,7 @@ class PbuilderBuilder(BaseBuilder):
                                       "Python version runs.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _builder_args.validate_args(args)
+        _builder_args.validate_shared_args(args)
         if args.is_inner:
             pass
         else:
@@ -76,6 +76,11 @@ class PbuilderBuilder(BaseBuilder):
                 raise ErrorMessage("pbuilder distribution unfortunately defaults to %s, so you must explicitly set it "
                                    "using the parameter %s" %
                                    (highlight("sid (unstable)"), highlight("--distribution")))
+            elif ("debian/%s" % args.pbuilder_distribution) not in _builder_args.get_dependencies() \
+                    and args.install_defaults:
+                raise ErrorMessage("GoPythonGo does not have stored package dependencies for distribution %s. You can "
+                                   "set %s to ignore this error." %
+                                   (highlight(args.pbuilder_distribution), highlight("--no-install-defaults")))
 
             if os.getuid() != 0:
                 raise ErrorMessage("pbuilder requires root privileges. Please run GoPythonGo as root when using "
@@ -102,8 +107,7 @@ class PbuilderBuilder(BaseBuilder):
                 create_cmdline += ["--basetgz", args.basetgz]
 
             if args.install_defaults:
-                args.build_deps += ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
-                                    "virtualenv"]
+                args.build_deps += _builder_args.get_dependencies()["debian/%s" % args.pbuilder_distribution]
                 if args.eatmydata:
                     args.build_deps += ["eatmydata"]
 
