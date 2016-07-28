@@ -1,12 +1,10 @@
 # -* encoding: utf-8 *-
 import argparse
-import tarfile
-import os
 
 from typing import Any, List, Union, Type
 
 from gopythongo.packers import BasePacker
-from gopythongo.utils import print_info, highlight, ErrorMessage
+from gopythongo.utils import print_info, highlight, ErrorMessage, targz
 from gopythongo.utils.buildcontext import the_context, PackerArtifact
 
 
@@ -53,33 +51,6 @@ class TarGzPacker(BasePacker):
             else:
                 validate_fns.append(fn)
 
-    def _create_targzip(self, outfile: str, basepath: str, args: argparse.Namespace,
-                        make_paths_relative: bool=False) -> None:
-        """
-        creates a .tar.gz of everything below basepath, making sure all
-        stored paths are relative
-        """
-        if os.path.exists(outfile):
-            os.remove(outfile)
-
-        f = open(outfile, 'w')
-        # we're using stream mode here as otherwise tarfile seems
-        # to add spurious information about f's path to the gzip
-        # wrapper... this can be seen inside 7-zip :(
-        tf = tarfile.open(fileobj=f, mode='w|gz')
-        for root, dir, files in os.walk(basepath):
-            for filename in files:
-                filepath = os.path.join(root, filename)
-                arcpath = root
-                if make_paths_relative:
-                    arcpath = root[len(basepath):]
-                arcname = os.path.join(arcpath, filename)
-                if args.verbose:
-                    print('adding %s as %s' % (filepath, arcname,))
-                tf.add(filepath, arcname, recursive=False)
-        tf.close()
-        f.close()
-
     def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
         # TODO: right now I don't know if this implementation will turn out to be more useful than return None
         ret = []  # type: List[str]
@@ -106,7 +77,7 @@ class TarGzPacker(BasePacker):
             # TODO: find the full path for the resulting file
 
             print_info("Creating bundle tarball of %s in %s" % (highlight(path), highlight(fn)))
-            self._create_targzip(fn, path, args.targz_relative)
+            targz.create_targzip(fn, path, args.targz_relative)
 
             the_context.packer_artifacts.add(PackerArtifact(
                 "targz",
