@@ -22,6 +22,7 @@ from gopythongo.utils import highlight, print_error, print_warning, print_info, 
 
 tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
+config_paths = set()  # type: Set[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
 
 
@@ -179,6 +180,7 @@ def _cleanup_tempfiles(args: configargparse.Namespace) -> None:
 
 
 def _find_default_mounts() -> Set[str]:
+    global config_paths
     basepath = os.getcwd()
     miniparser = configargparse.ArgumentParser()
     miniparser.add_argument(*args_for_setting_config_path, dest="config", action="append",
@@ -194,6 +196,7 @@ def _find_default_mounts() -> Set[str]:
     for cfg in args.config:
         if os.path.isfile(cfg):
             paths.add(os.path.abspath(os.path.dirname(cfg)))
+            config_paths.add(os.path.dirname(cfg))
     return paths
 
 

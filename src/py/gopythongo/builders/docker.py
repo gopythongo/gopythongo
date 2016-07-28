@@ -4,9 +4,9 @@ import configargparse
 
 from typing import Any, Type
 
-from gopythongo.shared import builder_args as _builder_args, docker_args as _docker_args
-from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process
-from gopythongo.builders import BaseBuilder
+from gopythongo.shared import docker_args as _docker_args
+from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug
+from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -19,7 +19,6 @@ class DockerBuilder(BaseBuilder):
         return "docker"
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _builder_args.add_shared_args(parser)
         _docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
@@ -35,7 +34,6 @@ class DockerBuilder(BaseBuilder):
                                     "resulting containers.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _builder_args.validate_shared_args(args)
         _docker_args.validate_shared_args(args)
 
         if not args.docker_buildfile:
@@ -49,16 +47,35 @@ class DockerBuilder(BaseBuilder):
     def build(self, args: configargparse.Namespace) -> None:
         print_info("Building with %s" % highlight("docker"))
         ctx = {
-            "gopythongo": the_context.get_gopythongo_inner_commandline(),
-            "dependencies": _builder_args.get_dependencies()
+            "run_after_create": args.run_after_create,
+            "dependencies": get_dependencies()
         }
         dockerfile = template.process_to_tempfile(args.docker_buildfile, ctx)
 
-        # TODO: figure out how to copy in config files from .gopythongo and other paths from the docker build context
+        # TODO: ship all config files in a .tar.gz as context via Docker STDIN
+        # then run GoPythonGo in the resulting container with all folders mounted
 
+        from gopythongo.main import config_paths
+        print_debug("Using first found config path as Docker build context: %s" % highlight(list(config_paths)[0]))
         build_cmdline = ["docker", "build", "-f", dockerfile]
-        print_info("Running Docker build with inner command-line: %s" % ctx["gopythongo"])
+        print_debug("Running Docker build from %s" % highlight(dockerfile))
         res = run_process(*build_cmdline)
+
+        gpg_cmdline = ["docker", "run"]
+
+        for mount in args.mounts + list(the_context.mounts):
+            gpg_cmdline += ["-v", mount]
+
+        if args.builder_debug_login:
+            debug_cmdline = gpg_cmdline + ["--"] + the_context.get_gopythongo_inner_commandline()
+            gpg_cmdline = gpg_cmdline + ["-i", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", "--", "/bin/bash"]
+            print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
+        else:
+            gpg_cmdline = gpg_cmdline + ["--"] + the_context.get_gopythongo_inner_commandline()
+
+        run_process(*gpg_cmdline, interactive=args.builder_debug_login)
+
+        # TODO: copy out results
 
 
     def print_help(self) -> None:
@@ -74,10 +91,18 @@ class DockerBuilder(BaseBuilder):
               "other helpers. Instead create a minimal production Docker container from the\n"
               "build container's output later, using the GoPythonGo Docker Store, for example.\n"
               "\n"
-              "The build Dockerfile template must contain the following variables that\n"
-              "GoPythonGo relies on to execute itself inside the build container:\n"
+              "The Docker build process runs in 3 steps:\n"
+              "    1. A build container is created using 'docker build' if it doesn't exist\n"
+              "       yet, containing sources, header files and compilers as needed.\n"
+              "    2. GoPythonGo executes inside that build container and builds a virtualenv"
+              "       using 'docker run'. This can't be done in step 1 because docker doesn't\n"
+              "       allow the mounting of host folders during build time.\n"
+              "    3. The build artifacts are extracted from the build container and the\n"
+              "       container is removed.\n"
               "\n"
-              "    {{gopythongo}} - will be replaced by the GoPythonGo build commands\n"
+              "The build Dockerfile template must contain the following variables to build\n"
+              "the container:\n"
+              "\n"
               "    {{run_after_create}} - is a list of commands to run via the RUN directive\n"
               "                           of the Dockerfile. Include it in your Dockerfile\n"
               "                           template like this:\n"
@@ -94,9 +119,9 @@ class DockerBuilder(BaseBuilder):
               "                       convenience.\n"
               "                       For example: {{dependencies['debian/jessie']}} will\n"
               "                       resolve to:\n"
-              "%s\n" %
-              (",\n".join(["                           %s" % x for x in
-                          _builder_args.get_dependencies()["debian/jessie"]])))
+              "%s\n"
+              "The build container is then run by GoPythonGo" %
+              (",\n".join(["                           %s" % x for x in get_dependencies()["debian/jessie"]])))
 
 
 builder_class = DockerBuilder  # type: Type[DockerBuilder]

@@ -6,9 +6,7 @@ import os
 
 from typing import Any, Type
 
-import gopythongo.shared.builder_args as _builder_args
-
-from gopythongo.builders import BaseBuilder
+from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils import print_info, highlight, run_process, print_debug, ErrorMessage
 from gopythongo.utils.buildcontext import the_context
 
@@ -22,7 +20,6 @@ class PbuilderBuilder(BaseBuilder):
         return "pbuilder"
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _builder_args.add_shared_args(parser)
         gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
                                  help="Specify an alternative pbuilder executable")
@@ -58,7 +55,6 @@ class PbuilderBuilder(BaseBuilder):
                                       "Python version runs.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _builder_args.validate_shared_args(args)
         if args.is_inner:
             pass
         else:
@@ -107,7 +103,7 @@ class PbuilderBuilder(BaseBuilder):
                 create_cmdline += ["--basetgz", args.basetgz]
 
             if args.install_defaults:
-                args.build_deps += _builder_args.get_dependencies()["debian/%s" % args.pbuilder_distribution]
+                args.build_deps += get_dependencies()["debian/%s" % args.pbuilder_distribution]
                 if args.eatmydata:
                     args.build_deps += ["eatmydata"]
 
