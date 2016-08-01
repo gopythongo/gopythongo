@@ -173,12 +173,14 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("Can't detect GoPythonGo path. You should run GoPythonGo from a virtualenv.")
 
     if not args.is_inner:
-        for runspec in args.run_after_create:
+        for ix, runspec in enumerate(args.run_after_create):
             if os.path.isfile(runspec):
                 if not os.access(runspec, os.X_OK):
                     raise ErrorMessage("GoPythonGo is supposed to run %s inside the build environment, but it's not "
                                        "executable" % highlight(runspec))
                 the_context.mounts.add(os.path.abspath(os.path.dirname(runspec)))
+                if not os.path.isabs(runspec):
+                    args.run_after_create[ix] = os.path.abspath(runspec)
 
 
 def build(args: argparse.Namespace) -> None:

@@ -3,10 +3,10 @@ import os
 import tarfile
 
 from io import BytesIO
-from typing import Sequence, Union, cast
+from typing import Sequence, Union, cast, Tuple
 
 
-def create_targzip(*, filename: str=None, paths: Sequence[str], verbose: bool=False,
+def create_targzip(*, filename: str=None, paths: Sequence[Union[str, Tuple[str, str]]], verbose: bool=False,
                    make_paths_relative: bool=False) -> Union[BytesIO, None]:
     """
     Creates a .tar.gz of everything below paths, making sure all
@@ -30,13 +30,22 @@ def create_targzip(*, filename: str=None, paths: Sequence[str], verbose: bool=Fa
     # to add spurious information about f's path to the gzip
     # wrapper... this can be seen inside 7-zip :(
     tf = tarfile.open(fileobj=f, mode='w|gz')
-    for path in paths:
+    for pspec in paths:
+        if isinstance(pspec, tuple):
+            path = pspec[0]
+            altpath = pspec[1]
+        else:
+            path = pspec
+            altpath = None
+
         if os.path.exists(path) and os.path.isdir(path):
             for root, dir, files in os.walk(path):
                 for fn in files:
                     filepath = os.path.join(root, fn)
                     arcpath = root
-                    if make_paths_relative:
+                    if altpath:
+                        arcpath = altpath
+                    elif make_paths_relative:
                         arcpath = root[len(path):]
                     arcname = os.path.join(arcpath, fn)
                     if verbose:
@@ -45,8 +54,8 @@ def create_targzip(*, filename: str=None, paths: Sequence[str], verbose: bool=Fa
 
         elif os.path.exists(path) and os.path.isfile(path):
             if verbose:
-                print('adding %s as %s' % (path, path))
-            tf.add(path, path, recursive=False)
+                print('adding %s as %s' % (path, altpath if altpath else path))
+            tf.add(path, altpath if altpath else path, recursive=False)
 
     if filename:
         tf.close()

@@ -1,12 +1,14 @@
 # -* encoding: utf-8 *-
 import os
+import re
+
 import configargparse
 
 from typing import Any, Type
 
 from gopythongo import utils
 from gopythongo.shared import docker_args as _docker_args
-from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug, targz
+from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug, targz, print_error
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
 
@@ -31,8 +33,12 @@ class DockerBuilder(BaseBuilder):
         gp_docker.add_argument("--docker-leave-containers", dest="docker_leave_containers", action="store_true",
                                default=False, env_var="DOCKER_LEAVE_CONTAINERS",
                                help="After creating a build environment and a runtime container, if this option is "
-                                    "used, GoPythonGo will not use 'docker rm' and 'docker rmi' to clean up the "
-                                    "resulting containers.")
+                                    "used, GoPythonGo will not use 'docker rm' to clean up the resulting containers.")
+        gp_docker.add_argument("--docker-leave-images", dest="docker_leave_images", action="store_true",
+                               default=False, env_var="DOCKER_LEAVE_IMAGES",
+                               help="After creating a build environment and a runtime container, if this option is "
+                                    "used, GoPythonGo will not use '--force-rm' to clean up the intermediate build "
+                                    "images.")
         gp_docker.add_argument("--docker-debug-savecontext", dest="docker_debug_save_context", default=None,
                                help="Set this to a filename to save the .tar.gz that GoPythonGo assembles as a "
                                     "Docker context to build the build environment container using 'docker build'.")
@@ -61,7 +67,7 @@ class DockerBuilder(BaseBuilder):
 
         from gopythongo.main import config_paths
         memtgz = targz.create_targzip(filename=None,
-                                      paths=list(config_paths) + [dockerfile],
+                                      paths=list(config_paths) + [(dockerfile, "/Dockerfile",)],
                                       verbose=utils.enable_debug_output)
 
         if args.docker_debug_save_context:
@@ -69,9 +75,24 @@ class DockerBuilder(BaseBuilder):
                 print_info("Saving Docker context to %s" % highlight(args.docker_debug_save_context))
                 f.write(memtgz.getvalue())
 
-        build_cmdline = ["docker", "build", "-"]
+        build_cmdline = ["docker", "build"]
+        if not args.docker_leave_images:
+            build_cmdline += ["--force-rm"]
+        build_cmdline += ["-"]
         print_debug("Running Docker build from %s" % highlight(dockerfile))
-        res = run_process(*build_cmdline, send_to_stdin=memtgz.getvalue())
+        res = run_process(*build_cmdline, send_to_stdin=memtgz.getvalue(), allow_nonzero_exitcode=True)
+
+        if res.exitcode != 0:
+            if not args.docker_leave_containers:
+                container_ids = re.findall("---> Running in ([0-9a-zA-Z]+)", res.output)
+                for c in reversed(container_ids):
+                    print_error("Remove container %s" % c)
+                    run_process("docker", "rm", c, allow_nonzero_exitcode=True)
+
+            raise ErrorMessage("'%s' exited with a non-zero exitcode (%s). Output was:\n%s" %
+                               (" ".join(build_cmdline), res.exitcode, res.output))
+
+        # FIXME: find "Successfully built e0c8921c1226" and run that container below
 
         gpg_cmdline = ["docker", "run"]
 
@@ -88,7 +109,6 @@ class DockerBuilder(BaseBuilder):
         run_process(*gpg_cmdline, interactive=args.builder_debug_login)
 
         # TODO: copy out results
-
 
     def print_help(self) -> None:
         print("Docker Builder\n"
