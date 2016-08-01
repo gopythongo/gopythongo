@@ -208,7 +208,7 @@ class AptlyStore(BaseStore):
 
             cmdline += [cmd, "-batch=true"]  # -batch=true enables gpg to run without an attached TTY on a build server
 
-            if args.aptly_publish_passphrase:
+            if args.aptly_passphrase:
                 # save the passphrase to a temporary file for aptly to read so we don't expose the passphrase on
                 # the process list
                 import gopythongo.main
