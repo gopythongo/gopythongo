@@ -14,7 +14,10 @@ def create_targzip(*, filename: str=None, paths: Sequence[Union[str, Tuple[str, 
 
     :param filename: the name of a file to write to, or `None`. If filename is `None` `create_targzip` returns
                      a `BinaryIO` in-memory file (be careful with the memory allocation here).
-    :param paths: a list of folders and files to add to the output .tar.gz
+    :param paths: a list of folders and files to add to the output .tar.gz. Each list item can be a ``str`` path or
+                  filename **or** a ``tuple`` of the form ``(path/filename, mapped path/mapped filename)`` allowing
+                  you to rename folders or files *inside* the .tar.gz ny using a tuple. For example: The Docker Builder
+                  uses this to pack '/tmp/xyz1234' as '/Dockerfile' into the Docker context .tar.gz.
     :param verbose: output each filename in paths as it is being processed
     :param make_paths_relative: ensure that the .tar.gz keeps all files relative to the path in paths. This is only
                                 mildly useful if you pack up multiple paths
