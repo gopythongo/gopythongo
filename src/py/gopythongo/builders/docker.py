@@ -124,7 +124,7 @@ class DockerBuilder(BaseBuilder):
         if args.builder_debug_login:
             debug_cmdline = gpg_cmdline + [build_container_id]
             debug_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
-            gpg_cmdline += ["-i", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", build_container_id, "/bin/bash"]
+            gpg_cmdline += ["-i", "-t", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", build_container_id, "/bin/bash"]
             print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
         else:
             gpg_cmdline = gpg_cmdline + [build_container_id]
