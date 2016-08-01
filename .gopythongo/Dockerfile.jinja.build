@@ -5,3 +5,4 @@ RUN apt-get update && apt-get -q -y -o DPkg::Options::=--force-confold -o DPkg::
 ADD {{cmd}} {{cmd}}
 RUN {{cmd}}
 {% endfor %}
+WORKDIR /gopythongo/output

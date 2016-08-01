@@ -133,12 +133,15 @@ class DockerBuilder(BaseBuilder):
 
         if res.exitcode == 0:
             # copy finished packages from the container
-            run_process("docker", "cp", "/gopythongo/output/*", ".")
+            res = run_process("docker", "cp", "%s:/gopythongo/output/*" % temp_container_name, ".",
+                              allow_nonzero_exitcode=True)
 
         if not args.docker_leave_containers:
             print_info("Removing build container %s" % temp_container_name)
             run_process("docker", "rm", temp_container_name)
 
+        # this exitcode can be non-zero because the docker run or the docker cp failed, in both cases we want to
+        # raise ErrorMessage
         if res.exitcode != 0:
             raise ErrorMessage("Inner GoPythonGo build in the Docker container failed. Please read the build jobs "
                                "output for more information.")
