@@ -9,7 +9,7 @@ from typing import Set, Any, Dict, List, Union, cast, Tuple
 from typing.io import TextIO
 
 from gopythongo.packers import BasePacker, get_packers
-from gopythongo.utils import GoPythonGoEnableSuper
+from gopythongo.utils import GoPythonGoEnableSuper, print_debug, highlight
 from gopythongo.versioners.parsers import VersionContainer
 
 
@@ -99,6 +99,7 @@ class BuildContext(object):
             self.write(f)
 
     def load_state(self) -> None:
+        print_debug("Reading state from %s in outer shell" % highlight(the_context.state_file))
         self.read(self.state_file)
 
     def get_gopythongo_inner_commandline(self) -> List[str]:

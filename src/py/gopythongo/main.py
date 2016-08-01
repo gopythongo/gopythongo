@@ -245,7 +245,6 @@ def route() -> None:
             builders.build(args)
 
             # STEP 3: After the 2nd gopythongo process is finished, we end up here
-            print_debug("Reading state from %s in outer shell" % highlight(the_context.state_file))
             the_context.load_state()
             stores.store(args)
         else:
