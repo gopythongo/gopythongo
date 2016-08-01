@@ -113,8 +113,8 @@ class DockerBuilder(BaseBuilder):
 
         # give the container a unique name so we can remove it later
         temp_container_name = "gopythongo-%s" % str(uuid.uuid4())
-        gpg_cmdline = [args.docker_executable, "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0", "--name",
-                       temp_container_name, "-w", os.getcwd()]
+        gpg_cmdline = [args.docker_executable, "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0",
+                       "--name", temp_container_name, "-w", os.getcwd()]
 
         for mount in args.mounts + list(the_context.mounts):
             # docker makes problems if you mount subfolders of the same path, so we filter those
