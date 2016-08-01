@@ -70,7 +70,7 @@ class DockerBuilder(BaseBuilder):
         }
         dockerfile = template.process_to_tempfile(args.docker_buildfile, ctx)
 
-        # TODO: ship all config files in a .tar.gz as context via Docker STDIN
+        # ship all config files in a .tar.gz as context via Docker STDIN
         # then run GoPythonGo in the resulting container with all folders mounted
 
         from gopythongo.main import config_paths
@@ -103,9 +103,10 @@ class DockerBuilder(BaseBuilder):
                 raise ErrorMessage("Unable to find the container ID of the build container, so GoPythonGo can't "
                                    "execute the build. Check the docker output for reasons.")
 
+        # give the container a unique name so we can remove it later
         temp_container_name = "gopythongo-%s" % str(uuid.uuid4())
         gpg_cmdline = ["docker", "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0", "--name",
-                       temp_container_name]
+                       temp_container_name, "-w", "/gopythongo/output"]
 
         for mount in args.mounts + list(the_context.mounts):
             # docker makes problems if you mount subfolders of the same path, so we filter those
@@ -119,14 +120,20 @@ class DockerBuilder(BaseBuilder):
                 gpg_cmdline += ["-v", "%s:%s" % (mount, mount)]
 
         if args.builder_debug_login:
-            debug_cmdline = gpg_cmdline + [build_container_id] + the_context.get_gopythongo_inner_commandline()
+            debug_cmdline = gpg_cmdline + [build_container_id]
+            debug_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
             gpg_cmdline += ["-i", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", build_container_id, "/bin/bash"]
             print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
         else:
-            gpg_cmdline = gpg_cmdline + [build_container_id] + the_context.get_gopythongo_inner_commandline()
+            gpg_cmdline = gpg_cmdline + [build_container_id]
+            gpg_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
 
         print_info("Starting build container %s" % temp_container_name)
         res = run_process(*gpg_cmdline, interactive=args.builder_debug_login, allow_nonzero_exitcode=True)
+
+        if res.exitcode == 0:
+            # copy finished packages from the container
+            run_process("docker", "cp", "/gopythongo/output/*", ".")
 
         if not args.docker_leave_containers:
             print_info("Removing build container %s" % temp_container_name)
@@ -135,8 +142,6 @@ class DockerBuilder(BaseBuilder):
         if res.exitcode != 0:
             raise ErrorMessage("Inner GoPythonGo build in the Docker container failed. Please read the build jobs "
                                "output for more information.")
-
-        # TODO: copy out results
 
     def print_help(self) -> None:
         print("Docker Builder\n"
