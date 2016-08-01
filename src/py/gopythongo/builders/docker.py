@@ -119,6 +119,8 @@ class DockerBuilder(BaseBuilder):
                     mount = "%s%s" % (mount, os.path.sep)
                 gpg_cmdline += ["-v", "%s:%s" % (mount, mount)]
 
+        gpg_cmdline += ["-v", "%s:/gopythongo/output" % os.getcwd()]
+
         if args.builder_debug_login:
             debug_cmdline = gpg_cmdline + [build_container_id]
             debug_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
