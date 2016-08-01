@@ -79,7 +79,7 @@ class ProcessOutput(object):
 
 
 def run_process(*args: str, allow_nonzero_exitcode: bool=False, raise_nonzero_exitcode: bool=False,
-                interactive: bool=False, send_to_stdin: IO=None) -> ProcessOutput:
+                interactive: bool=False, send_to_stdin: Union[IO, bytes]=None) -> ProcessOutput:
     if prepend_exec:
         actual_args = prepend_exec + list(args)  # type: List[str]
     else:
