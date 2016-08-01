@@ -6,7 +6,7 @@ from io import BytesIO
 from typing import Sequence, Union, cast, Tuple
 
 
-def create_targzip(*, filename: str=None, paths: Sequence[Union[str, Tuple[str, str]]], verbose: bool=False,
+def create_targzip(*, filename: str=None, paths: Sequence[Tuple[str, str]], verbose: bool=False,
                    make_paths_relative: bool=False) -> Union[BytesIO, None]:
     """
     Creates a .tar.gz of everything below paths, making sure all
@@ -14,10 +14,10 @@ def create_targzip(*, filename: str=None, paths: Sequence[Union[str, Tuple[str, 
 
     :param filename: the name of a file to write to, or `None`. If filename is `None` `create_targzip` returns
                      a `BinaryIO` in-memory file (be careful with the memory allocation here).
-    :param paths: a list of folders and files to add to the output .tar.gz. Each list item can be a ``str`` path or
-                  filename **or** a ``tuple`` of the form ``(path/filename, mapped path/mapped filename)`` allowing
-                  you to rename folders or files *inside* the .tar.gz ny using a tuple. For example: The Docker Builder
-                  uses this to pack '/tmp/xyz1234' as '/Dockerfile' into the Docker context .tar.gz.
+    :param paths: a list of folders and files to add to the output .tar.gz. Each list item is a ``tuple`` of the form
+                  ``(path/filename, mapped path/mapped filename)`` allowing you to rename folders or files *inside*
+                  the .tar.gz ny using a tuple. For example: The Docker Builder uses this to pack '/tmp/xyz1234' as
+                  '/Dockerfile' into the Docker context .tar.gz.
     :param verbose: output each filename in paths as it is being processed
     :param make_paths_relative: ensure that the .tar.gz keeps all files relative to the path in paths. This is only
                                 mildly useful if you pack up multiple paths
@@ -34,12 +34,8 @@ def create_targzip(*, filename: str=None, paths: Sequence[Union[str, Tuple[str, 
     # wrapper... this can be seen inside 7-zip :(
     tf = tarfile.open(fileobj=f, mode='w|gz')
     for pspec in paths:
-        if isinstance(pspec, tuple):
-            path = pspec[0]
-            altpath = pspec[1]
-        else:
-            path = pspec
-            altpath = None
+        path = pspec[0]
+        altpath = pspec[1] if pspec[1] else None
 
         if os.path.exists(path) and os.path.isdir(path):
             for root, dir, files in os.walk(path):

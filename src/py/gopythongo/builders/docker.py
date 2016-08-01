@@ -83,7 +83,7 @@ class DockerBuilder(BaseBuilder):
 
         from gopythongo.main import config_paths
         memtgz = targz.create_targzip(filename=None,
-                                      paths=list(config_paths) + [(dockerfile, "/Dockerfile",)],
+                                      paths=[(x, x) for x in list(config_paths)] + [(dockerfile, "/Dockerfile",)],
                                       verbose=utils.enable_debug_output)
 
         if args.docker_debug_save_context:
