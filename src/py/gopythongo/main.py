@@ -221,6 +221,12 @@ def route() -> None:
         os.chdir(preargs.cwd)  # This should ensure all relative paths still work (for example to --config)
         print_info("Executing in %s" % preargs.cwd)
 
+    if not os.access(os.getcwd(), os.W_OK):
+        raise ErrorMessage("%s is configured as the GoPythonGo output folder for the Docker Builder. That folder "
+                           "MUST be writable for the current user, but it isn't, so GoPythonGo can't store the "
+                           "build results. Please execute GoPythonGo from a different folder or give this user write "
+                           "permissions." % highlight(os.getcwd()))
+
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
         atexit.register(_cleanup_tempfiles, args)

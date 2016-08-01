@@ -106,7 +106,7 @@ class DockerBuilder(BaseBuilder):
         # give the container a unique name so we can remove it later
         temp_container_name = "gopythongo-%s" % str(uuid.uuid4())
         gpg_cmdline = ["docker", "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0", "--name",
-                       temp_container_name, "-w", "/gopythongo/output"]
+                       temp_container_name, "-w", os.getcwd()]
 
         for mount in args.mounts + list(the_context.mounts):
             # docker makes problems if you mount subfolders of the same path, so we filter those
@@ -119,16 +119,14 @@ class DockerBuilder(BaseBuilder):
                     mount = "%s%s" % (mount, os.path.sep)
                 gpg_cmdline += ["-v", "%s:%s" % (mount, mount)]
 
-        gpg_cmdline += ["-v", "%s:/gopythongo/output" % os.getcwd()]
-
         if args.builder_debug_login:
             debug_cmdline = gpg_cmdline + [build_container_id]
-            debug_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
+            debug_cmdline += the_context.get_gopythongo_inner_commandline()
             gpg_cmdline += ["-i", "-t", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", build_container_id, "/bin/bash"]
             print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
         else:
             gpg_cmdline = gpg_cmdline + [build_container_id]
-            gpg_cmdline += the_context.get_gopythongo_inner_commandline(cwd="/gopythongo/output")
+            gpg_cmdline += the_context.get_gopythongo_inner_commandline()
 
         print_info("Starting build container %s" % temp_container_name)
         res = run_process(*gpg_cmdline, interactive=args.builder_debug_login, allow_nonzero_exitcode=True)
