@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import subprocess
 import sys
 import os
@@ -57,7 +57,7 @@ class BaseBuilder(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
 
-    def build(self, args: argparse.Namespace) -> None:
+    def build(self, args: configargparse.Namespace) -> None:
         """
         Run a build environment while making sure that:
           * all folders listed in args.mounts and the_context.mounts are available inside the build environment
@@ -71,7 +71,7 @@ class BaseBuilder(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement print_help")
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     global _builders
 
     gr_builder = parser.add_argument_group("Common Builder options")
@@ -136,7 +136,7 @@ def test_gopythongo(path: str) -> Tuple[str, List[str]]:
     raise NoMountableGoPythonGo("Can't find GoPythonGo as a virtualenv or PEX executable in %s" % path)
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if args.builder:
         if args.builder in _builders.keys():
             _builders[args.builder].validate_args(args)
@@ -183,5 +183,5 @@ def validate_args(args: argparse.Namespace) -> None:
                     args.run_after_create[ix] = os.path.abspath(runspec)
 
 
-def build(args: argparse.Namespace) -> None:
+def build(args: configargparse.Namespace) -> None:
     _builders[args.builder].build(args)

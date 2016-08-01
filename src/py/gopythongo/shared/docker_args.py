@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import os
 
 from gopythongo.utils import highlight, ErrorMessage
@@ -7,7 +7,7 @@ from gopythongo.utils import highlight, ErrorMessage
 _docker_shared_args_added = False  # type: bool
 
 
-def add_shared_args(parser: argparse.ArgumentParser) -> None:
+def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     global _docker_shared_args_added
 
     if not _docker_shared_args_added:
@@ -18,7 +18,7 @@ def add_shared_args(parser: argparse.ArgumentParser) -> None:
     _docker_shared_args_added = True
 
 
-def validate_shared_args(args: argparse.Namespace) -> None:
+def validate_shared_args(args: configargparse.Namespace) -> None:
     if not os.path.exists(args.docker_executable) or not os.access(args.docker_executable, os.X_OK):
         raise ErrorMessage("docker not found in path or not executable (%s). You can specify "
                            "an alternative path using %s" %

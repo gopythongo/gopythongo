@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Dict, Any, Sequence, Union, List
 
@@ -49,7 +49,8 @@ class BaseStore(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseStore MUST implement supported_version_parsers")
 
     def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
-                                 action: str, args: argparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
+                                 action: str,
+                                 args: configargparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
         """
         Takes a list of unique artifact identifiers (e.g. package names) which *will be created by a Packer during the
         build later* and returns a dict mapping of identifier to version for the Packer to be used during the build
@@ -64,21 +65,21 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement generate_future_versions")
 
-    def store(self, args: argparse.Namespace) -> None:
+    def store(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseStore MUST implement store")
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     for s in _stores.values():
         s.add_args(parser)
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if args.store in _stores.keys():
         _stores[args.store].validate_args(args)
 
 
-def store(args: argparse.Namespace) -> None:
+def store(args: configargparse.Namespace) -> None:
     from gopythongo.utils.buildcontext import the_context
     if len(the_context.packer_artifacts) == 0:
         raise ErrorMessage("The Builder/Packer seems to have created no build artifacts for GoPythonGo to process.")

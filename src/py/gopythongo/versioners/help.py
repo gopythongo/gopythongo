@@ -1,12 +1,12 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Any, Iterable, Sequence, Union, cast
 
 from gopythongo.utils import highlight
 
 
-class VersionerHelpAction(argparse.Action):
+class VersionerHelpAction(configargparse.Action):
     def __init__(self,
                  option_strings: Sequence[str],
                  dest: str,
@@ -16,7 +16,7 @@ class VersionerHelpAction(argparse.Action):
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 
-    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
+    def __call__(self, parser: configargparse.ArgumentParser, namespace: configargparse.Namespace,
                  values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         from gopythongo.versioners import get_versioners
         versioners = get_versioners()

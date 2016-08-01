@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Dict, Any, List, Union
 
@@ -50,10 +50,10 @@ class BasePacker(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BasePacker MUST implement provides")
 
-    def pack(self, args: argparse.Namespace) -> None:
+    def pack(self, args: configargparse.Namespace) -> None:
         pass
 
-    def predict_future_artifacts(self, args: argparse.Namespace) -> Union[List[str], None]:
+    def predict_future_artifacts(self, args: configargparse.Namespace) -> Union[List[str], None]:
         """
         This method provides an internal API that is supposed to allow Store implementations to query a packer for
         a prediction of what it will provide during the build phase so that the Store implementation can query version
@@ -71,7 +71,7 @@ class BasePacker(CommandLinePlugin):
         return None
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     for m in _packers.values():
         m.add_args(parser)
 
@@ -82,10 +82,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                                  "build folder of your build server, for example.")
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if args.packer in _packers.keys():
         _packers[args.packer].validate_args(args)
 
 
-def pack(args: argparse.Namespace) -> None:
+def pack(args: configargparse.Namespace) -> None:
     _packers[args.packer].pack(args)

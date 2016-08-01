@@ -1,9 +1,10 @@
 # -* encoding: utf-8 *-
-import argparse
 import shutil
 import os
 
 from typing import Any, Type
+
+import configargparse
 
 from gopythongo import utils
 from gopythongo.assemblers import BaseAssembler
@@ -18,7 +19,7 @@ class DjangoAssembler(BaseAssembler):
     def assembler_name(self) -> str:
         return u"django"
 
-    def add_parser(self, parser: argparse.ArgumentParser) -> None:
+    def add_parser(self, parser: configargparse.ArgumentParser) -> None:
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
                                help="run 'django-admin.py collectstatic' inside the bundle")
@@ -34,13 +35,13 @@ class DjangoAssembler(BaseAssembler):
                                help="'--settings' argument to pass to django-admin.py when it is called by " +
                                     "this script")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if args.static_outfile or args.collect_static:
             if not (args.static_outfile and args.collect_static):
                 raise ErrorMessage("%s and %s must be used together" %
                                    (highlight("--static-out"), highlight("--collect-static")))
 
-    def assemble(self, args: argparse.Namespace) -> None:
+    def assemble(self, args: configargparse.Namespace) -> None:
         envpy = utils.create_script_path(args.build_path, "python")
         print("Collecting static artifacts")
         if os.path.exists(args.static_root):

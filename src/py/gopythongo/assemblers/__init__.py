@@ -1,6 +1,7 @@
 # -* encoding: utf-8 *-
-import argparse
 import os
+
+import configargparse
 
 from typing import Dict, Any
 
@@ -37,11 +38,11 @@ class BaseAssembler(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
 
-    def assemble(self, args: argparse.Namespace) -> None:
+    def assemble(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assemble")
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     global _assemblers
 
     pos_args = parser.add_argument_group("Python ecosystem arguments (positional)")
@@ -58,7 +59,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
         assembler.add_args(parser)
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if args.assemblers:
         for asm in args.assemblers:
             if asm in _assemblers.keys():
@@ -71,6 +72,6 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ErrorMessage("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
 
 
-def assemble(args: argparse.Namespace) -> None:
+def assemble(args: configargparse.Namespace) -> None:
     for asm in args.assemblers:
         _assemblers[asm].assemble(args)

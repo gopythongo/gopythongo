@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import re
 
 from typing import Any, Type
@@ -13,7 +13,7 @@ class RegexVersionParser(SemVerVersionParser):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_regex = parser.add_argument_group("Regex Version Parser options")
         gr_regex.add_argument("--version-regex", dest="version_regex", default=None,
                               help="Select the regular expression used to parse the version string read by the version "
@@ -26,7 +26,7 @@ class RegexVersionParser(SemVerVersionParser):
     def versionparser_name(self) -> str:
         return "regex"
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if args.version_parser == self.versionparser_name:
             if args.version_regex:
                 try:
@@ -47,7 +47,7 @@ class RegexVersionParser(SemVerVersionParser):
                                    (highlight("--version-parser=%s" % self.versionparser_name),
                                     highlight("--version-regex")))
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[SemVerAdapter]:
+    def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer[SemVerAdapter]:
         match = re.match(args.version_regex, version_str)
         if not match:
             raise ErrorMessage("The regular expression '%s' does not match the version read '%s'" %

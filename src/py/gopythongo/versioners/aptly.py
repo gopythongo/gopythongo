@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import shlex
 
 from typing import List, Any, Type
@@ -26,7 +26,7 @@ class AptlyVersioner(BaseVersioner):
     def print_help(self) -> None:
         pass
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
 
         gr_aptly = parser.add_argument_group("Aptly Versioner options")
@@ -44,7 +44,7 @@ class AptlyVersioner(BaseVersioner):
                                    "https://aptly.info. To find the overall latest version of GoPythonGo in a repo, "
                                    "you would use --aptly-query='Name (gopythongo)'")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
 
         if args.aptly_fallback_version:
@@ -57,7 +57,7 @@ class AptlyVersioner(BaseVersioner):
         if not args.aptly_query:
             raise ErrorMessage("To use the Aptly Versioner, you must specify --aptly-query.")
 
-    def query_repo_versions(self, query: str, args: argparse.Namespace, *,
+    def query_repo_versions(self, query: str, args: configargparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:
         cmd = _aptly_args.get_aptly_cmdline(args) + ["repo", "search"]
         cmd += shlex.split(args.aptly_versioner_opts)
@@ -95,7 +95,7 @@ class AptlyVersioner(BaseVersioner):
                 else:
                     return []
 
-    def read(self, args: argparse.Namespace) -> str:
+    def read(self, args: configargparse.Namespace) -> str:
         versions = self.query_repo_versions(args.aptly_query, args)
         return str(versions[-1])
 

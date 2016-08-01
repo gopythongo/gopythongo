@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from importlib import import_module
 from typing import Any, Type
@@ -44,13 +44,13 @@ class PymoduleVersioner(_versioners.BaseVersioner):
     def can_read(self) -> bool:
         return True
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_pymod = parser.add_argument_group("Pymodule Versioner options")
         gr_pymod.add_argument("--pymodule-read", dest="pymodule_read", default=None,
                               help="A fully qualified dotted path to a str attribute in a Python module accessible on"
                                    "the current PYTHONPATH to be read to get the version string.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if args.pymodule_read:
             try:
                 import_string(args.pymodule_read)
@@ -59,7 +59,7 @@ class PymoduleVersioner(_versioners.BaseVersioner):
         else:
             raise ErrorMessage("%s requires %s" % (highlight("--versioner=pymodule"), highlight("--pymodule-read")))
 
-    def read(self, args: argparse.Namespace) -> str:
+    def read(self, args: configargparse.Namespace) -> str:
         attr = import_string(args.pymodule_read)
         if callable(attr):
             return attr()

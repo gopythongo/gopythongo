@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Any, Type
 
@@ -16,13 +16,13 @@ class DockerStore(BaseStore):
     def store_name(self) -> str:
         return u"docker"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _docker_args.add_shared_args(parser)
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         pass
 
-    def store(self, args: argparse.Namespace) -> None:
+    def store(self, args: configargparse.Namespace) -> None:
         pass
 
 

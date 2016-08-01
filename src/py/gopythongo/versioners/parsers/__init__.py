@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Tuple, Any, List, Dict, TypeVar, Generic
 
@@ -121,13 +121,13 @@ class BaseVersionParser(CommandLinePlugin):
         """
         print("Version Parser %s provides no help, unfortunately." % self.versionparser_name)
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer:
+    def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer:
         """
         Is called by GoPythonGo to parse a version string as it was read by a Versioner.
 
         :param version_str: The version string read by the Versioner
         :type version_str: str
-        :param args: The parsed command-line arguments as provided by argparse
+        :param args: The parsed command-line arguments as provided by configargparse
         """
         raise NotImplementedError("Every Version Parser MUST implement parse()")
 

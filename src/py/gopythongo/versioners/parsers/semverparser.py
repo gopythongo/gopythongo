@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import re
 
 from typing import Any, Tuple, List, Type
@@ -30,7 +30,7 @@ class SemVerVersionParser(BaseVersionParser):
     def supported_actions(self) -> List[str]:
         return ["bump-major", "bump-minor", "bump-patch", "bump-pre"]
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_semver = parser.add_argument_group("SemVer Version Parser options")
         gr_semver.add_argument("--semver-allow-partial", dest="semver_partial", action="store_true", default=False,
                                help="Allow the parsing of incomplete version strings, which still partially comply "
@@ -39,7 +39,7 @@ class SemVerVersionParser(BaseVersionParser):
                                help="Try really hard to make the input version into something resembling SemVer. Use "
                                     "this with caution.")
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[SemVerAdapter]:
+    def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer[SemVerAdapter]:
         try:
             if args.semver_coerce:
                 sv = SemVerAdapter.coerce(version_str, partial=args.semver_partial)

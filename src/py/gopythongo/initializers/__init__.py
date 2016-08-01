@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import io
 import os
 
@@ -28,7 +28,7 @@ def init_subsystem() -> None:
                          "initializer_name", [".gopythongo"])
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     gp_init = parser.add_argument_group("Quick start / Configuration generators")
     gp_init.add_argument("--init", action=InitializerAction, nargs="+", metavar=("BUILDTYPE", "PATH"),
                          help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
@@ -39,7 +39,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
                               "configuration generators.")
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     pass
 
 
@@ -112,12 +112,12 @@ class BaseInitializer(GoPythonGoEnableSuper):
         raise ErrorMessage("Unfortunately %s does not provide help" % self.initializer_name)
 
 
-class InitializerAction(argparse.Action):
+class InitializerAction(configargparse.Action):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Sequence[str],
-                 option_string: str=None) -> None:
+    def __call__(self, parser: configargparse.ArgumentParser, namespace: configargparse.Namespace,
+                 values: Sequence[str], option_string: str=None) -> None:
         if len(values) > 2:
             raise ErrorMessage("%s takes 1 or 2 arguments, not more." % highlight("--init"))
 

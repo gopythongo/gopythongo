@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from copy import copy
 from typing import Any, List, Tuple, Union, Type
@@ -62,13 +62,13 @@ class PEP440VersionParser(BaseVersionParser):
         return ["bump-epoch", "bump-major", "bump-minor", "bump-patch",
                 "bump-pre", "bump-dev", "bump-post"]
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         pass
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         pass
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[PEP440Adapter]:
+    def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer[PEP440Adapter]:
         try:
             version = _adapt(parse(version_str))
         except InvalidVersion as e:

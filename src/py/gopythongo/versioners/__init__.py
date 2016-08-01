@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Dict, Any
 
@@ -75,7 +75,7 @@ class BaseVersioner(CommandLinePlugin):
         """
         print("Versioner %s provides no help, unfortunately." % self.versioner_name)
 
-    def read(self, args: argparse.Namespace) -> str:
+    def read(self, args: configargparse.Namespace) -> str:
         """
         Read a version string from wherever this Versioner reads versions. The parsed command-line arguments are
         passed along for context.
@@ -83,7 +83,7 @@ class BaseVersioner(CommandLinePlugin):
         raise NotImplementedError("This Versioner does not support reading versions")
 
 
-def add_args(parser: argparse.ArgumentParser) -> None:
+def add_args(parser: configargparse.ArgumentParser) -> None:
     global _versioners, _version_parsers
 
     collected_actions = set()
@@ -117,7 +117,7 @@ def add_args(parser: argparse.ArgumentParser) -> None:
         vp.add_args(parser)
 
 
-def validate_args(args: argparse.Namespace) -> None:
+def validate_args(args: configargparse.Namespace) -> None:
     if args.version_parser not in _version_parsers:
         raise ErrorMessage("%s is not a valid version parser. Valid options are: %s" %
                            (highlight(args.version_parser), ", ".join(_version_parsers.keys())))
@@ -162,7 +162,7 @@ def validate_args(args: argparse.Namespace) -> None:
                                 ", ".join(_version_parsers[args.version_parser].supported_actions)))
 
 
-def version(args: argparse.Namespace) -> None:
+def version(args: configargparse.Namespace) -> None:
     reader_name = args.input_versioner
     reader = _versioners[reader_name]
     version_str = None

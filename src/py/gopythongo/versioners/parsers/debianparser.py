@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 import re
 
 from typing import Any, Tuple, List, Type
@@ -22,15 +22,15 @@ class DebianVersionParser(BaseVersionParser):
     def supported_actions(self) -> List[str]:
         return ["bump-epoch", "bump-revision"]
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         pass
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if args.version_action not in self.supported_actions:
             raise ErrorMessage("Debian Version Parser does not support the selected action (%s). Supported version "
                                "actions are: %s" % (highlight(args.version_action), ", ".join(self.supported_actions)))
 
-    def parse(self, version_str: str, args: argparse.Namespace) -> VersionContainer[DebianVersion]:
+    def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer[DebianVersion]:
         try:
             dv = DebianVersion.fromstring(version_str)
         except InvalidDebianVersionString as e:

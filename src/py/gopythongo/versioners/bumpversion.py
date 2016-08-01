@@ -1,6 +1,6 @@
 # -* encoding: utf-8 *-
 import os
-import argparse
+import configargparse
 
 from typing import Any, Type
 
@@ -16,7 +16,7 @@ class BumpVersioner(BaseVersioner):
     def versioner_name(self) -> str:
         return "bumpversion"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_bv = parser.add_argument_group("Bumpversion Versioner options")
         gr_bv.add_argument("--use-bumpversion", dest="bumpversion_executable", default=None,
                            help="Set the path to the bumpversion shellscript. Required if you want to use the "
@@ -28,7 +28,7 @@ class BumpVersioner(BaseVersioner):
         gr_bv.add_argument("--bumpversion-opts", dest="bumpversion_opts", default="",
                            help="Additional arbitrary command-line options to pass to bumpversion.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if not args.bumpversion_executable:
             raise ErrorMessage("To use the bumpversion Versioner, you must set %s" % highlight("--use-bumpversion"))
 
@@ -48,7 +48,8 @@ class BumpVersioner(BaseVersioner):
     def can_read(self) -> bool:
         return True
 
-    def read(self, args: argparse.Namespace) -> str:
+    def read(self, args: configargparse.Namespace) -> str:
+        # FIXME: implement me!
         pass
 
     def print_help(self) -> None:

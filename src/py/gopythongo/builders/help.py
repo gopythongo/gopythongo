@@ -1,9 +1,9 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 from typing import Sequence, Union, Any, cast, Iterable
 
 
-class BuilderHelpAction(argparse.Action):
+class BuilderHelpAction(configargparse.Action):
     def __init__(self,
                  option_strings: Sequence[str],
                  dest: str,
@@ -13,7 +13,7 @@ class BuilderHelpAction(argparse.Action):
         super().__init__(option_strings=option_strings, dest=dest, default=default,
                          nargs="?", choices=choices, help=help)
 
-    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
+    def __call__(self, parser: configargparse.ArgumentParser, namespace: configargparse.Namespace,
                  values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         from gopythongo.builders import get_builders
         builders = get_builders()

@@ -1,7 +1,7 @@
 # -* encoding: utf-8 *-
 import collections
 import subprocess
-import argparse
+import configargparse
 import sys
 import os
 
@@ -165,22 +165,22 @@ class CommandLinePlugin(GoPythonGoEnableSuper):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         """
         Add command-line arguments to configure this plugin inside GoPythonGo. Do NOT add *required* arguments
         to the command-line parser.
 
         :param parser: An ArgumentParser instance that you can call ``add_argument_group`` etc. on
-        :type parser: argparse.ArgumentParser
+        :type parser: configargparse.ArgumentParser
         """
         pass
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         """
         Validate the arguments added by ``add_args``. Feel free to raise ``ErrorMessage`` from here if any argument
         is invalid.
 
-        :param args: The parsed command-line arguments as provided by argparse
+        :param args: The parsed command-line arguments as provided by configargparse
         """
         pass
 

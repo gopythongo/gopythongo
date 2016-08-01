@@ -1,12 +1,12 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Iterable, Any, List, Union, cast, Sequence
 
 from gopythongo.utils import highlight
 
 
-class InitializerHelpAction(argparse.Action):
+class InitializerHelpAction(configargparse.Action):
     def __init__(self,
                  option_strings: List[str],
                  dest: str,
@@ -16,7 +16,7 @@ class InitializerHelpAction(argparse.Action):
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 
-    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace,
+    def __call__(self, parser: configargparse.ArgumentParser, namespace: configargparse.Namespace,
                  values: Union[str, Sequence[Any], None], option_string: str=None) -> None:
         from gopythongo.initializers import get_initializers
         initializers = get_initializers()

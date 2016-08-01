@@ -1,5 +1,5 @@
 # -* encoding: utf-8 *-
-import argparse
+import configargparse
 
 from typing import Any, Type
 
@@ -15,12 +15,12 @@ class StaticVersioner(BaseVersioner):
     def versioner_name(self) -> str:
         return u"static"
 
-    def add_args(self, parser: argparse.ArgumentParser) -> None:
+    def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gp_static = parser.add_argument_group("Static Versioner options")
         gp_static.add_argument("--static-version", dest="static_version", default=None,
                                help="The static version string to use.")
 
-    def validate_args(self, args: argparse.Namespace) -> None:
+    def validate_args(self, args: configargparse.Namespace) -> None:
         if not args.static_version:
             raise ErrorMessage("Static versioner requires %s" % highlight("--static-version"))
 
@@ -28,7 +28,7 @@ class StaticVersioner(BaseVersioner):
     def can_read(self) -> bool:
         return True
 
-    def read(self, args: argparse.Namespace) -> str:
+    def read(self, args: configargparse.Namespace) -> str:
         return args.static_version
 
     def print_help(self) -> None:
