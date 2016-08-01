@@ -27,7 +27,7 @@ class DockerBuilder(BaseBuilder):
         _docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
-        # FIXME: reimplement this using docker-py?
+        # FIXME: reimplement this using docker-py? docker-py supports streaming so we can output progress
         gp_docker.add_argument("--use-docker", dest="docker_executable", default="/usr/bin/docker",
                                help="Specify an alternative Docker client executable.")
         gp_docker.add_argument("--docker-buildfile", dest="docker_buildfile", default=None,
