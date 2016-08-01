@@ -79,4 +79,7 @@ def validate_args(args: argparse.Namespace) -> None:
 
 
 def store(args: argparse.Namespace) -> None:
+    from gopythongo.utils.buildcontext import the_context
+    if len(the_context.packer_artifacts) == 0:
+        raise ErrorMessage("The Builder/Packer seems to have created no build artifacts for GoPythonGo to process.")
     _stores[args.store].store(args)
