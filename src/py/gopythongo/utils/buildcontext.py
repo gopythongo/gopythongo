@@ -102,9 +102,11 @@ class BuildContext(object):
         print_debug("Reading state from %s in outer shell" % highlight(the_context.state_file))
         self.read(self.state_file)
 
-    def get_gopythongo_inner_commandline(self) -> List[str]:
-        return self.gopythongo_cmd + ["--inner"] + ['--read-state="%s"' % self.state_file] + \
-               ['--cwd="%s"' % os.getcwd()] + sys.argv[1:]
+    def get_gopythongo_inner_commandline(self, *, cwd: str=None) -> List[str]:
+        cmd = self.gopythongo_cmd + ["--inner"] + ['--read-state="%s"' % self.state_file]
+        cmd += ['--cwd="%s"' % cwd if cwd else os.getcwd()]
+        cmd += sys.argv[1:]
+        return cmd
 
 
 the_context = BuildContext()  # type: BuildContext
