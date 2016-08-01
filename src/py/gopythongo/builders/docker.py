@@ -27,6 +27,9 @@ class DockerBuilder(BaseBuilder):
         _docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
+        # FIXME: reimplement this using docker-py?
+        gp_docker.add_argument("--use-docker", dest="docker_executable", default="/usr/bin/docker",
+                               help="Specify an alternative Docker client executable.")
         gp_docker.add_argument("--docker-buildfile", dest="docker_buildfile", default=None,
                                help="Specify a Dockerfile to build the the build environment. The build commands will "
                                     "then be executed inside the resulting container. The file is always processed as "
@@ -47,6 +50,11 @@ class DockerBuilder(BaseBuilder):
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _docker_args.validate_shared_args(args)
+
+        if not os.path.exists(args.docker_executable) or not os.access(args.docker_executable, os.X_OK):
+            raise ErrorMessage("docker not found in path or not executable (%s).\n"
+                               "You can specify an alternative path using %s" %
+                               (args.docker_executable, highlight("--use-docker")))
 
         if not args.docker_buildfile:
             raise ErrorMessage("Using the docker builder requires you to pass --docker-buildfile and specify a "
@@ -83,7 +91,7 @@ class DockerBuilder(BaseBuilder):
                 print_info("Saving Docker context to %s" % highlight(args.docker_debug_save_context))
                 f.write(memtgz.getvalue())
 
-        build_cmdline = ["docker", "build"]
+        build_cmdline = [args.docker_executable, "build"]
         if not args.docker_leave_images:
             build_cmdline += ["--force-rm"]
         build_cmdline += ["-"]
@@ -105,7 +113,7 @@ class DockerBuilder(BaseBuilder):
 
         # give the container a unique name so we can remove it later
         temp_container_name = "gopythongo-%s" % str(uuid.uuid4())
-        gpg_cmdline = ["docker", "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0", "--name",
+        gpg_cmdline = [args.docker_executable, "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0", "--name",
                        temp_container_name, "-w", os.getcwd()]
 
         for mount in args.mounts + list(the_context.mounts):
@@ -133,7 +141,7 @@ class DockerBuilder(BaseBuilder):
 
         if not args.docker_leave_containers:
             print_info("Removing build container %s" % temp_container_name)
-            run_process("docker", "rm", temp_container_name)
+            run_process(args.docker_executable, "rm", temp_container_name)
 
         if res.exitcode != 0:
             raise ErrorMessage("Inner GoPythonGo build in the Docker container failed. Please read the build jobs "
