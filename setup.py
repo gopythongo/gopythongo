@@ -31,6 +31,7 @@ _requirements = [
     'packaging==16.6',
     'typing==3.5.2.2',
     'hvac==0.2.15',
+    'docker-py==1.9.0',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
