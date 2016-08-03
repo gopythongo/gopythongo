@@ -2,7 +2,10 @@
 import configargparse
 import os
 
+from docker.client import Client as DockerClient
+from docker.tls import TLSConfig
 from gopythongo.utils import highlight, ErrorMessage
+from requests.exceptions import RequestException
 
 _docker_shared_args_added = False  # type: bool
 
@@ -32,6 +35,39 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     _docker_shared_args_added = True
 
 
+def get_docker_client(args) -> DockerClient:
+    return DockerClient(
+        args.docker_api,
+        tls=TLSConfig(
+            client_cert=args.docker_tls_client_cert,
+            ca_cert=args.docker_tls_verify,
+            verify=args.docker_tls_verify is not False,
+            ssl_version=args.docker_ssl_version,
+            assert_hostname=not args.docker_dont_verify_hostname,
+        ),
+    )
+
+
 def validate_shared_args(args: configargparse.Namespace) -> None:
-    # TODO: check that the Docker API is reachable
-    pass
+    if args.docker_tls_verify:
+        if not os.path.isfile(args.docker_tls_verify) or not os.access(args.docker_tls_verify, os.R_OK):
+            raise ErrorMessage("File not found: %s (or not readable)" % highlight(args.docker_tls_verify))
+
+    if args.docker_tls_client_cert:
+        if not os.path.isfile(args.docker_tls_client_cert) or not os.access(args.docker_tls_client_cert, os.R_OK):
+            raise ErrorMessage("File not found: %s (or not readable)" % highlight(args.docker_tls_client_cert))
+
+    try:
+        x = int(args.docker_ssl_version)
+        if x < 1 or x > 5:
+            raise ErrorMessage("Unknown value %s for SSL Protocol version. Valid are values 1-5." %
+                               args.docker_ssl_version)
+    except ValueError:
+        raise ErrorMessage("Parameter to --docker-ssl-version must be an integer between 1 and 5")
+
+    dcl = get_docker_client(args)
+    try:
+        info = dcl.info()
+    except RequestException as e:
+        raise ErrorMessage("GoPythonGo can't talk to the Docker API at %s (Error was: %s)" %
+                           (highlight(args.docker_api), str(e))) from e

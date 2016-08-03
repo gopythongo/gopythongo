@@ -1,4 +1,6 @@
 builder=docker
+docker-buildarg=[APTSRCHOST=192.168.56.10 fileserver.maurusnet.test,APTSRCDEF=deb http://fileserver.maurusnet.test/debian/ jessie main]
+dockerfile-var=APTKEYURL=http://fileserver.maurusnet.test/dev_apt_signing.public.pgp
 
 run-after-create=[.gopythongo/install_fpm.sh]
 packer=fpm
@@ -17,5 +19,3 @@ version-action=bump-revision
 
 use-fpm=/usr/local/bin/fpm
 run-fpm=template:.gopythongo/fpm_opts
-copy-out=/home/vagrant/test/build
-
