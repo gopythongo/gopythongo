@@ -17,7 +17,7 @@ from gopythongo.builders import help as _builder_help
 _builders = {}  # type: Dict[str, 'BaseBuilder']
 _dependencies = {
     "debian/jessie": ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
-                      "virtualenv"]
+                      "virtualenv", "binutils"]
 }  # type: Dict[str, List[str]]
 
 
