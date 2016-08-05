@@ -7,12 +7,15 @@ import configargparse
 
 from typing import Any, Type
 
+import dockerpty
+import sys
 from gopythongo import utils
 from gopythongo.shared import docker_args as _docker_args
 from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug, targz, print_error, \
     ProcessOutput
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
+from requests.exceptions import RequestException
 
 
 class DockerBuilder(BaseBuilder):
@@ -47,6 +50,13 @@ class DockerBuilder(BaseBuilder):
         gp_docker.add_argument("--docker-debug-savecontext", dest="docker_debug_save_context", default=None,
                                help="Set this to a filename to save the .tar.gz that GoPythonGo assembles as a "
                                     "Docker context to build the build environment container using 'docker build'.")
+        gp_docker.add_argument("--docker-buildarg", dest="docker_buildargs", default=[], action="append",
+                               help="Allows you to set Docker build args in the form of 'KEY=VALUE' which will be "
+                                    "passed to the Docker daemon and into your Dockerfile as ARGs.")
+        gp_docker.add_argument("--dockerfile-var", dest="dockerfile_vars", default=[], action="append",
+                               help="Allows you to set Dockerfile Jinja template context variables in the form of "
+                                    "'key=value' which will be passed into your Dockerfile template before it is "
+                                    "rendered to be sent to the Docker daemon.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _docker_args.validate_shared_args(args)
@@ -64,6 +74,17 @@ class DockerBuilder(BaseBuilder):
             raise ErrorMessage("It seems that GoPythonGo can't find or isn't allowed to read %s" %
                                highlight(args.docker_buildfile))
 
+        for arg in args.docker_buildargs:
+            if "=" not in arg:
+                raise ErrorMessage("A Docker build arg must be in the form 'key=value'. Consult the %s "
+                                   "documentation for more information. '%s' does not contain a '='." %
+                                   (highlight("docker build"), arg))
+
+        for var in args.dockerfile_vars:
+            if "=" not in var:
+                raise ErrorMessage("A Dockerfile Jinja template context variable must be in the form 'key=value'. "
+                                   "'%s' does not contain a '='" % var)
+
     def _clean_containers(self, docker_return: ProcessOutput) -> None:
         container_ids = re.findall("---> Running in ([0-9a-zA-Z]+)", docker_return.output)
         for c in reversed(container_ids):
@@ -76,6 +97,7 @@ class DockerBuilder(BaseBuilder):
             "run_after_create": args.run_after_create,
             "dependencies": get_dependencies()
         }
+        ctx.update({key: value for key, value in [x.split("=", 1) for x in args.dockerfile_vars]})
         dockerfile = template.process_to_tempfile(args.docker_buildfile, ctx)
 
         # ship all config files in a .tar.gz as context via Docker STDIN
@@ -91,31 +113,53 @@ class DockerBuilder(BaseBuilder):
                 print_info("Saving Docker context to %s" % highlight(args.docker_debug_save_context))
                 f.write(memtgz.getvalue())
 
-        build_cmdline = [args.docker_executable, "build"]
-        if not args.docker_leave_images:
-            build_cmdline += ["--force-rm"]
-        build_cmdline += ["-"]
-        print_debug("Running Docker build from %s" % highlight(dockerfile))
-        res = run_process(*build_cmdline, send_to_stdin=memtgz.getvalue(), allow_nonzero_exitcode=True)
+        dcl = _docker_args.get_docker_client(args)
 
-        if res.exitcode != 0:
-            if not args.docker_leave_containers:
-                self._clean_containers(res)
-            raise ErrorMessage("'%s' exited with a non-zero exitcode (%s). Output was:\n%s" %
-                               (" ".join(build_cmdline), res.exitcode, res.output))
-        else:
-            m = re.search("Successfully built ([0-9a-zA-Z]+)", res.output)
-            if m:
-                build_container_id = m.group(1)
+        try:
+            build_output = dcl.build(
+                fileobj=memtgz.getbuffer(),
+                custom_context=True,
+                encoding="gzip",
+                forcerm=not args.docker_leave_images,
+                decode=True,
+                buildargs={
+                    key: value for key, value in [x.split("=", 1) for x in args.docker_buildargs]
+                },
+            )
+        except RequestException as e:
+            raise ErrorMessage("GoPythonGo failed to execute the Docker build API call: %s" % str(e)) from e
+
+        prev_progress = False
+        full_output = []
+        # do a build with fancy string formatting
+        for line in build_output:
+            if "progress" in line:
+                if not prev_progress:
+                    if "id" in line:
+                        print_info("Downloading %s" % line["id"])
+                    prev_progress = True
+                print(line["progress"].strip(), end="\r")
             else:
-                raise ErrorMessage("Unable to find the container ID of the build container, so GoPythonGo can't "
-                                   "execute the build. Check the docker output for reasons.")
+                if prev_progress:
+                    print()
+                    prev_progress = False
 
-        # give the container a unique name so we can remove it later
+                if "stream" in line:
+                    print_debug(line["stream"].strip())
+                    full_output.append(line["stream"].strip())
+                elif "error" in line:
+                    raise ErrorMessage("Docker build failed with error message: %s" % line["error"])
+
+        m = re.search("Successfully built ([0-9a-zA-Z]+)", "\n".join(full_output))
+        if m:
+            build_container_id = m.group(1)
+        else:
+            raise ErrorMessage("Unable to find the container ID of the build container, so GoPythonGo can't "
+                               "execute the build. Check the docker output for reasons.")
+
         temp_container_name = "gopythongo-%s" % str(uuid.uuid4())
-        gpg_cmdline = [args.docker_executable, "run", "-a", "STDOUT", "-a", "STDERR", "-e", "PYTHONUNBUFFERED=0",
-                       "--name", temp_container_name, "-w", os.getcwd()]
 
+        volumes = []
         for mount in args.mounts + list(the_context.mounts):
             # docker makes problems if you mount subfolders of the same path, so we filter those
             parent_mounted = False
@@ -124,28 +168,86 @@ class DockerBuilder(BaseBuilder):
                     parent_mounted = True
             if not parent_mounted:
                 if os.path.isdir(mount) and mount[-1] != os.path.sep:
-                    mount = "%s%s" % (mount, os.path.sep)
-                gpg_cmdline += ["-v", "%s:%s" % (mount, mount)]
+                    mount = "%s%s" % (mount, os.path.sep)  # append a trailing slash for folders
+                # in docker-py, you add a "mountpoint definition" for create_container then specify the bindmount
+                # on .start(binds=)
+                volumes.append(mount)
+
+        import gopythongo.main  # import for later use of break_handlers
 
         if args.builder_debug_login:
-            debug_cmdline = gpg_cmdline + [build_container_id]
-            debug_cmdline += the_context.get_gopythongo_inner_commandline()
-            gpg_cmdline += ["-i", "-t", "-a", "STDIN", "-a", "STDOUT", "-a", "STDERR", build_container_id, "/bin/bash"]
-            print_debug("Without --builder-debug-login, GoPythonGo would have run: %s" % " ".join(debug_cmdline))
-        else:
-            gpg_cmdline = gpg_cmdline + [build_container_id]
-            gpg_cmdline += the_context.get_gopythongo_inner_commandline()
+            print_info("Without --builder-debug-login, inside this container GoPythonGo would have run: %s" %
+                       " ".join(the_context.get_gopythongo_inner_commandline()))
+            try:
+                build_container = dcl.create_container(
+                    image=build_container_id,
+                    command="/bin/bash",
+                    volumes=volumes,
+                    name=temp_container_name,
+                    working_dir=os.getcwd(),
+                    environment={
+                        "PYTHONUNBUFFERED": "0"
+                    },
+                    tty=True,
+                    stdin_open=True,
+                )
 
-        print_info("Starting build container %s" % temp_container_name)
-        res = run_process(*gpg_cmdline, interactive=args.builder_debug_login, allow_nonzero_exitcode=True)
+                dockerpty.start(dcl, build_container, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+            except RequestException as e:
+                raise ErrorMessage("Failed to create Docker container from image %s: %s" %
+                                   (highlight(build_container_id), highlight(str(e)))) from e
+        else:
+            try:
+                # while the container is running, make sure we kill it when the user hits CTRL+C
+                build_container = dcl.create_container(
+                    image=build_container_id,
+                    command=the_context.get_gopythongo_inner_commandline(),
+                    volumes=volumes,
+                    name=temp_container_name,
+                    working_dir=os.getcwd(),
+                    environment={
+                        "PYTHONUNBUFFERED": "0"
+                    },
+                )
+
+
+                def killlambda() -> None:
+                    print_info("Stopping and removing build container %s" % build_container["Id"])
+                    dcl.kill(build_container["Id"])
+                    dcl.remove_container(build_container["Id"])
+
+                gopythongo.main.break_handlers["docker-kill"] = killlambda
+
+                dcl.start(
+                    build_container["Id"],
+                    binds={
+                        k: k for k in volumes
+                    },
+                )
+
+                run_output = dcl.logs(build_container["Id"], stream=True)
+            except RequestException as e:
+                raise ErrorMessage("Failed to create Docker container from image %s: %s" %
+                                   (highlight(build_container_id), highlight(str(e)))) from e
+
+            full_output = []
+            for line in run_output:
+                if isinstance(line, bytes):
+                    line = line.decode("utf-8")
+                line = line.strip()
+                full_output.append(line)
+                print("| %s" % line)
+
+            # after the build has finished remove the break_handler
+            del gopythongo.main.break_handlers["docker-kill"]
 
         if not args.docker_leave_containers:
             print_info("Removing build container %s" % temp_container_name)
-            run_process(args.docker_executable, "rm", temp_container_name)
-
-        if res.exitcode != 0:
-            raise ErrorMessage("Inner GoPythonGo build in the Docker container failed. Please read the build jobs "
-                               "output for more information.")
+            try:
+                dcl.remove_container(temp_container_name)
+            except RequestException as e:
+                raise ErrorMessage("Failed to remove the temporary build container %s: %s" %
+                                   (highlight(temp_container_name), highlight(str(e)))) from e
 
     def print_help(self) -> None:
         print("Docker Builder\n"

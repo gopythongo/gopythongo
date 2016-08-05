@@ -1,8 +1,18 @@
 FROM debian:jessie
 
-RUN apt-get update && apt-get -q -y -o DPkg::Options::=--force-confold -o DPkg::Options::=--force-confdef install {{" ".join(dependencies["debian/jessie"])}}
+ARG APTSRCHOST
+ARG APTSRCDEF
+
+{% set pref = 'test -n "${APTSRCHOST}" && echo ${APTSRCHOST} >> /etc/hosts || /bin/true && test -n "${APTSRCDEF}" && echo ${APTSRCDEF} > /etc/apt/sources.list || /bin/true &&' %}
+
+{% if APTKEYURL is defined %}
+ADD {{APTKEYURL}} /etc/apt/key.pgp
+RUN apt-key add /etc/apt/key.pgp
+{% endif %}
+
+RUN {{pref}} cat /etc/apt/sources.list && cat /etc/hosts && apt-get update && apt-get -q -y -o DPkg::Options::=--force-confold -o DPkg::Options::=--force-confdef install {{" ".join(dependencies["debian/jessie"])}}
 {% for cmd in run_after_create %}
 ADD {{cmd}} {{cmd}}
-RUN {{cmd}}
+RUN {{pref}} {{cmd}}
 {% endfor %}
 WORKDIR /gopythongo/output
