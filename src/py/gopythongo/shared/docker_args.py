@@ -35,7 +35,7 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     _docker_shared_args_added = True
 
 
-def get_docker_client(args) -> DockerClient:
+def get_docker_client(args: configargparse.Namespace) -> DockerClient:
     return DockerClient(
         args.docker_api,
         tls=TLSConfig(

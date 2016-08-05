@@ -24,7 +24,7 @@ tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
 config_paths = set()  # type: Set[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
-break_handlers = {}  # Dict[str, Callable[[], None]
+break_handlers = {}  # type: Dict[str, Callable[[], None]]
 
 
 class DebugConfigAction(configargparse.Action):
