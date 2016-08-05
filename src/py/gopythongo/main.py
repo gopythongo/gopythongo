@@ -12,7 +12,7 @@ import os
 
 from gopythongo.utils.buildcontext import the_context
 from types import FrameType
-from typing import List, Any, Iterable, Set, Sequence, Union
+from typing import List, Any, Iterable, Set, Sequence, Union, Callable
 
 import gopythongo
 
@@ -24,6 +24,7 @@ tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
 config_paths = set()  # type: Set[str]
 args_for_setting_config_path=["-c", "--config"]  # type: List[str]
+break_handlers = {}  # Dict[str, Callable[[], None]
 
 
 class DebugConfigAction(configargparse.Action):
@@ -165,6 +166,8 @@ def print_help() -> None:
 
 def _sigint_handler(sig: int, frame: FrameType) -> None:
     print_warning("CTRL+BREAK. Exiting.")
+    for k in break_handlers.keys():
+        break_handlers[k]()
     sys.exit(1)
 
 
