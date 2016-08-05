@@ -15,7 +15,7 @@ from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_
     ProcessOutput
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
-from requests.exceptions import HTTPError, RequestException
+from requests.exceptions import RequestException
 
 
 class DockerBuilder(BaseBuilder):
@@ -169,7 +169,11 @@ class DockerBuilder(BaseBuilder):
             if not parent_mounted:
                 if os.path.isdir(mount) and mount[-1] != os.path.sep:
                     mount = "%s%s" % (mount, os.path.sep)  # append a trailing slash for folders
-                volumes += ["%s:%s" % (mount, mount)]
+                # in docker-py, you add a "mountpoint definition" for create_container then specify the bindmount
+                # on .start(binds=)
+                volumes.append(mount)
+
+        import gopythongo.main  # import for later use of break_handlers
 
         if args.builder_debug_login:
             print_info("Without --builder-debug-login, inside this container GoPythonGo would have run: %s" %
@@ -187,13 +191,14 @@ class DockerBuilder(BaseBuilder):
                     tty=True,
                     stdin_open=True,
                 )
+
+                dockerpty.start(dcl, build_container, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
             except RequestException as e:
                 raise ErrorMessage("Failed to create Docker container from image %s: %s" %
                                    (highlight(build_container_id), highlight(str(e)))) from e
-
-            dockerpty.start(dcl, build_container, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
         else:
             try:
+                # while the container is running, make sure we kill it when the user hits CTRL+C
                 build_container = dcl.create_container(
                     image=build_container_id,
                     command=the_context.get_gopythongo_inner_commandline(),
@@ -205,15 +210,36 @@ class DockerBuilder(BaseBuilder):
                     },
                 )
 
-                run_output = dcl.start(build_container)
+
+                def killlambda() -> None:
+                    print_info("Stopping and removing build container %s" % build_container["Id"])
+                    dcl.kill(build_container["Id"])
+                    dcl.remove_container(build_container["Id"])
+
+                gopythongo.main.break_handlers["docker-kill"] = killlambda
+
+                dcl.start(
+                    build_container["Id"],
+                    binds={
+                        k: k for k in volumes
+                    },
+                )
+
+                run_output = dcl.logs(build_container["Id"], stream=True)
             except RequestException as e:
                 raise ErrorMessage("Failed to create Docker container from image %s: %s" %
                                    (highlight(build_container_id), highlight(str(e)))) from e
 
-        full_output = []
-        for line in run_output:
-            #full_output.append()
-            print(run_output)
+            full_output = []
+            for line in run_output:
+                if isinstance(line, bytes):
+                    line = line.decode("utf-8")
+                line = line.strip()
+                full_output.append(line)
+                print("| %s" % line)
+
+            # after the build has finished remove the break_handler
+            del gopythongo.main.break_handlers["docker-kill"]
 
         if not args.docker_leave_containers:
             print_info("Removing build container %s" % temp_container_name)
