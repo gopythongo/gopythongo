@@ -26,7 +26,7 @@ def get_parser() -> configargparse.ArgumentParser:
                         help="Path to the real GnuPG executable.")
     parser.add_argument("--address", dest="vault_address", default="https://127.0.0.1:8200",
                         env_var="VAULT_URL", help="Vault URL")
-    parser.add_argument("--read-key", dest="read_key", deault="/secrets/gpg/passphrase",
+    parser.add_argument("--read-key", dest="read_key", default="/secrets/gpg/passphrase",
                         env_var="VAULT_READ_KEY", help="The key path to read from Vault. The value found there will "
                                                        "be used as the passphrase.")
 
