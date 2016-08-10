@@ -1,5 +1,4 @@
 # -* encoding: utf-8 *-
-import json
 import os
 import subprocess
 
@@ -179,18 +178,14 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        data = vcl.read(args.read_key)
-        res = json.loads(data, encoding="utf-8")
+        res = vcl.read(args.read_key)
     except RequestException as e:
         print("* ERROR: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
         sys.exit(1)
-    except json.JSONDecodeError as e:
-        print("* ERROR: Unable to decode returned JSON value. Returned string was:\n%s" % data)
-        sys.exit(1)
 
     if "data" not in res or "value" not in res["data"]:
-        print("* ERROR: Vault returned a value without the necessary fields (data->value). Returned string was:\n%s" %
-              data)
+        print("* ERROR: Vault returned a value without the necessary fields (data->value). Returned dict was:\n%s" %
+              res)
 
     passphrase = res['data']['value']
 
