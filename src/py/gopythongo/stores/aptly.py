@@ -1,4 +1,6 @@
 # -* encoding: utf-8 *-
+import os
+
 import configargparse
 import shlex
 import tempfile
@@ -9,7 +11,8 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.stores import BaseStore
-from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning
+from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
+    create_script_path
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
@@ -20,6 +23,7 @@ from gopythongo.versioners.aptly import AptlyVersioner
 class AptlyStore(BaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        self.aptly_wrapper_cmd = None
 
     @property
     def store_name(self) -> str:
@@ -66,7 +70,16 @@ class AptlyStore(BaseStore):
                                  "the passphrase from secure storage it pass it to GoPythonGo with a modicum of "
                                  "protection. Using the command-line parameter however will expose the passphrase to "
                                  "every user on the system. You're better of passing --passphrase-file to aptly via "
-                                 "--aptly-publish-opts in that case.")
+                                 "--aptly-publish-opts in that case. The most secure option would be to use "
+                                 "--use-aptly-wrapper.")
+        gp_ast.add_argument("--use-aptly-vault-wrapper", dest="use_aptly_wrapper", env_var="APTLY_USE_WRAPPER",
+                            default=False, action="store_true",
+                            help="When you set this, GoPythonGo will not directly invoke aptly to publish or update "
+                                 "aptly-managed repos. Instead it will call GoPythonGo's aptly_vault_wrapper program, "
+                                 "which can be configured by environment variables or its own configuration file or "
+                                 "both (Default: .gopythongo/aptlywrapper). This program will load the GnuPG signing "
+                                 "passphrase for aptly-managed repos from Hashicorp Vault. You can find out more by "
+                                 "running 'aptly_vault_wraper --help'.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
@@ -85,6 +98,13 @@ class AptlyStore(BaseStore):
                           "instead, since using -distribution in the aptly command line is invalid when GoPythonGo "
                           "tries to update a published repo." %
                           (highlight("-distribution"), highlight("--aptly-distribution")))
+
+        if args.use_aptly_wrapper:
+            wrapper_cmd = create_script_path(the_context.gopythongo_path, "aptly_vault_wrapper")
+            if not os.path.exists(wrapper_cmd) or not os.access(wrapper_cmd, os.X_OK):
+                raise ErrorMessage("%s can either not be found or is not executable. The aptly vault wrapper seems to "
+                                   "be unavailable." % wrapper_cmd)
+            self.aptly_wrapper_cmd = wrapper_cmd
 
     @staticmethod
     def _get_aptly_versioner() -> AptlyVersioner:
@@ -189,11 +209,12 @@ class AptlyStore(BaseStore):
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
-            cmdline = get_aptly_cmdline(args) + ["publish"]
+            # override to use aptly_vault_wrapper if specified on the command-line
+            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd) + ["publish"]
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
-            query_publish = cmdline + ["list", "-raw"]
+            query_publish = get_aptly_cmdline(args) + ["publish"] + ["list", "-raw"]
             out = run_process(*query_publish)
             cmd = "repo"
             if out.output:
