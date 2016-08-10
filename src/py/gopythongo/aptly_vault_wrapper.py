@@ -190,8 +190,8 @@ def main() -> None:
     passphrase = res['data']['value']
 
     aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + aptly_args
-    subprocess.call(aptly_cmdline, input=("%s\n%s\n" % (passphrase, passphrase)).encode("utf-8"),
-                    universal_newlines=True, stdout=sys.stdout, stderr=sys.stderr)
+    with subprocess.Popen(aptly_cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0) as proc:
+        proc.communicate(input="%s\n%s\n" % (passphrase, passphrase))
 
 
 if __name__ == "__main__":
