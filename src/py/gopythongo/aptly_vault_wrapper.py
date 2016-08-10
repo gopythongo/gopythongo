@@ -31,17 +31,18 @@ class HelpAction(configargparse.Action):
         print("Vault Integration\n"
               "=================\n"
               "\n"
-              "When signing packages, GoPythonGo must know the passphrase to use for GPG,\n"
+              "When signing packages, GoPythonGo/Aptly must know the passphrase to use for GPG,\n"
               "especially when GoPythonGo is invoked on a build server without user\n"
               "interaction. A good way to manage secret information such as GPG passphrases for\n"
               "automated jobs or SSL keys is Hashicorp's Vault (https://vaultproject.io/).\n"
-              "Using gpg_vault_wrapper as a replacement for the GPG executable allows you to\n"
-              "query Vault for the GPG passphrase to use when signing packages.\n"
+              "Using aptly_vault_wrapper as a replacement for the aptly executable allows you\n"
+              "to query Vault for the GPG passphrase to use when signing packages.\n"
               "\n"
               "Once you have a configured, initialized and unsealed Vault installation in your\n"
-              "network, you must set up a policy for gpg_vault_wrapper to use and define a way\n"
-              "for gpg_vault_wrapper to authenticate. Currently gpg_vault_wrapper allows you to\n"
-              "pass in a Vault auth token or use the app-id authentication backend.\n"
+              "network, you must set up a policy for aptly_vault_wrapper to use and define a\n"
+              "way for aptly_vault_wrapper to authenticate. Currently aptly_vault_wrapper\n"
+              "allows you to pass in a Vault auth token or use the app-id authentication\n"
+              "backend.\n"
               "\n"
               "Let's set up the policy, assuming that you have already authenticated to Vault:\n"
               "\n"
@@ -55,7 +56,7 @@ class HelpAction(configargparse.Action):
               "    vault write secret/gpg/package_sign_passphrase value=-\n"
               "[send passphrase from stdin so as to not save it in your shell history!]\n"
               "\n"
-              "And finally set up app-id for gpg_vault_wrapper. Make sure you set cidr_block\n"
+              "And finally set up app-id for aptly_vault_wrapper. Make sure you set cidr_block\n"
               "to an appropriate value for your network:\n"
               "\n"
               "    APPID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
@@ -79,22 +80,22 @@ class HelpAction(configargparse.Action):
 
 def get_parser() -> configargparse.ArgumentParser:
     parser = configargparse.ArgumentParser(
-        description="Use this program as a replacement for the gnupg binary with GoPythonGo/Aptly. This will allow you "
-                    "to load the gpg key passphrase for a package signing operation from Hashicorp Vault "
+        description="Use this program as a replacement for the aptly binary with GoPythonGo/Aptly. This will allow you "
+                    "to load the gnupg key passphrase for a package signing operation from Hashicorp Vault "
                     "(https://vaultproject.io/), thereby increasing security on your build servers. To configure "
-                    "GoPythonGo to use the gopythongo.gpg_vault_wrapper, simply set '--use-gpg' on your GoPythonGo "
-                    "command-line to this program. All parameters not recognized by gpg_vault_wrapper are passed "
-                    "directly to gpg. gpg_vault_wrapper will always append '--passphrase-fd 0' to the final gpg "
-                    "command-line so for gpg>2.1 you must pass '--pinentry-mode loopback' on the command-line "
-                    "yourself.",
+                    "GoPythonGo to use aptly_vault_wrapper, simply set '--use-aptly' on your GoPythonGo "
+                    "command-line to this program. All parameters not recognized by aptly_vault_wrapper are passed "
+                    "directly to aptly, so all other aptly options still work. aptly_vault_wrapper will always append "
+                    "'-passphrase-file /dev/stdin' to the final aptly "
+                    "command-line and send the passphrase twice (for both signing operations).",
         prog="gopythongo.gpg_vault_Wrapper",
         args_for_setting_config_path=args_for_setting_config_path,
         config_arg_help_message="Use this path instead of the default (.gopythongo/vault)",
         default_config_files=default_config_files
     )
 
-    parser.add_argument("--wrap-gpg", dest="wrap_gpg", default="/usr/bin/gpg", env_var="WRAP_GPG",
-                        help="Path to the real GnuPG executable.")
+    parser.add_argument("--wrap-aptly", dest="wrap_aptly", default="/usr/bin/aptly", env_var="WRAP_APTLY",
+                        help="Path to the real Aptly executable.")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VAULT_URL", help="Vault URL")
     parser.add_argument("--read-key", dest="read_key", default="/secret/gpg/package_sign_passphrase",
@@ -140,8 +141,8 @@ def validate_args(args: configargparse.Namespace):
                   "--token are mutually exclusive).")
             sys.exit(1)
 
-    if args.wrap_gpg and (not os.path.exists(args.wrap_gpg) or not os.access(args.wrap_gpg, os.X_OK)):
-        print("* ERROR: GnuPG executable %s doesn't exist or is not executable." % args.wrap_gpg)
+    if args.wrap_gpg and (not os.path.exists(args.wrap_aptly) or not os.access(args.wrap_aptly, os.X_OK)):
+        print("* ERROR: Aptly executable %s doesn't exist or is not executable." % args.wrap_gpg)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
@@ -153,7 +154,7 @@ def validate_args(args: configargparse.Namespace):
 
 def main() -> None:
     parser = get_parser()
-    args, gpg_args = parser.parse_known_args()
+    args, aptly_args = parser.parse_known_args()
     validate_args(args)
 
     vcl = hvac.Client(url=args.vault_address,
@@ -174,7 +175,7 @@ def main() -> None:
         print("* ERROR: Failure while authenticating to Vault. (%s)" % str(e))
         sys.exit(1)
     if not vcl.is_authenticated():
-        print("* ERROR: gpg_vault_wrapper was unable to authenticate with Vault, but no error occured :(.")
+        print("* ERROR: aptly_vault_wrapper was unable to authenticate with Vault, but no error occured :(.")
         sys.exit(1)
 
     try:
@@ -193,8 +194,9 @@ def main() -> None:
 
     passphrase = res['data']['value']
 
-    gpg_cmdline = [args.wrap_gpg, "--passphrase-fd", "0"] + gpg_args
-    subprocess.call(gpg_cmdline, input=passphrase.encode("utf-8"), universal_newlines=True)
+    aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + gpg_args
+    subprocess.call(aptly_cmdline, input=("%s\n%s\n" % (passphrase, passphrase)).encode("utf-8"),
+                    universal_newlines=True, stdout=sys.stdout, stderr=sys.stderr)
 
 
 if __name__ == "__main__":
