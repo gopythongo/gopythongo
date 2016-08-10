@@ -141,7 +141,7 @@ def validate_args(args: configargparse.Namespace):
                   "--token are mutually exclusive).")
             sys.exit(1)
 
-    if args.wrap_gpg and (not os.path.exists(args.wrap_aptly) or not os.access(args.wrap_aptly, os.X_OK)):
+    if args.wrap_aptly and (not os.path.exists(args.wrap_aptly) or not os.access(args.wrap_aptly, os.X_OK)):
         print("* ERROR: Aptly executable %s doesn't exist or is not executable." % args.wrap_gpg)
         sys.exit(1)
 
