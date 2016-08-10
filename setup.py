@@ -48,7 +48,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gopythongo = gopythongo.main:main",
-            "gpg_vault_wrapper = gopythongo.gpg_vault_wrapper:main"
+            "aptly_vault_wrapper = gopythongo.aptly_vault_wrapper:main"
         ]
     },
     install_requires=_requirements,

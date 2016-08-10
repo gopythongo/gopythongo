@@ -13,7 +13,7 @@ import sys
 from requests.exceptions import RequestException
 
 args_for_setting_config_path = ["-c", "--config"]  # type: List[str]
-default_config_files = [".gopythongo/vault"]  # type: List[str]
+default_config_files = [".gopythongo/aptlywrapper"]  # type: List[str]
 
 
 class HelpAction(configargparse.Action):
@@ -61,7 +61,7 @@ class HelpAction(configargparse.Action):
               "\n"
               "    APPID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/app-id/$APPID value=r_pkg_sign \\\n"
-              "        display_name=gpg_vault_wrapper\n"
+              "        display_name=aptly_vault_wrapper\n"
               "    USERID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/user-id/$USERID value=$APPID \\\n"
               "        cidr_block=192.168.56.0/24\n"
@@ -83,14 +83,14 @@ def get_parser() -> configargparse.ArgumentParser:
         description="Use this program as a replacement for the aptly binary with GoPythonGo/Aptly. This will allow you "
                     "to load the gnupg key passphrase for a package signing operation from Hashicorp Vault "
                     "(https://vaultproject.io/), thereby increasing security on your build servers. To configure "
-                    "GoPythonGo to use aptly_vault_wrapper, simply set '--use-aptly' on your GoPythonGo "
-                    "command-line to this program. All parameters not recognized by aptly_vault_wrapper are passed "
+                    "GoPythonGo to use aptly_vault_wrapper, simply set '--aptly-use-vault-wrapper' on your GoPythonGo "
+                    "command-line. All parameters not recognized by aptly_vault_wrapper are passed "
                     "directly to aptly, so all other aptly options still work. aptly_vault_wrapper will always append "
-                    "'-passphrase-file /dev/stdin' to the final aptly "
-                    "command-line and send the passphrase twice (for both signing operations).",
-        prog="gopythongo.gpg_vault_Wrapper",
+                    "'-passphrase-file /dev/stdin' to the final aptly command-line and send the passphrase twice "
+                    "(for both signing operations).",
+        prog="gopythongo.aptly_vault_Wrapper",
         args_for_setting_config_path=args_for_setting_config_path,
-        config_arg_help_message="Use this path instead of the default (.gopythongo/vault)",
+        config_arg_help_message="Use this path instead of the default (.gopythongo/aptlywrapper)",
         default_config_files=default_config_files
     )
 
@@ -102,7 +102,7 @@ def get_parser() -> configargparse.ArgumentParser:
                         env_var="VAULT_READ_KEY",
                         help="The key path to read from Vault. The value found there will be used as the passphrase.")
     parser.add_argument("--help-policies", action=HelpAction,
-                        help="Show additional information about how to set up Vault for using gpg_vault_wrapper.")
+                        help="Show additional information about how to set up Vault for using aptly_vault_wrapper.")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
@@ -194,7 +194,7 @@ def main() -> None:
 
     passphrase = res['data']['value']
 
-    aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + gpg_args
+    aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + aptly_args
     subprocess.call(aptly_cmdline, input=("%s\n%s\n" % (passphrase, passphrase)).encode("utf-8"),
                     universal_newlines=True, stdout=sys.stdout, stderr=sys.stderr)
 
