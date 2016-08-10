@@ -36,8 +36,11 @@ def validate_shared_args(args: configargparse.Namespace) -> None:
                            "operate on via %s" % highlight("--repo"))
 
 
-def get_aptly_cmdline(args: configargparse.Namespace) -> List[str]:
-    cmdline = [args.aptly_executable]
+def get_aptly_cmdline(args: configargparse.Namespace, *, override_aptly_cmd: str=None) -> List[str]:
+    if override_aptly_cmd:
+        cmdline = [override_aptly_cmd]
+    else:
+        cmdline = [args.aptly_executable]
 
     if args.aptly_config:
         cmdline += ["-config", args.aptly_config]
