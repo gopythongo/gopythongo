@@ -130,25 +130,26 @@ def get_parser() -> configargparse.ArgumentParser:
 def validate_args(args: configargparse.Namespace):
     if not args.vault_token:
         if not args.vault_appid or not args.vault_userid:
-            print("* ERROR: You must specify an authentication method, so you must pass either --token or --app-id and "
-                  "--user-id or set the VAULT_TOKEN, VAULT_APPID and VAULT_USERID environment variables respectively.")
+            print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
+                  "--token or --app-id and --user-id or set the VAULT_TOKEN, VAULT_APPID and VAULT_USERID environment "
+                  "variables respectively.")
             sys.exit(1)
 
     if args.vault_token:
         if args.vault_appid or args.vault_userid:
-            print("* ERROR: Can't use app-id authentication with token authentication (--app-id/--user-id and "
-                  "--token are mutually exclusive).")
+            print("* ERR VAULT WRAPPER *: Can't use app-id authentication with token authentication (--app-id/"
+                  "--user-id and --token are mutually exclusive).")
             sys.exit(1)
 
     if args.wrap_aptly and (not os.path.exists(args.wrap_aptly) or not os.access(args.wrap_aptly, os.X_OK)):
-        print("* ERROR: Aptly executable %s doesn't exist or is not executable." % args.wrap_gpg)
+        print("* ERR VAULT WRAPPER *: Aptly executable %s doesn't exist or is not executable." % args.wrap_gpg)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
-        print("* ERROR: %s File not found or no read privileges" % args.client_cert)
+        print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_cert)
 
     if args.client_key and (not os.path.exists(args.client_key) or not os.access(args.client_key, os.R_OK)):
-        print("* ERROR: %s File not found or no read privileges" % args.client_key)
+        print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_key)
 
 
 def main() -> None:
@@ -171,27 +172,35 @@ def main() -> None:
         if args.vault_appid:
             vcl.auth_app_id(args.vault_appid, args.vault_userid)
     except RequestException as e:
-        print("* ERROR: Failure while authenticating to Vault. (%s)" % str(e))
+        print("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
         sys.exit(1)
     if not vcl.is_authenticated():
-        print("* ERROR: aptly_vault_wrapper was unable to authenticate with Vault, but no error occured :(.")
+        print("* ERR VAULT WRAPPER *: aptly_vault_wrapper was unable to authenticate with Vault, but no error occured "
+              ":(.")
         sys.exit(1)
 
     try:
         res = vcl.read(args.read_key)
     except RequestException as e:
-        print("* ERROR: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
+        print("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
         sys.exit(1)
 
     if "data" not in res or "value" not in res["data"]:
-        print("* ERROR: Vault returned a value without the necessary fields (data->value). Returned dict was:\n%s" %
+        print("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
+              "dict was:\n%s" %
               res)
 
     passphrase = res['data']['value']
 
     aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + aptly_args
-    with subprocess.Popen(aptly_cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0) as proc:
+    with subprocess.Popen(aptly_cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0, stdout=sys.stdout,
+                          stderr=sys.stderr) as proc:
         proc.communicate(input="%s\n%s\n" % (passphrase, passphrase))
+        # FIXME: stream the results
+
+    if proc.returncode != 0:
+        print("* ERR VAULT WRAPPER *: Call to aptly failed with exit code %s." % proc.returncode)
+        sys.exit(proc.returncode)
 
 
 if __name__ == "__main__":
