@@ -67,8 +67,8 @@ class DockerBuilder(BaseBuilder):
                                (args.docker_executable, highlight("--use-docker")))
 
         if not args.docker_buildfile:
-            raise ErrorMessage("Using the docker builder requires you to pass --docker-buildfile and specify a "
-                               "Dockerfile template.")
+            raise ErrorMessage("Using the docker builder requires you to specify a Dockerfile template via "
+                               "--docker-buildfile.")
 
         if not os.path.exists(args.docker_buildfile) or not os.access(args.docker_buildfile, os.R_OK):
             raise ErrorMessage("It seems that GoPythonGo can't find or isn't allowed to read %s" %
