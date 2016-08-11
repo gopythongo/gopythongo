@@ -8,7 +8,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 
 from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, flatten
+from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, flatten, cmdargs_unquote_split
 
 
 class AptlyVersioner(BaseVersioner):
@@ -60,7 +60,7 @@ class AptlyVersioner(BaseVersioner):
     def query_repo_versions(self, query: str, args: configargparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:
         cmd = _aptly_args.get_aptly_cmdline(args) + ["repo", "search"]
-        cmd += shlex.split(args.aptly_versioner_opts)
+        cmd += cmdargs_unquote_split(args.aptly_versioner_opts)
 
         cmd += ["-format", "{{.Version}}", args.aptly_repo, query]
         ret = run_process(*cmd, allow_nonzero_exitcode=True)

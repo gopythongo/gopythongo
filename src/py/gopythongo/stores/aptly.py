@@ -12,7 +12,7 @@ import gopythongo.shared.aptly_args as _aptly_args
 from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.stores import BaseStore
 from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
-    create_script_path
+    create_script_path, cmdargs_unquote_split
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
@@ -200,7 +200,7 @@ class AptlyStore(BaseStore):
 
             print_info("Adding %s to repo %s" % (highlight(pkg.artifact_filename), highlight(args.aptly_repo)))
             cmdline = get_aptly_cmdline(args)
-            cmdline += shlex.split(args.aptly_repo_opts)
+            cmdline += cmdargs_unquote_split(args.aptly_repo_opts)
 
             cmdline += ["repo", "add", args.aptly_repo, pkg.artifact_filename]
             run_process(*cmdline)
@@ -242,11 +242,11 @@ class AptlyStore(BaseStore):
 
             # when publishing the repo for the first time we need to add the -distribution flag
             if cmd == "repo":
-                cmdline += shlex.split(args.aptly_publish_opts)
+                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
                 cmdline += ["-distribution", args.aptly_distribution]
                 cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
             else:
-                cmdline += shlex.split(args.aptly_publish_opts)
+                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
                 cmdline += [args.aptly_distribution, args.aptly_publish_endpoint]
 
             run_process(*cmdline)

@@ -1,5 +1,6 @@
 # -* encoding: utf-8 *-
 import collections
+import shlex
 import subprocess
 import configargparse
 import sys
@@ -155,6 +156,27 @@ def success(message: str) -> None:
 def highlight(message: str) -> str:
     return "%s%s%s" % (highlight_color, message, color_reset)
 
+
+def cmdargs_unquote_split(arg: str) -> List[str]:
+    """
+    configargparse is a bit difficult in its config file parsing. It does accept quoted strings as arguments in the
+    config file, but since there is no shell to *unquote* these arguments before it parses them (as it loads them
+    from a file), it presents them with the surrounding quotes, which `shlex.split` will also not unquote, but instead
+    return them as a single argument.
+
+    So this function removes surrounding quotes and calls `shlex.split` after doing so. This is being used throughout
+    GoPythonGo in lieu of `shlex.split` for command-line arguments which are used to pass argument strings to
+    subprocesses (like --aptly-publish-opts).
+    :param arg: the potentially quoted argument string
+    :return: a split unquoted argument string (inner quotes stay intact)
+    """
+    arg = arg.strip(" \t\n\r")
+    if arg.startswith('"') and arg.endswith('"') and arg.count('"') % 2 == 0:
+        # even number of quotes means the quotes are likely balanced
+        arg = arg[1:-1]
+    if arg.startswith("'") and arg.endswith("'") and arg.count("'") % 2 == 0:
+        arg = arg[1:-1]
+    return shlex.split(arg)
 
 class GoPythonGoEnableSuper(object):
     def __init__(self, *args: Any, **kwargs: Any) -> None:

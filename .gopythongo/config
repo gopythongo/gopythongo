@@ -2,17 +2,19 @@ builder=pbuilder
 distribution=jessie
 
 # local build options
-pbuilder-create-opts=--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian
+pbuilder-create-opts="--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian"
 
 run-after-create=[.gopythongo/install_fpm.sh]
 packer=fpm
 
 store=aptly
+use-aptly-vault-wrapper
 repo=gopythongo
 aptly-distribution=jessie
 # reference for build server
-aptly-publish-opts=-architectures=amd64 -keyring=/root/package_signing_authority_public.gpg -secret-keyring=/root/package_signing_authority_secret.gpg -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF -passphrase-file=/root/gopythongo_dev_passphrase.txt
+aptly-publish-opts="-config=/etc/aptly/aptly.conf -architectures=amd64 -keyring=/etc/gpg-managed-keyring/pubring.gpg -secret-keyring=/etc/gpg-managed-keyring/secring.gpg -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF"
 aptly-publish-endpoint=s3:gopythongo:debian
+aptly-versioner-opts="-config=/etc/aptly/aptly.conf"
 
 versioner=pymodule
 pymodule-read=gopythongo.version
@@ -21,7 +23,6 @@ version-action=bump-revision
 
 use-fpm=/usr/local/bin/fpm
 run-fpm=template:.gopythongo/fpm_opts
-copy-out=/home/vagrant/test/build
 
 eatmydata
 eatmydata-path=/usr/bin/eatmydata

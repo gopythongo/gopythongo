@@ -7,7 +7,7 @@ import os
 from typing import Any, Type
 
 from gopythongo.builders import BaseBuilder, get_dependencies
-from gopythongo.utils import print_info, highlight, run_process, print_debug, ErrorMessage
+from gopythongo.utils import print_info, highlight, run_process, print_debug, ErrorMessage, cmdargs_unquote_split
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -94,8 +94,8 @@ class PbuilderBuilder(BaseBuilder):
 
         if do_create:
             create_cmdline = [args.pbuilder_executable, "--create"]
-            create_cmdline += shlex.split(args.pbuilder_opts)
-            create_cmdline += shlex.split(args.pbuilder_create_opts)
+            create_cmdline += cmdargs_unquote_split(args.pbuilder_opts)
+            create_cmdline += cmdargs_unquote_split(args.pbuilder_create_opts)
             if args.pbuilder_distribution:
                 create_cmdline += ["--distribution", args.pbuilder_distribution]
 
@@ -113,8 +113,8 @@ class PbuilderBuilder(BaseBuilder):
             run_process(*create_cmdline)
 
         build_args = []  # type: List[str]
-        build_args += shlex.split(args.pbuilder_opts)
-        build_args += shlex.split(args.pbuilder_execute_opts)
+        build_args += cmdargs_unquote_split(args.pbuilder_opts)
+        build_args += cmdargs_unquote_split(args.pbuilder_execute_opts)
 
         for mount in args.mounts + list(the_context.mounts):
             build_args += ["--bindmounts", mount]

@@ -7,7 +7,7 @@ import os
 from typing import Any, List, Dict, Union, Type
 
 from gopythongo.packers import BasePacker
-from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage, flatten
+from gopythongo.utils import template, print_info, highlight, run_process, ErrorMessage, flatten, cmdargs_unquote_split
 from gopythongo.utils.buildcontext import the_context, PackerArtifact
 
 
@@ -157,7 +157,7 @@ class FPMPacker(BasePacker):
         ]
 
         if args.fpm_extra_opts:
-            fpm_base += shlex.split(" ".join(flatten(args.fpm_extra_opts)))
+            fpm_base += cmdargs_unquote_split(args.fpm_extra_opts)
 
         ctx = {
             "basedir": args.build_path,

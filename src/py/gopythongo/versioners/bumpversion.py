@@ -7,7 +7,7 @@ import configargparse
 
 from typing import Any, Type
 
-from gopythongo.utils import highlight, ErrorMessage, run_process
+from gopythongo.utils import highlight, ErrorMessage, run_process, cmdargs_unquote_split
 from gopythongo.versioners import BaseVersioner
 
 
@@ -61,7 +61,7 @@ class BumpVersioner(BaseVersioner):
             bumpcmd += ["--config-file", args.bumpversion_config]
 
         if args.bumpversion_opts:
-            bumpcmd += shlex.split(args.bumpversion_opts)
+            bumpcmd += cmdargs_unquote_split(args.bumpversion_opts)
 
         bumpcmd += [args.bumpversion_part]
 
