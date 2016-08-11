@@ -133,6 +133,10 @@ def validate_args(args: configargparse.Namespace):
             print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
                   "--token or --app-id and --user-id or set the VAULT_TOKEN, VAULT_APPID and VAULT_USERID environment "
                   "variables respectively.")
+            if args.vault_appid:
+                print("* INF VAULT WRAPPER *: appid is set")
+            if args.vault_userid:
+                print("* INF VAULT WRAPPER *: userid is set")
             sys.exit(1)
 
     if args.vault_token:
@@ -153,6 +157,7 @@ def validate_args(args: configargparse.Namespace):
 
 
 def main() -> None:
+    print("* INF VAULT WRAPPER *: cwd is %s" % os.getcwd())
     parser = get_parser()
     args, aptly_args = parser.parse_known_args()
     validate_args(args)
