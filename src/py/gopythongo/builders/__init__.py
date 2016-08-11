@@ -13,7 +13,6 @@ from gopythongo.utils import print_info, highlight, create_script_path, print_wa
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.builders import help as _builder_help
 
-
 _builders = {}  # type: Dict[str, 'BaseBuilder']
 _dependencies = {
     "debian/jessie": ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
@@ -37,10 +36,11 @@ def get_builders() -> Dict[str, 'BaseBuilder']:
 def init_subsystem() -> None:
     global _builders
 
-    from gopythongo.builders import docker, pbuilder
+    from gopythongo.builders import docker, pbuilder, noisolation
     _builders = {
-        u"pbuilder": pbuilder.builder_class(),
-        u"docker": docker.builder_class(),
+        "pbuilder": pbuilder.builder_class(),
+        "docker": docker.builder_class(),
+        "noisolation": noisolation.builder_class(),
     }
 
     plugins.load_plugins("gopythongo.builders", _builders, "builder_class", BaseBuilder, "builder_name")
