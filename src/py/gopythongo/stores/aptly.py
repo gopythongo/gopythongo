@@ -195,6 +195,7 @@ class AptlyStore(BaseStore):
                     print_info("Removing existing package %s from repo %s" %
                                (highlight(pkg.artifact_metadata["package_name"]), args.aptly_repo))
                     cmdline = get_aptly_cmdline(args)
+                    cmdline += cmdargs_unquote_split(args.aptly_repo_opts)
                     cmdline += ["repo", "remove", args.aptly_repo, pkg.artifact_metadata["package_name"]]
                     run_process(*cmdline)
 
