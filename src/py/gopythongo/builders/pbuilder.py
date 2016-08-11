@@ -1,7 +1,6 @@
 # -* encoding: utf-8 *-
 import configargparse
 import tempfile
-import shlex
 import os
 
 from typing import Any, Type

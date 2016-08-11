@@ -1,6 +1,5 @@
 # -* encoding: utf-8 *-
 import configargparse
-import shlex
 
 from typing import List, Any, Type
 
