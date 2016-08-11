@@ -132,7 +132,9 @@ def validate_args(args: configargparse.Namespace):
         if not args.vault_appid or not args.vault_userid:
             print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
                   "--token or --app-id and --user-id or set the VAULT_TOKEN, VAULT_APPID and VAULT_USERID environment "
-                  "variables respectively.")
+                  "variables respectively. If you run GoPythonGo under sudo (e.g. for pbuilder), make sure your "
+                  "build server environment variables also exist in the root shell, or build containers, or "
+                  "whatever else you're using.")
             if args.vault_appid:
                 print("* INF VAULT WRAPPER *: appid is set")
             if args.vault_userid:
