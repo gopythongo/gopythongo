@@ -23,7 +23,7 @@ from gopythongo.versioners.aptly import AptlyVersioner
 class AptlyStore(BaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.aptly_wrapper_cmd = None
+        self.aptly_wrapper_cmd = None  # type: str
 
     @property
     def store_name(self) -> str:

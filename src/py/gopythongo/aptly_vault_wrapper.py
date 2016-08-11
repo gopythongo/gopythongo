@@ -127,7 +127,7 @@ def get_parser() -> configargparse.ArgumentParser:
     return parser
 
 
-def validate_args(args: configargparse.Namespace):
+def validate_args(args: configargparse.Namespace) -> None:
     if not args.vault_token:
         if not args.vault_appid or not args.vault_userid:
             print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
