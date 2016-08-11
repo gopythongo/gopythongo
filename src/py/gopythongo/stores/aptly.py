@@ -171,7 +171,7 @@ class AptlyStore(BaseStore):
                 self._find_new_version(package_name, after_action, action, args)
             else:
                 print_info("After executing action %s, the selected next version for %s is %s" %
-                            (highlight(action), highlight(package_name), highlight(str(after_action.version))))
+                           (highlight(action), highlight(package_name), highlight(str(after_action.version))))
                 return after_action
         else:
             print_info("%s seems to be as yet unused" % highlight(str(version.version)))
