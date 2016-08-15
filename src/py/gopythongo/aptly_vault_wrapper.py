@@ -45,7 +45,7 @@ class HelpAction(configargparse.Action):
               "\n"
               "Let's set up the policy, assuming that you have already authenticated to Vault:\n"
               "\n"
-              "    cat | vault policy-write r_pkg_sign -\n"
+              "    vault policy-write r_pkg_sign -\n"
               "path \"secret/gpg/package_sign_passphrase\" {\n"
               "    capabilities = [\"read\"]\n"
               "}\n"
