@@ -59,7 +59,7 @@ class HelpAction(configargparse.Action):
               "to an appropriate value for your network:\n"
               "\n"
               "    # Make sure you are authenticated with Vault, then run something like the\n"
-              "    # following commands:"
+              "    # following commands:\n"
               "    vault auth-enable app-id"
               "    APPID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/app-id/$APPID value=r_pkg_sign \\\n"
