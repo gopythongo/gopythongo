@@ -11,8 +11,8 @@ import sys
 
 from requests.exceptions import RequestException
 
-args_for_setting_config_path = ["--aptly-wrapper-config"]  # type: List[str]
-default_config_files = [".gopythongo/aptlywrapper"]  # type: List[str]
+args_for_setting_config_path = ["--vault-wrapper-config"]  # type: List[str]
+default_config_files = [".gopythongo/vaultwrapper"]  # type: List[str]
 
 
 class HelpAction(configargparse.Action):
