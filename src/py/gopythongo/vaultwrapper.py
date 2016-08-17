@@ -64,7 +64,7 @@ class HelpAction(configargparse.Action):
               "\n"
               "    # Make sure you are authenticated with Vault, then run something like the\n"
               "    # following commands:\n"
-              "    vault auth-enable app-id"
+              "    vault auth-enable app-id\n"
               "    APPID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/app-id/$APPID value=r_pkg_sign \\\n"
               "        display_name=aptly_vault_wrapper\n"
