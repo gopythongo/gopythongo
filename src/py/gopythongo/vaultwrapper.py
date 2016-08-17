@@ -67,7 +67,7 @@ class HelpAction(configargparse.Action):
               "    vault auth-enable app-id\n"
               "    APPID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/app-id/$APPID value=r_pkg_sign \\\n"
-              "        display_name=aptly_vault_wrapper\n"
+              "        display_name=vaultwrapper\n"
               "    USERID=$(python3 -c \"import uuid; print(str(uuid.uuid4()), end='')\")\n"
               "    vault write auth/app-id/map/user-id/$USERID value=$APPID \\\n"
               "        cidr_block=192.168.56.0/24\n"
