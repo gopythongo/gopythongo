@@ -99,7 +99,7 @@ class AptlyStore(BaseStore):
                           (highlight("-distribution"), highlight("--aptly-distribution")))
 
         if args.use_aptly_wrapper:
-            wrapper_cmd = create_script_path(the_context.gopythongo_path, "vault_wrapper")
+            wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
             if not os.path.exists(wrapper_cmd) or not os.access(wrapper_cmd, os.X_OK):
                 raise ErrorMessage("%s can either not be found or is not executable. The vault wrapper seems to "
                                    "be unavailable." % wrapper_cmd)

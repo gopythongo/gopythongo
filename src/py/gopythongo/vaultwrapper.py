@@ -95,7 +95,7 @@ def get_parser() -> configargparse.ArgumentParser:
                     "work as expected. If you use '--mode=aptly' vault_wrapper will always append "
                     "'-passphrase-file /dev/stdin' to the final aptly command-line and send the passphrase twice "
                     "(for both signing operations).",
-        prog="gopythongo.vault_Wrapper",
+        prog="gopythongo.vaultwrapper",
         args_for_setting_config_path=args_for_setting_config_path,
         config_arg_help_message="Use this path instead of the default (.gopythongo/vaultwrapper)",
         default_config_files=default_config_files
