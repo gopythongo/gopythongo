@@ -43,7 +43,11 @@ class HelpAction(configargparse.Action):
               "allows you to pass in a Vault auth token or use the app-id authentication\n"
               "backend.\n"
               "\n"
-              "Let's set up the policy, assuming that you have already authenticated to Vault:\n"
+              "Here is an example for how I use Vault to store the GnuPG package signature\n"
+              "passphrase for GoPythonGo packages:\n"
+              "\n"
+              "Let's set up a read policy, assuming that you have already authenticated to\n"
+              "Vault:\n"
               "\n"
               "    vault policy-write r_pkg_sign -\n"
               "path \"secret/gpg/package_sign_passphrase\" {\n"
@@ -82,25 +86,30 @@ class HelpAction(configargparse.Action):
 
 def get_parser() -> configargparse.ArgumentParser:
     parser = configargparse.ArgumentParser(
-        description="Use this program as a replacement for the aptly binary with GoPythonGo/Aptly. This will allow you "
-                    "to load the gnupg key passphrase for a package signing operation from Hashicorp Vault "
-                    "(https://vaultproject.io/), thereby increasing security on your build servers. To configure "
-                    "GoPythonGo to use aptly_vault_wrapper, simply set '--aptly-use-vault-wrapper' on your GoPythonGo "
-                    "command-line. All parameters not recognized by aptly_vault_wrapper are passed "
-                    "directly to aptly, so all other aptly options still work. aptly_vault_wrapper will always append "
+        description="Use this program as a replacement for the any binary that needs to read a passphrase from STDIN, "
+                    "be it GnuPG or SSL. This was initially built for GoPythonGo/Aptly. It allows you to load a key "
+                    "passphrase from Hashicorp Vault (https://vaultproject.io/), thereby increasing security on your "
+                    "servers. To configure GoPythonGo specifically to use vault_wrapper, simply set "
+                    "'--aptly-use-vault-wrapper' on your GoPythonGo command-line. All parameters not recognized by "
+                    "vault_wrapper are passed directly to the wrapped program, so all other command-line options "
+                    "work as expected. If you use '--mode=aptly' vault_wrapper will always append "
                     "'-passphrase-file /dev/stdin' to the final aptly command-line and send the passphrase twice "
                     "(for both signing operations).",
-        prog="gopythongo.aptly_vault_Wrapper",
+        prog="gopythongo.vault_Wrapper",
         args_for_setting_config_path=args_for_setting_config_path,
-        config_arg_help_message="Use this path instead of the default (.gopythongo/aptlywrapper)",
+        config_arg_help_message="Use this path instead of the default (.gopythongo/vaultwrapper)",
         default_config_files=default_config_files
     )
 
-    parser.add_argument("--wrap-aptly", dest="wrap_aptly", default="/usr/bin/aptly", env_var="WRAP_APTLY",
-                        help="Path to the real Aptly executable.")
+    parser.add_argument("--wrap-program", dest="wrap_program", default=None, env_var="WRAP_PROGRAM",
+                        help="Path to the executable to wrap and provide a passphrase to.")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VAULT_URL", help="Vault URL")
-    parser.add_argument("--read-key", dest="read_key", default="/secret/gpg/package_sign_passphrase",
+    parser.add_argument("--wrap-mode", dest="wrap_mode", choices=["aptly", "stdin"], default="stdin",
+                        help="Select a mode of operation. 'aptly' will append '-passphrase-file /dev/stdin' to the "
+                             "wrapped program's parameters and output the passphrase twice, because aptly requires "
+                             "that for package signing.")
+    parser.add_argument("--read-key", dest="read_key", default=None, required=True,
                         env_var="VAULT_READ_KEY",
                         help="The key path to read from Vault. The value found there will be used as the passphrase.")
     parser.add_argument("--help-policies", action=HelpAction,
@@ -150,8 +159,8 @@ def validate_args(args: configargparse.Namespace) -> None:
                   "--user-id and --token are mutually exclusive).")
             sys.exit(1)
 
-    if args.wrap_aptly and (not os.path.exists(args.wrap_aptly) or not os.access(args.wrap_aptly, os.X_OK)):
-        print("* ERR VAULT WRAPPER *: Aptly executable %s doesn't exist or is not executable." % args.wrap_gpg)
+    if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
+        print("* ERR VAULT WRAPPER *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
@@ -164,7 +173,7 @@ def validate_args(args: configargparse.Namespace) -> None:
 def main() -> None:
     print("* INF VAULT WRAPPER *: cwd is %s" % os.getcwd())
     parser = get_parser()
-    args, aptly_args = parser.parse_known_args()
+    args, wrapped_args = parser.parse_known_args()
     validate_args(args)
 
     vcl = hvac.Client(url=args.vault_address,
@@ -202,11 +211,17 @@ def main() -> None:
 
     passphrase = res['data']['value']
 
-    aptly_cmdline = [args.wrap_aptly, "--passphrase-file", "/dev/stdin"] + aptly_args
-    with subprocess.Popen(aptly_cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0, stdout=sys.stdout,
+    if args.wrap_mode == "aptly":
+        cmdline = [args.wrap_program, "--passphrase-file", "/dev/stdin"] + wrapped_args
+    else:
+        cmdline = [args.wrap_program] + wrapped_args
+
+    with subprocess.Popen(cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0, stdout=sys.stdout,
                           stderr=sys.stderr) as proc:
-        proc.communicate(input="%s\n%s\n" % (passphrase, passphrase))
-        # FIXME: stream the results
+        if args.wrap_mode == "aptly":
+            proc.communicate(input="%s\n%s\n" % (passphrase, passphrase))
+        else:
+            proc.communicate(input="%s\n" % passphrase)
 
     if proc.returncode != 0:
         print("* ERR VAULT WRAPPER *: Call to aptly failed with exit code %s." % proc.returncode)

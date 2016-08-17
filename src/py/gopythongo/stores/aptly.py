@@ -74,11 +74,11 @@ class AptlyStore(BaseStore):
         gp_ast.add_argument("--use-aptly-vault-wrapper", dest="use_aptly_wrapper", env_var="APTLY_USE_WRAPPER",
                             default=False, action="store_true",
                             help="When you set this, GoPythonGo will not directly invoke aptly to publish or update "
-                                 "aptly-managed repos. Instead it will call GoPythonGo's aptly_vault_wrapper program, "
-                                 "which can be configured by environment variables or its own configuration file or "
-                                 "both (Default: .gopythongo/aptlywrapper). This program will load the GnuPG signing "
-                                 "passphrase for aptly-managed repos from Hashicorp Vault. You can find out more by "
-                                 "running 'aptly_vault_wraper --help'.")
+                                 "aptly-managed repos. Instead it will call GoPythonGo's vault_wrapper program in"
+                                 "'aptly' mode, which can be configured by environment variables or its own "
+                                 "configuration file or both (Default: .gopythongo/vaultwrapper). This program will "
+                                 "load the GnuPG signing passphrase for aptly-managed repos from Hashicorp Vault. You "
+                                 "can find out more by running 'vault_wraper --help'.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
@@ -99,9 +99,9 @@ class AptlyStore(BaseStore):
                           (highlight("-distribution"), highlight("--aptly-distribution")))
 
         if args.use_aptly_wrapper:
-            wrapper_cmd = create_script_path(the_context.gopythongo_path, "aptly_vault_wrapper")
+            wrapper_cmd = create_script_path(the_context.gopythongo_path, "vault_wrapper")
             if not os.path.exists(wrapper_cmd) or not os.access(wrapper_cmd, os.X_OK):
-                raise ErrorMessage("%s can either not be found or is not executable. The aptly vault wrapper seems to "
+                raise ErrorMessage("%s can either not be found or is not executable. The vault wrapper seems to "
                                    "be unavailable." % wrapper_cmd)
             self.aptly_wrapper_cmd = wrapper_cmd
 
@@ -208,8 +208,12 @@ class AptlyStore(BaseStore):
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
-            # override to use aptly_vault_wrapper if specified on the command-line
-            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd) + ["publish"]
+            # override to use vault_wrapper if specified on the command-line
+            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd)
+            if args.use_aptly_wrapper:
+                cmdline += ["--wrap-mode", "aptly"]
+                cmdline += ["--wrap-program", args.aptly_executable]
+            cmdline += ["publish"]
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
