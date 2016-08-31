@@ -101,7 +101,7 @@ def get_parser() -> configargparse.ArgumentParser:
         default_config_files=default_config_files
     )
 
-    parser.add_argument("--wrap-program", dest="wrap_program", default=None, env_var="WRAP_PROGRAM",
+    parser.add_argument("--wrap-program", dest="wrap_program", default=None, env_var="VAULTWRAPPER_PROGRAM",
                         help="Path to the executable to wrap and provide a passphrase to.")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VAULT_URL", help="Vault URL")
@@ -110,10 +110,10 @@ def get_parser() -> configargparse.ArgumentParser:
                              "wrapped program's parameters and output the passphrase twice, because aptly requires "
                              "that for package signing.")
     parser.add_argument("--read-key", dest="read_key", default=None, required=True,
-                        env_var="VAULT_READ_KEY",
+                        env_var="VAULTWRAPPER_READ_KEY",
                         help="The key path to read from Vault. The value found there will be used as the passphrase.")
     parser.add_argument("--help-policies", action=HelpAction,
-                        help="Show additional information about how to set up Vault for using aptly_vault_wrapper.")
+                        help="Show additional information about how to set up Vault for using vaultwrapper.")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
@@ -140,24 +140,27 @@ def get_parser() -> configargparse.ArgumentParser:
 
 
 def validate_args(args: configargparse.Namespace) -> None:
-    if not args.vault_token:
-        if not args.vault_appid or not args.vault_userid:
-            print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
-                  "--token or --app-id and --user-id or set the VAULT_TOKEN, VAULT_APPID and VAULT_USERID environment "
-                  "variables respectively. If you run GoPythonGo under sudo (e.g. for pbuilder), make sure your "
-                  "build server environment variables also exist in the root shell, or build containers, or "
-                  "whatever else you're using.")
-            if args.vault_appid:
-                print("* INF VAULT WRAPPER *: appid is set")
-            if args.vault_userid:
-                print("* INF VAULT WRAPPER *: userid is set")
-            sys.exit(1)
-
     if args.vault_token:
-        if args.vault_appid or args.vault_userid:
-            print("* ERR VAULT WRAPPER *: Can't use app-id authentication with token authentication (--app-id/"
-                  "--user-id and --token are mutually exclusive).")
-            sys.exit(1)
+        pass
+    elif args.vault_appid and args.vault_userid:
+        pass
+    elif args.client_cert and args.client_key:
+        pass
+    else:
+        print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
+              "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
+              "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
+              "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
+              "root shell, or build containers, or whatever else you're using.")
+        if args.vault_appid:
+            print("* INF VAULT WRAPPER *: appid is set")
+        if args.vault_userid:
+            print("* INF VAULT WRAPPER *: userid is set")
+        if args.client_cert:
+            print("* INF VAULT WRAPPER *: client_cert is set")
+        if args.client_key:
+            print("* INF VAULT WRAPPER *: client_key is set")
+        sys.exit(1)
 
     if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
         print("* ERR VAULT WRAPPER *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
@@ -165,9 +168,11 @@ def validate_args(args: configargparse.Namespace) -> None:
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
         print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_cert)
+        sys.exit(1)
 
     if args.client_key and (not os.path.exists(args.client_key) or not os.access(args.client_key, os.R_OK)):
         print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_key)
+        sys.exit(1)
 
 
 def main() -> None:
@@ -194,7 +199,7 @@ def main() -> None:
         print("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
         sys.exit(1)
     if not vcl.is_authenticated():
-        print("* ERR VAULT WRAPPER *: aptly_vault_wrapper was unable to authenticate with Vault, but no error occured "
+        print("* ERR VAULT WRAPPER *: vaultwrapper was unable to authenticate with Vault, but no error occured "
               ":(.")
         sys.exit(1)
 
@@ -207,7 +212,7 @@ def main() -> None:
     if "data" not in res or "value" not in res["data"]:
         print("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
               "dict was:\n%s" %
-              res)
+              str(res))
 
     passphrase = res['data']['value']
 
