@@ -82,9 +82,10 @@ class BaseInitializer(GoPythonGoEnableSuper):
         if self._check_rights() and not os.path.exists(self.configfolder):
             os.mkdir(self.configfolder)
 
-    def create_file_in_config_folder(self, filename: str) -> TextIO:
+    def create_file_in_config_folder(self, filename: str, mode: int=None) -> TextIO:
         """
         :param filename: the name of the file in the generated config folder
+        :param mode: pass an ``int`` here if you want to modify the files mode (will be umasked)
         :return: an open file descriptor (``TextIO``) object that the *caller must call `.close()` on*
         """
         if os.path.isfile(filename):
@@ -92,6 +93,12 @@ class BaseInitializer(GoPythonGoEnableSuper):
 
         self.ensure_config_folder()
         f = cast(TextIO, io.open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8"))
+
+        if mode:
+            umask = os.umask(0o022)
+            os.umask(umask)
+            os.chmod(os.path.join(self.configfolder, filename), mode & umask)
+
         return f
 
     @property

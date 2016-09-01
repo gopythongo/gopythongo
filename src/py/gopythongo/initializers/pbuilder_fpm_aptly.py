@@ -109,7 +109,7 @@ class PbuilderFpmAptlyInitializer(BaseInitializer):
         cf.write(configtpl.replace("CONFIGFOLDER", self.configfolder))
         cf.close()
 
-        instf = self.create_file_in_config_folder("install_fpm.sh")
+        instf = self.create_file_in_config_folder("install_fpm.sh", mode=0o755)
         instf.write(installfpm)
         instf.close()
 
