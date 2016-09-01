@@ -2,11 +2,11 @@
 import os
 import sys
 import hvac
-import subprocess
 import configargparse
 
 from typing import List, Sequence, Iterable, Union, Any
 
+from OpenSSL import crypto
 from requests.exceptions import RequestException
 
 
@@ -86,7 +86,8 @@ def get_parser() -> configargparse.ArgumentParser:
     parser = configargparse.ArgumentParser(
         description="This is a little helper tool that contacts a Vault server to issue a SSL client "
                     "certificate and save its X.509 certificate and private key to local files. Use "
-                    "--help-verbose to learn more.",
+                    "--help-verbose to learn more. vaultgetcert expects everything to be PEM encoded. "
+                    "It cannot convert between different formats.",
         prog="gopythongo.vaultgetcert",
         args_for_setting_config_path=["-c"],
         config_arg_help_message="Use this path instead of the default (.gopythongo/vaultwrapper)",
@@ -126,10 +127,15 @@ def get_parser() -> configargparse.ArgumentParser:
                                "(concatenated PEM file) for each xsign-cacert with the specified name. MUST be used "
                                "together with --xsign-bundle-path. You can specify an absolute path for bundlename in "
                                "which case --xsign-bundle-path will not be used for that bundlename.")
+    gp_xsign.add_argument("--issuer-bundle", dest="issuer_bundle", default=None,
+                          help="The argument for this is the bundlename for the issuer certificate returned by Vault. "
+                               "That bundlename will be handled like --xsign-cacert bundlenames. It can also be used "
+                               "in --output-bundle-envvar, thereby allowing you to use whichever CA Vault returns like "
+                               "any other well-known CA.")
     gp_xsign.add_argument("--xsign-bundle-path", dest="bundlepath", default=None,
                           help="A folder where all of the generated files without absolute paths from specified "
-                               "--xsign-cacert parameters will be stored.")
-    gp_xsign.add_argument("--generate-bundle-envvar", dest="bundle_envvars", default=[], action="append",
+                               "--xsign-cacert parameters will be stored. Existing bundles will be overwritten.")
+    gp_xsign.add_argument("--output-bundle-envvar", dest="bundle_envvars", default=[], action="append",
                           help="Can be specified multiple times. The argument must be in the form "
                                "'envvar=bundlename[:altpath]' (altpath is optional). "
                                "For each envvar specified vaultgetcert will output 'envvar=bundlepath' to stdout. If "
@@ -159,6 +165,10 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,
                          help="Set the user-id for Vault app-id authentication.")
+
+
+xsign_bundles = {}  # type: Dict[str, str]
+bundle_vars = {}  # type: Dict[str, Dict[str, str]]
 
 
 def validate_args(args: configargparse.Namespace) -> None:
@@ -203,6 +213,46 @@ def validate_args(args: configargparse.Namespace) -> None:
     if os.path.exists(args.keyfile) and not args.overwrite:
         _out("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.keyfile)
         sys.exit(1)
+
+    for xcertspec in args.xsigners:
+        if "=" not in xcertspec:
+            _out("* ERR VAULT CERT UTIL *: each --xsign-cacert argument must be formed as 'bundlename=certificate'. "
+                 "%s is not." % xcertspec)
+        bundlename, xcert = xcertspec.split("=", 1)
+        if bundlename not in xsign_bundles.keys():
+            xsign_bundles[bundlename] = xcert
+        else:
+            _out("* ERR VAULT CERT UTIL *: duplicate xsigner bundle name %s (from 1:%s and 2:%s=%s)" %
+                 (bundlename, xcertspec, bundlename, xsign_bundles[bundlename]))
+        if not os.path.exists(xcert) or not os.access(xcert, os.R_OK):
+            _out("* ERR VAULT CERT UTIL *: %s does not exist or is not readable (from %s)" % (xcert, xcertspec))
+            sys.exit(1)
+
+    if args.issuer_bundle:
+        xsign_bundles[args.issuer_bundle] = None
+
+    if args.bundlepath:
+        if not os.path.exists(args.bundlepath) or not os.access(args.bundlepath, os.W_OK):
+            _out("* ERR VAULT CERT UTIL *: %s does not exist or is not writable" % args.bundlepath)
+
+    for benvspec in args.bundle_envvars:
+        if "=" not in benvspec:
+            _out("* ERR VAULT CERT UTIL *: each --output-bundle-envvar must be formed as 'envvar=bundlename[:altpath]' "
+                 "with altpath being optional. %s is not." % benvspec)
+        envvar, bundlespec = benvspec.split("=", 1)
+        if ":" in bundlespec:
+            bundleref, altpath = bundlespec.split(":", 1)
+        else:
+            bundleref, altpath = bundlespec, None
+
+        if bundleref not in xsign_bundles.keys():
+            _out("* ERR VAULT CERT UTIL *: --output-bundle-envvar argument %s references a bundle name %s which has "
+                 "not been specified as an argument to --xsign-cacert." % (benvspec, bundleref))
+
+        bundle_vars[bundleref] = {
+            "envvar": envvar,
+            "altpath": altpath,
+        }
 
 
 def main():
@@ -258,7 +308,51 @@ def main():
     if args.certchain:
         _out("* INF VAULT CERT UTIL *: the certificate chain has been stored in %s" % args.certchain)
 
-    # TODO: implement xsigners
+    vault_pubkey = crypto.load_certificate("pem", res["data"]["issuing_ca"]).get_pubkey() \
+                        .to_cryptography_key().public_numbers()
+    vault_subject = crypto.load_certificate("pem", res["data"]["issuing_ca"]).get_subject().get_components()
+
+    for bundlename in xsign_bundles.keys():
+        if xsign_bundles[bundlename] is None:
+            x509str = res["data"]["issuing_ca"]
+        else:
+            with open(xsign_bundles[bundlename], mode="rt", encoding="ascii") as xcacert:
+                x509str = xcacert.read()
+
+        # the cross-signing certificate must sign the same keypair as the issueing_ca returned by Vault.
+        # Let's check...
+        xsign_pubkey = crypto.load_certificate(crypto.FILETYPE_PEM, x509str).get_pubkey() \
+            .to_cryptography_key().public_numbers()
+
+        if vault_pubkey != xsign_pubkey:
+            xsign_subject = crypto.load_certificate(crypto.FILETYPE_PEM, x509str).get_subject().get_components()
+            _out("* ERR VAULT CERT UTIL *: Cross-signing certificate %s has a different public key as the CA returned "
+                 "by Vault. This certificate is invalid for the bundle.\nXsign subject: %s\nVault subject: %s" %
+                 (bundlename,
+                  ", ".join(["%s=%s" % (k.decode("utf-8"), v.decode("utf-8")) for k, v in xsign_subject]),
+                  ", ".join(["%s=%s" % (k.decode("utf-8"), v.decode("utf-8")) for k, v in vault_subject])))
+            sys.exit(1)
+
+        if os.path.isabs(bundlename):
+            fn = bundlename
+        else:
+            fn = os.path.join(args.bundlepath, bundlename)
+
+        with open(fn, "wt", encoding="ascii") as bundle:
+            _out("* INF VAULT CERT UTIL *: Creating bundle %s" % fn)
+            bundle.write(res["data"]["certificate"])
+            bundle.write(x509str)
+
+    for bundleref in bundle_vars.keys():
+        # print goes to stdout
+        if os.path.isabs(bundleref):
+            fn = bundleref
+        else:
+            fn = os.path.join(args.bundlepath, bundleref)
+        print("%s=\"%s\"" %
+              (bundle_vars[bundleref]["envvar"],
+               fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
+                  if bundle_vars[bundleref]["altpath"] else fn))
 
     _out("*** Done.")
 
