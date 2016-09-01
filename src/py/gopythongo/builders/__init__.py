@@ -14,9 +14,11 @@ from gopythongo.utils.buildcontext import the_context
 from gopythongo.builders import help as _builder_help
 
 _builders = {}  # type: Dict[str, 'BaseBuilder']
+
+# a list of common dependencies as a convenience
 _dependencies = {
     "debian/jessie": ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
-                      "virtualenv", "binutils"]
+                      "virtualenv", "binutils", "libssl-dev", "libffi-dev"]
 }  # type: Dict[str, List[str]]
 
 

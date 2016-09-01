@@ -255,7 +255,7 @@ def validate_args(args: configargparse.Namespace) -> None:
         }
 
 
-def main():
+def main() -> None:
     _out("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
     parser = get_parser()
     args, wrapped_args = parser.parse_known_args()

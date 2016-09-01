@@ -1,15 +1,15 @@
 # -* encoding: utf-8 *-
 import os
-
 import configargparse
+from typing import Type, Any
 from gopythongo.builders import BaseBuilder
 from gopythongo.utils import print_info, highlight, run_process, print_debug
 from gopythongo.utils.buildcontext import the_context
 
 
 class NoIsolationBuilder(BaseBuilder):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(args, kwargs)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     @property
     def builder_name(self) -> str:
@@ -32,7 +32,7 @@ class NoIsolationBuilder(BaseBuilder):
                 run_process(runspec)
 
         print_debug("Running the build command: %s" % " ".join(the_context.get_gopythongo_inner_commandline()))
-        run_process(the_context.get_gopythongo_inner_commandline())
+        run_process(*the_context.get_gopythongo_inner_commandline())
 
     def print_help(self) -> None:
         print("No isolation Builder\n"
@@ -45,4 +45,5 @@ class NoIsolationBuilder(BaseBuilder):
               "isolate your builds (like TravisCI) and often don't give you the privileges to\n"
               "run your own isolation layers anyway.\n")
 
-builder_class = NoIsolationBuilder
+
+builder_class = NoIsolationBuilder  # type: Type[NoIsolationBuilder]
