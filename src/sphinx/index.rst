@@ -23,13 +23,11 @@ This project consists of two parts:
 .. toctree::
     :maxdepth: 1
     :numbered:
-    :caption: The process
+    :caption: Building things
 
     process/intro
-    process/execution_plan
     process/build_process
     process/configuration
-    process/virtualenvs
     process/docker
 
 .. toctree::
@@ -49,7 +47,9 @@ This project consists of two parts:
     toolkit/plugins/versioners
     toolkit/plugins/versionparsers
     toolkit/comparison
-    
+    toolkit/templating
+    toolkit/vault
+
 
 Indices and tables
 ==================

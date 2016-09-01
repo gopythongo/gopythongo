@@ -1,8 +1,16 @@
 GoPythonGo creates Python deployment artifacts
 ==============================================
 
-GoPythonGo is still under very active development. Currently you can use it to build .deb packages to deploy virtual
-environments using Debian packages.
+You can go to many conferences and watch talks on Youtube about Python deployment that invariably include a slide
+which has a diagram that looks something like this:
+
+.. pre:
+    Developer -push-> GitHub/GitLab/BitBucket -webhook-> SomeBuildServer -magic-> Fabulous cloud stuff
+
+GoPythonGo is a opinionated, extensible, well-structured implementation of the arrow that says "magic".
+
+*GoPythonGo is still under very active development. Currently you can use it to build .deb packages to deploy virtual
+environments using Debian packages.*
 
 Getting started
 ---------------
@@ -18,8 +26,8 @@ On Debian:
 
   2. create a simple example project:
 
-            mkdir -p /tmp/helloworld/helloworld
-            cat > /tmp/helloworld/helloworld/__init__.py << EOF
+        mkdir -p /tmp/helloworld/helloworld
+        cat > /tmp/helloworld/helloworld/__init__.py << EOF
         # -* encoding: utf-8
 
         def main():

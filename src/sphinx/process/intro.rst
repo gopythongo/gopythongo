@@ -1,7 +1,7 @@
 .. intro:
 
-Introduction to the process
-===========================
+Introduction to "building" Python
+=================================
 
 The problem with Python deployment
 ----------------------------------
@@ -97,7 +97,8 @@ GoPythonGo also uses a variety of supporting software to reach its goals:
   * Concourse.ci, the go.cd build pipeline or even the Jenkins build server (or TravisCI or CircleCI or whatever
     else you want to use)
   * pbuilder, a chroot-based build automation tool from the Debian project
-  * The GoPythonGo build helper tools
+  * Docker as an alternative isolated build environment
+  * The GoPythonGo build helper tools themselves
   * DjangoPyPi2, a pypi compatible server for serving Python packages
   * The docker registry project to keep pre-built Docker containers
   * Aptly, the excellent Debian repository management tool by @xxx

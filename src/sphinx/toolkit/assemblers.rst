@@ -1,4 +1,10 @@
 .. _assemblers:
 
-Assemblers: Doing extra stuff in virtualenvs
-============================================
+Assemblers: Putting everything together in a build environment
+==============================================================
+
+Virtualenv
+----------
+
+Django collectstatic
+--------------------
