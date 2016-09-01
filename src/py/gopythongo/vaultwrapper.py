@@ -15,6 +15,12 @@ args_for_setting_config_path = ["--vault-wrapper-config"]  # type: List[str]
 default_config_files = [".gopythongo/vaultwrapper"]  # type: List[str]
 
 
+def _out(*args: Any, **kwargs: Any) -> None:
+    if "file" not in kwargs:
+        kwargs["file"] = sys.stderr
+    print(*args, **kwargs)
+
+
 class HelpAction(configargparse.Action):
     def __init__(self,
                  option_strings: Sequence[str],
@@ -147,36 +153,36 @@ def validate_args(args: configargparse.Namespace) -> None:
     elif args.client_cert and args.client_key:
         pass
     else:
-        print("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
-              "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
-              "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
-              "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
-              "root shell, or build containers, or whatever else you're using.")
+        _out("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
+             "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
+             "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
+             "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
+             "root shell, or build containers, or whatever else you're using.")
         if args.vault_appid:
-            print("* INF VAULT WRAPPER *: appid is set")
+            _out("* INF VAULT WRAPPER *: appid is set")
         if args.vault_userid:
-            print("* INF VAULT WRAPPER *: userid is set")
+            _out("* INF VAULT WRAPPER *: userid is set")
         if args.client_cert:
-            print("* INF VAULT WRAPPER *: client_cert is set")
+            _out("* INF VAULT WRAPPER *: client_cert is set")
         if args.client_key:
-            print("* INF VAULT WRAPPER *: client_key is set")
+            _out("* INF VAULT WRAPPER *: client_key is set")
         sys.exit(1)
 
     if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
-        print("* ERR VAULT WRAPPER *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
+        _out("* ERR VAULT WRAPPER *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
-        print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_cert)
+        _out("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_cert)
         sys.exit(1)
 
     if args.client_key and (not os.path.exists(args.client_key) or not os.access(args.client_key, os.R_OK)):
-        print("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_key)
+        _out("* ERR VAULT WRAPPER *: %s File not found or no read privileges" % args.client_key)
         sys.exit(1)
 
 
 def main() -> None:
-    print("* INF VAULT WRAPPER *: cwd is %s" % os.getcwd())
+    _out("* INF VAULT WRAPPER *: cwd is %s" % os.getcwd())
     parser = get_parser()
     args, wrapped_args = parser.parse_known_args()
     validate_args(args)
@@ -196,22 +202,22 @@ def main() -> None:
         if args.vault_appid:
             vcl.auth_app_id(args.vault_appid, args.vault_userid)
     except RequestException as e:
-        print("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
+        _out("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
         sys.exit(1)
     if not vcl.is_authenticated():
-        print("* ERR VAULT WRAPPER *: vaultwrapper was unable to authenticate with Vault, but no error occured "
-              ":(.")
+        _out("* ERR VAULT WRAPPER *: vaultwrapper was unable to authenticate with Vault, but no error occured "
+             ":(.")
         sys.exit(1)
 
     try:
         res = vcl.read(args.read_key)
     except RequestException as e:
-        print("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
+        _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
         sys.exit(1)
 
     if "data" not in res or "value" not in res["data"]:
-        print("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
-              "dict was:\n%s" %
+        _out("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
+             "dict was:\n%s" %
               str(res))
 
     passphrase = res['data']['value']
@@ -229,7 +235,7 @@ def main() -> None:
             proc.communicate(input="%s\n" % passphrase)
 
     if proc.returncode != 0:
-        print("* ERR VAULT WRAPPER *: Call to aptly failed with exit code %s." % proc.returncode)
+        _out("* ERR VAULT WRAPPER *: Call to aptly failed with exit code %s." % proc.returncode)
         sys.exit(proc.returncode)
 
 

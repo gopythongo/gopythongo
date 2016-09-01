@@ -10,6 +10,12 @@ from typing import List, Sequence, Iterable, Union, Any
 from requests.exceptions import RequestException
 
 
+def _out(*args: Any, **kwargs: Any) -> None:
+    if "file" not in kwargs:
+        kwargs["file"] = sys.stderr
+    print(*args, **kwargs)
+
+
 class HelpAction(configargparse.Action):
     def __init__(self,
                  option_strings: Sequence[str],
@@ -104,6 +110,9 @@ def get_parser() -> configargparse.ArgumentParser:
     parser.add_argument("--keyfile-out", dest="keyfile", required=True,
                         help="Path of the file where the generated private key will be stored. Permissions for this "
                              "file will be set to 600.")
+    parser.add_argument("--certchain-out", dest="certchain", default=None,
+                        help="Save the issuer CA certificate, which is likely the intermediate CA that you need to "
+                             "provide in the certificate chain.")
     parser.add_argument("--overwrite", dest="overwrite", default=False, action="store_true",
                         help="When set, this program will overwrite existing certificates and keys on disk.")
     parser.add_argument("--help-verbose", action=HelpAction,
@@ -140,44 +149,44 @@ def validate_args(args: configargparse.Namespace) -> None:
     elif args.client_cert and args.client_key:
         pass
     else:
-        print("* ERR VAULT CERT UTIL *: You must specify an authentication method, so you must pass either "
-              "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
-              "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
-              "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
-              "root shell, or build containers, or whatever else you're using.")
+        _out("* ERR VAULT CERT UTIL *: You must specify an authentication method, so you must pass either "
+             "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
+             "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
+             "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
+             "root shell, or build containers, or whatever else you're using.")
         if args.vault_appid:
-            print("* INF VAULT CERT UTIL *: appid is set")
+            _out("* INF VAULT CERT UTIL *: appid is set")
         if args.vault_userid:
-            print("* INF VAULT CERT UTIL *: userid is set")
+            _out("* INF VAULT CERT UTIL *: userid is set")
         if args.client_cert:
-            print("* INF VAULT CERT UTIL *: client_cert is set")
+            _out("* INF VAULT CERT UTIL *: client_cert is set")
         if args.client_key:
-            print("* INF VAULT CERT UTIL *: client_key is set")
+            _out("* INF VAULT CERT UTIL *: client_key is set")
         sys.exit(1)
 
     if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
-        print("* ERR VAULT CERT UTIL *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
+        _out("* ERR VAULT CERT UTIL *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
-        print("* ERR VAULT CERT UTIL *: %s File not found or no read privileges" % args.client_cert)
+        _out("* ERR VAULT CERT UTIL *: %s File not found or no read privileges" % args.client_cert)
         sys.exit(1)
 
     if args.client_key and (not os.path.exists(args.client_key) or not os.access(args.client_key, os.R_OK)):
-        print("* ERR VAULT CERT UTIL *: %s File not found or no read privileges" % args.client_key)
+        _out("* ERR VAULT CERT UTIL *: %s File not found or no read privileges" % args.client_key)
         sys.exit(1)
 
     if os.path.exists(args.certfile) and not args.overwrite:
-        print("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.certfile)
+        _out("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.certfile)
         sys.exit(1)
 
     if os.path.exists(args.keyfile) and not args.overwrite:
-        print("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.keyfile)
+        _out("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.keyfile)
         sys.exit(1)
 
 
 def main():
-    print("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
+    _out("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
     parser = get_parser()
     args, wrapped_args = parser.parse_known_args()
     validate_args(args)
@@ -197,32 +206,38 @@ def main():
         if args.vault_appid:
             vcl.auth_app_id(args.vault_appid, args.vault_userid)
     except RequestException as e:
-        print("* ERR VAULT CERT UTIL *: Failure while authenticating to Vault. (%s)" % str(e))
+        _out("* ERR VAULT CERT UTIL *: Failure while authenticating to Vault. (%s)" % str(e))
         sys.exit(1)
     if not vcl.is_authenticated():
-        print("* ERR VAULT CERT UTIL *: vaultgetcert was unable to authenticate with Vault, but no error occured "
-              ":(.")
+        _out("* ERR VAULT CERT UTIL *: vaultgetcert was unable to authenticate with Vault, but no error occured "
+             ":(.")
         sys.exit(1)
 
-    with open(args.certfile, "wt", encoding="ascii") as certfile:
-        with open(args.keyfile, "wt", encoding="ascii") as keyfile:
-            os.chmod(args.keyfile, '0600')
-            try:
-                res = vcl.write(args.cert_key)
-            except RequestException as e:
-                print("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.cert_key, str(e)))
-                sys.exit(1)
+    with open(args.certfile, "wt", encoding="ascii") as certfile, \
+            open(args.keyfile, "wt", encoding="ascii") as keyfile:
+        os.chmod(args.keyfile, 0o0600)
+        try:
+            res = vcl.write(args.cert_key)
+        except RequestException as e:
+            _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.cert_key, str(e)))
+            sys.exit(1)
 
-            if "data" not in res or "certificate" not in res["data"] or "private_key" not in res["data"]:
-                print("* ERR VAULT CERT UTIL *: Vault returned a value without the necessary fields "
-                      "(data->certificate,private_key). Returned dict was:\n%s" %
-                      str(res))
-            certfile.write(res["data"]["certificate"])
-            keyfile.write(res["data"]["keyfile"])
+        if "data" not in res or "certificate" not in res["data"] or "private_key" not in res["data"]:
+            _out("* ERR VAULT CERT UTIL *: Vault returned a value without the necessary fields "
+                 "(data->certificate,private_key). Returned dict was:\n%s" %
+                 str(res))
+        certfile.write(res["data"]["certificate"])
+        keyfile.write(res["data"]["keyfile"])
 
-    print("* INF VAULT CERT UTIL *: the issued certificate and key have been stored in %s and %s" %
+        if args.certchain:
+            with open(args.certchain, "wt", encoding="ascii") as certchain:
+                certchain.write(res["data"]["issuing_ca"])
+
+    _out("* INF VAULT CERT UTIL *: the issued certificate and key have been stored in %s and %s" %
           (args.certfile, args.keyfile))
-    print("*** Done.")
+    if args.certchain:
+        _out("* INF VAULT CERT UTIL *: the certificate chain has been stored in %s" % args.certchain)
+    _out("*** Done.")
 
 
 if __name__ == "__main__":
