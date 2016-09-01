@@ -118,6 +118,26 @@ def get_parser() -> configargparse.ArgumentParser:
     parser.add_argument("--help-verbose", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultgetcert.")
 
+    gp_xsign = parser.add_argument_group("Handling cross-signing CAs")
+    gp_xsign.add_argument("--xsign-cacert", dest="xsigners", default=[], action="append",
+                          help="Can be set multiple times. The argument must be in the form 'bundlename=certificate'. "
+                               "For each certificate specified, vaultgetcert will verify that it uses the same public "
+                               "key as the issuer certificate returned by Vault. It will then create a bundle "
+                               "(concatenated PEM file) for each xsign-cacert with the specified name. MUST be used "
+                               "together with --xsign-bundle-path. You can specify an absolute path for bundlename in "
+                               "which case --xsign-bundle-path will not be used for that bundlename.")
+    gp_xsign.add_argument("--xsign-bundle-path", dest="bundlepath", default=None,
+                          help="A folder where all of the generated files without absolute paths from specified "
+                               "--xsign-cacert parameters will be stored.")
+    gp_xsign.add_argument("--generate-bundle-envvar", dest="bundle_envvars", default=[], action="append",
+                          help="Can be specified multiple times. The argument must be in the form "
+                               "'envvar=bundlename[:altpath]' (altpath is optional). "
+                               "For each envvar specified vaultgetcert will output 'envvar=bundlepath' to stdout. If "
+                               "you specify 'altpath', 'altpath' will replace the FULL path in bundlepath. The "
+                               "filename will stay the same. This output is meant to be used as configuration "
+                               "environment variables for your program and can be shipped, for example, for usage in "
+                               "/etc/default.")
+
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
                           help="Use a HTTPS client certificate to connect.")
@@ -237,6 +257,9 @@ def main():
           (args.certfile, args.keyfile))
     if args.certchain:
         _out("* INF VAULT CERT UTIL *: the certificate chain has been stored in %s" % args.certchain)
+
+    # TODO: implement xsigners
+
     _out("*** Done.")
 
 
