@@ -96,11 +96,12 @@ def get_parser() -> configargparse.ArgumentParser:
 
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VAULT_URL", help="Vault URL")
-    parser.add_argument("--cert-key", dest="cert_key", default=None, required=True,
+    parser.add_argument("--vault-pki", dest="vault_pki", default=None, required=True,
                         env_var="VAULT_CERT_KEY",
-                        help="The key path to issue a certificate from Vault.")
+                        help="The PKI backend path to issue a certificate from Vault (e.g. 'pki/issue/[role]').")
     parser.add_argument("--subject-alt-names", dest="subject_alt_names", default=None,
-                        help="alt_names to pass to Vault for the issued certificate.")
+                        help="alt_names parameter to pass to Vault for the issued certificate. (Use a comma-separated "
+                             "list if you want to specify more than one.)")
     parser.add_argument("--common-name", dest="common_name", default=None, required=True,
                         help="The CN to pass to Vault for the issued certificate.")
     parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", default=False, action="store_true",
@@ -143,6 +144,12 @@ def get_parser() -> configargparse.ArgumentParser:
                                "filename will stay the same. This output is meant to be used as configuration "
                                "environment variables for your program and can be shipped, for example, for usage in "
                                "/etc/default.")
+    gp_xsign.add_argument("--output-key-envvar", dest="key_envvars", default=[], action="append",
+                          help="Can be specified multiple times. Output one or more key/value pairs to stdout in the "
+                               "form 'envvar=keyfile' where 'keyfile' is the file specified by --keyfile-out. Each "
+                               "argument should be formatted like 'envvar[:altpath]' where 'altpath' is optional. If "
+                               "'altpath' is specified, the keyfile's path will be replaced by 'altpath' in the "
+                               "output.")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
@@ -165,6 +172,8 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,
                          help="Set the user-id for Vault app-id authentication.")
+
+    return parser
 
 
 xsign_bundles = {}  # type: Dict[str, str]
@@ -192,10 +201,6 @@ def validate_args(args: configargparse.Namespace) -> None:
             _out("* INF VAULT CERT UTIL *: client_cert is set")
         if args.client_key:
             _out("* INF VAULT CERT UTIL *: client_key is set")
-        sys.exit(1)
-
-    if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
-        _out("* ERR VAULT CERT UTIL *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
         sys.exit(1)
 
     if args.client_cert and (not os.path.exists(args.client_cert) or not os.access(args.client_cert, os.R_OK)):
@@ -258,7 +263,7 @@ def validate_args(args: configargparse.Namespace) -> None:
 def main() -> None:
     _out("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
     parser = get_parser()
-    args, wrapped_args = parser.parse_known_args()
+    args = parser.parse_args()
     validate_args(args)
 
     vcl = hvac.Client(url=args.vault_address,
@@ -283,34 +288,46 @@ def main() -> None:
              ":(.")
         sys.exit(1)
 
+    try:
+        res = vcl.write(args.vault_pki, common_name=args.common_name, alt_names=args.subject_alt_names or "",
+                        exclude_cn_from_sans=not args.include_cn_in_sans)
+    except RequestException as e:
+        _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.cert_key, str(e)))
+        sys.exit(1)
+
+    if "data" not in res or "certificate" not in res["data"] or "private_key" not in res["data"]:
+        _out("* ERR VAULT CERT UTIL *: Vault returned a value without the necessary fields "
+             "(data->certificate,private_key). Returned dict was:\n%s" %
+             str(res))
+
     with open(args.certfile, "wt", encoding="ascii") as certfile, \
             open(args.keyfile, "wt", encoding="ascii") as keyfile:
         os.chmod(args.keyfile, 0o0600)
-        try:
-            res = vcl.write(args.cert_key)
-        except RequestException as e:
-            _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.cert_key, str(e)))
-            sys.exit(1)
 
-        if "data" not in res or "certificate" not in res["data"] or "private_key" not in res["data"]:
-            _out("* ERR VAULT CERT UTIL *: Vault returned a value without the necessary fields "
-                 "(data->certificate,private_key). Returned dict was:\n%s" %
-                 str(res))
-        certfile.write(res["data"]["certificate"])
-        keyfile.write(res["data"]["keyfile"])
+        certfile.write(res["data"]["certificate"].strip())
+        certfile.write("\n")
+        keyfile.write(res["data"]["private_key"].strip())
+        keyfile.write("\n")
 
         if args.certchain:
             with open(args.certchain, "wt", encoding="ascii") as certchain:
-                certchain.write(res["data"]["issuing_ca"])
+                certchain.write(res["data"]["issuing_ca"].strip())
+                certchain.write("\n")
 
     _out("* INF VAULT CERT UTIL *: the issued certificate and key have been stored in %s and %s" %
           (args.certfile, args.keyfile))
     if args.certchain:
         _out("* INF VAULT CERT UTIL *: the certificate chain has been stored in %s" % args.certchain)
 
-    vault_pubkey = crypto.load_certificate("pem", res["data"]["issuing_ca"]).get_pubkey() \
-                        .to_cryptography_key().public_numbers()
-    vault_subject = crypto.load_certificate("pem", res["data"]["issuing_ca"]).get_subject().get_components()
+    vault_pubkey = crypto.load_certificate(
+        crypto.FILETYPE_PEM,
+        res["data"]["issuing_ca"]
+    ).get_pubkey().to_cryptography_key().public_numbers()
+
+    vault_subject = crypto.load_certificate(
+        crypto.FILETYPE_PEM,
+        res["data"]["issuing_ca"]
+    ).get_subject().get_components()
 
     for bundlename in xsign_bundles.keys():
         if xsign_bundles[bundlename] is None:
@@ -327,32 +344,43 @@ def main() -> None:
         if vault_pubkey != xsign_pubkey:
             xsign_subject = crypto.load_certificate(crypto.FILETYPE_PEM, x509str).get_subject().get_components()
             _out("* ERR VAULT CERT UTIL *: Cross-signing certificate %s has a different public key as the CA returned "
-                 "by Vault. This certificate is invalid for the bundle.\nXsign subject: %s\nVault subject: %s" %
+                 "by Vault. This certificate is invalid for the bundle.\n"
+                 "***Xsign subject***\n%s\n***Vault subject***\n%s" %
                  (bundlename,
                   ", ".join(["%s=%s" % (k.decode("utf-8"), v.decode("utf-8")) for k, v in xsign_subject]),
                   ", ".join(["%s=%s" % (k.decode("utf-8"), v.decode("utf-8")) for k, v in vault_subject])))
             sys.exit(1)
 
-        if os.path.isabs(bundlename):
-            fn = bundlename
-        else:
+        fn = bundlename
+        if args.bundlepath and not os.path.isabs(bundlename):
             fn = os.path.join(args.bundlepath, bundlename)
 
         with open(fn, "wt", encoding="ascii") as bundle:
             _out("* INF VAULT CERT UTIL *: Creating bundle %s" % fn)
-            bundle.write(res["data"]["certificate"])
-            bundle.write(x509str)
+            bundle.write(res["data"]["certificate"].strip())
+            bundle.write("\n")
+            bundle.write(x509str.strip())
+            bundle.write("\n")
 
     for bundleref in bundle_vars.keys():
         # print goes to stdout
-        if os.path.isabs(bundleref):
-            fn = bundleref
-        else:
+        fn = bundleref
+        if args.bundlepath and not os.path.isabs(bundleref):
             fn = os.path.join(args.bundlepath, bundleref)
         print("%s=\"%s\"" %
               (bundle_vars[bundleref]["envvar"],
                fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
                   if bundle_vars[bundleref]["altpath"] else fn))
+
+    for keyvar in args.key_envvars:
+        if ":" in keyvar:
+            envvar, altpath = keyvar.split(":", 1)
+        else:
+            envvar, altpath = keyvar, None
+
+        print("%s=\"%s\"" %
+              (envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath)
+                  if altpath else args.keyfile))
 
     _out("*** Done.")
 
