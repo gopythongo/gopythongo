@@ -3,7 +3,7 @@ import configargparse
 import tempfile
 import os
 
-from typing import Any, Type
+from typing import Any, Type, List
 
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils import print_info, highlight, run_process, print_debug, ErrorMessage, cmdargs_unquote_split
