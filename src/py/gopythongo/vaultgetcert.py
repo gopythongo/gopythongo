@@ -81,7 +81,7 @@ def get_parser() -> configargparse.ArgumentParser:
         description="This is a little helper tool that contacts a Vault server to issue a SSL client "
                     "certificate and save its X.509 certificate and private key to local files. Use "
                     "--help-verbose to learn more.",
-        prog="gopythongo.vaultwrapper",
+        prog="gopythongo.vaultgetcert",
         args_for_setting_config_path=["-c"],
         config_arg_help_message="Use this path instead of the default (.gopythongo/vaultwrapper)",
         default_config_files=[".gopythongo/vaultgetcert",]
