@@ -55,8 +55,9 @@ version-action=bump-revision
 use-fpm=/usr/local/bin/fpm
 run-fpm=template:CONFIGFOLDER/fpm_opts
 
-eatmydata
-eatmydata-path=/usr/bin/eatmydata
+# install eatmydata (apt-get install eatmydata), then uncomment this to speed up the build process
+#eatmydata
+#eatmydata-path=/usr/bin/eatmydata
 """
 
 installfpm = """
