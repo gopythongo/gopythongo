@@ -99,9 +99,9 @@ def get_parser() -> configargparse.ArgumentParser:
     parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", default=False, action="store_true",
                         help="Set this if you want the value of --common-name to also show up in the issued "
                              "certificate's SANs")
-    parser.add_argument("--certfile", dest="certfile", required=True,
+    parser.add_argument("--certfile-out", dest="certfile", required=True,
                         help="Path of the file where the generated certificate will be stored.")
-    parser.add_argument("--keyfile", dest="keyfile", required=True,
+    parser.add_argument("--keyfile-out", dest="keyfile", required=True,
                         help="Path of the file where the generated private key will be stored. Permissions for this "
                              "file will be set to 600.")
     parser.add_argument("--overwrite", dest="overwrite", default=False, action="store_true",
@@ -223,3 +223,7 @@ def main():
     print("* INF VAULT CERT UTIL *: the issued certificate and key have been stored in %s and %s" %
           (args.certfile, args.keyfile))
     print("*** Done.")
+
+
+if __name__ == "__main__":
+    main()

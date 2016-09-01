@@ -48,7 +48,8 @@ setup(
     entry_points={
         "console_scripts": [
             "gopythongo = gopythongo.main:main",
-            "vaultwrapper = gopythongo.vaultwrapper:main"
+            "vaultwrapper = gopythongo.vaultwrapper:main",
+            "vaultgetcert = gopythongo.vaultgetcert:main",
         ]
     },
     install_requires=_requirements,
