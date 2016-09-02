@@ -3,6 +3,7 @@ import configargparse
 
 from typing import Dict, Any, List, Union
 
+from gopythongo.packers.help import PackerHelpAction
 from gopythongo.utils import plugins, CommandLinePlugin
 
 _packers = {}  # type: Dict[str, 'BasePacker']
@@ -70,6 +71,9 @@ class BasePacker(CommandLinePlugin):
         """
         return None
 
+    def print_help(self) -> None:
+        raise NotImplementedError("Each subclass of BasePacker MUST implement print_help")
+
 
 def add_args(parser: configargparse.ArgumentParser) -> None:
     for m in _packers.values():
@@ -80,6 +84,8 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
                             help="The destination path inside the build environment, where the resulting packages will "
                                  "be copied. This will usually be the path of a bindmount, created with --mount in the "
                                  "build folder of your build server, for example.")
+
+    parser.add_argument("--help-packer", action=PackerHelpAction, choices=_packers.keys(), default=None)
 
 
 def validate_args(args: configargparse.Namespace) -> None:

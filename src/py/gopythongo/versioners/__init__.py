@@ -92,11 +92,12 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
         for action in vp.supported_actions:
             collected_actions.add(action)
 
+    parser.add_argument("--help-versioner", choices=_versioners.keys(), default=None,
+                        action=versioner_help.VersionerHelpAction)
+    parser.add_argument("--help-versionparser", choices=_version_parsers.keys(), default=None,
+                        action=parser_help.VersionParserHelpAction)
+
     gp_version = parser.add_argument_group("Version determination")
-    gp_version.add_argument("--help-versioner", choices=_versioners.keys(), default=None,
-                            action=versioner_help.VersionerHelpAction)
-    gp_version.add_argument("--help-versionparser", choices=_version_parsers.keys(), default=None,
-                            action=parser_help.VersionParserHelpAction)
     gp_version.add_argument("--versioner", dest="input_versioner", default=None,
                             help="Specify from where to read the base version string. See --help-versioner for "
                                  "details. Most versioners take specific additional command-line parameters")

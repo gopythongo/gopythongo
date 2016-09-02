@@ -34,9 +34,7 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
                          help="Initialize a default configuration. BUILDTYPE must be one of (%s) and PATH"
                               "is the path of the configuration folder you want to initialize." %
                               (", ".join(_initializers.keys())))
-    gp_init.add_argument("--help-initializer", action=InitializerHelpAction, choices=_initializers.keys(), default=None,
-                         help="Get help on individual quick start configuration generators or general help on "
-                              "configuration generators.")
+    parser.add_argument("--help-initializer", action=InitializerHelpAction, choices=_initializers.keys(), default=None)
 
 
 def validate_args(args: configargparse.Namespace) -> None:

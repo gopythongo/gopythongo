@@ -12,7 +12,8 @@ class VersionParserHelpAction(configargparse.Action):
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
-                 help: str="Show help for GoPythonGo version parsers.") -> None:
+                 help: str="Get help for GoPythonGo Version Parsers which take a version string read by a Versioner "
+                           "and parse it or convert between version formats.") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default,
                          nargs="?", choices=choices, help=help)
 

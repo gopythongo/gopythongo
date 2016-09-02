@@ -90,8 +90,9 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
                                  "environment e.g. pbuilder or docker  after a build environment is created. This "
                                  "allows you to perform additional necessary build configuration, which shouldn't be "
                                  "repeated for each subsequent build (e.g. 'gem install fpm')")
-    gr_builder.add_argument("--help-builder", choices=_builders.keys(), default=None,
-                            action=_builder_help.BuilderHelpAction)
+
+    parser.add_argument("--help-builder", choices=_builders.keys(), default=None,
+                        action=_builder_help.BuilderHelpAction)
 
     for b in _builders.values():
         b.add_args(parser)

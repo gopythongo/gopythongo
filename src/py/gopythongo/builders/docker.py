@@ -265,7 +265,7 @@ class DockerBuilder(BaseBuilder):
               "The Docker build process runs in 3 steps:\n"
               "    1. A build container is created using 'docker build' if it doesn't exist\n"
               "       yet, containing sources, header files and compilers as needed.\n"
-              "    2. GoPythonGo executes inside that build container and builds a virtualenv"
+              "    2. GoPythonGo executes inside that build container and builds a virtualenv\n"
               "       using 'docker run'. This can't be done in step 1 because docker doesn't\n"
               "       allow the mounting of host folders during build time.\n"
               "    3. The build artifacts are extracted from the build container and the\n"
@@ -291,7 +291,8 @@ class DockerBuilder(BaseBuilder):
               "                       For example: {{dependencies['debian/jessie']}} will\n"
               "                       resolve to:\n"
               "%s\n"
-              "The build container is then run by GoPythonGo" %
+              "\n"
+              "The build container is then run by GoPythonGo." %
               (",\n".join(["                           %s" % x for x in get_dependencies()["debian/jessie"]])))
 
 

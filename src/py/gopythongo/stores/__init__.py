@@ -3,6 +3,7 @@ import configargparse
 
 from typing import Dict, Any, Sequence, Union, List
 
+from gopythongo.stores.help import StoreHelpAction
 from gopythongo.utils import plugins, CommandLinePlugin, ErrorMessage
 from gopythongo.versioners.parsers import VersionContainer
 
@@ -68,8 +69,13 @@ class BaseStore(CommandLinePlugin):
     def store(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseStore MUST implement store")
 
+    def print_help(self) -> None:
+        raise NotImplementedError("Each subclass of BaseStore MUST implement print_help")
+
 
 def add_args(parser: configargparse.ArgumentParser) -> None:
+    parser.add_argument("--help-store", action=StoreHelpAction, choices=_stores.keys(), default=None)
+
     for s in _stores.values():
         s.add_args(parser)
 

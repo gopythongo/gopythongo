@@ -5,6 +5,7 @@ import configargparse
 
 from typing import Dict, Any
 
+from gopythongo.assemblers.help import AssemblerHelpAction
 from gopythongo.utils import run_process, create_script_path, print_info, highlight, plugins, \
     CommandLinePlugin, ErrorMessage
 
@@ -41,6 +42,9 @@ class BaseAssembler(CommandLinePlugin):
     def assemble(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assemble")
 
+    def print_help(self) -> None:
+        raise NotImplementedError("Each subclass of BaseAssembler MUST implement print_help")
+
 
 def add_args(parser: configargparse.ArgumentParser) -> None:
     global _assemblers
@@ -54,6 +58,8 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
     pos_args.add_argument("packages", metavar="package<=>version", nargs="*",
                           help="a list of package/version specifiers. Remember to quote your " +
                                "strings as in \"Django>=1.9,<1.10\"")
+
+    parser.add_argument("--help-assembler", action=AssemblerHelpAction, choices=_assemblers.keys(), default=None)
 
     for assembler in _assemblers.values():
         assembler.add_args(parser)

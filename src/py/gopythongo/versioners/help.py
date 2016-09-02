@@ -12,7 +12,8 @@ class VersionerHelpAction(configargparse.Action):
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
-                 help: str="Show help for GoPythonGo Versioners.") -> None:
+                 help: str="Get help for GoPythonGo Versioners which read your applications version and create "
+                           "version strings for your build.") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 

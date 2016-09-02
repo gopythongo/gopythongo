@@ -12,7 +12,8 @@ class InitializerHelpAction(configargparse.Action):
                  dest: str,
                  default: Any=None,
                  choices: Iterable[Any]=None,
-                 help: str="Show help for GoPythonGo Configuration Initializers.") -> None:
+                 help: str="Get help on individual quick start configuration generators or general help on "
+                           "configuration generators.") -> None:
         super().__init__(option_strings=option_strings, dest=dest, default=default, nargs="?",
                          choices=choices, help=help)
 
