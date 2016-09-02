@@ -68,20 +68,14 @@ On Debian:
 
         cd /tmp/helloworld
         /opt/gopythongo/bin/gopythongo --init pbuilder_deb
-        sed -e 's/mypackage/helloworld/g' .gopythongo/config | \
-            sed -e 's/# aptly-publish-opts/aptly-publish-opts/g' | \
-            sed -e 's/KEY_ID_HERE/helloworld/g' > .gopythongo/config.1
+        sed -e 's/mypackage/helloworld/g' .gopythongo/config > .gopythongo/config.1
         mv .gopythongo/config.1 .gopythongo/config
         sed -e 's/PACKAGENAME/helloworld/g' .gopythongo/fpm_opts > .gopythongo/fpm_opts.1
         mv .gopythongo/fpm_opts.1 .gopythongo/fpm_opts
 
-  5. Create a Debian repo and a GnuPG 2048 bit RSA signing keypair. Name the key "helloworld sign" and use the
-     passphrase "password":
+  5. Create a Debian repository managed by aptly
 
         aptly repo create helloworld
-        gpg --no-default-keyring --keyring /root/helloworld_sign_pub.gpg \
-            --secret-keyring=/root/helloworld_sign_secret.gpg --trustdb /root/helloworld_trust.gpg --gen-key
-        echo "password" > /root/helloworld_passphrase.txt
 
   6. Build the helloworld package (-v enables verbose output):
 
