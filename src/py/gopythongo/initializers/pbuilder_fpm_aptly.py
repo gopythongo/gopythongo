@@ -50,7 +50,7 @@ aptly-distribution=jessie
 versioner=aptly
 aptly-query=Name (mypackage)
 aptly-fallback-version=1.0.dev1
-version-parser=pep440
+version-parser=debian
 version-action=bump-revision
 
 use-fpm=/usr/local/bin/fpm
