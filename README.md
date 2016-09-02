@@ -16,9 +16,17 @@ includes tools to integrate with Hashicorp Vault for secure package signing usin
 SSL credential management. BUT, it's still changing all the time. That said, GoPythonGo is used to distribute
 GoPythonGo, so there.
 
+Basic philosophy
+----------------
+GoPythonGo is built to allow you to put things where they make the most sense. In practice, this means that the
+command-line tool takes it's parameters from three sources: a configuration file, environment variables and
+command-line parameters. This way, keep the configuration for *how to build* with your code in a checked-in config
+file, but the configuration for *assembling* your build onm your build server server in environment variables or on
+the command-line or a second configuration file that will be merged.
+
+
 Getting started
 ---------------
-
 On Debian:
 
   1. Install the GoPythonGo and Aptly distribution keys
@@ -93,3 +101,21 @@ On Debian:
         /opt/helloworld/bin/helloworld
 
  10. Go party!
+
+
+Next steps
+----------
+If you create an aptly configuration file, you can use GoPythonGo to sign and push the package to, for example,
+Amazon S3. Just look at GoPythonGo's own `.gopythongo` folder for examples.
+
+
+Future features
+---------------
+In order of priority:
+
+  1. Potentially add an additional class of plug-ins "composers" which execute even before the creation of the
+     build environment to prepare the source tree for building. These might do things like: clean up temp files,
+     request/download/install stuff or clone submodules.
+  2. Add Docker Store support to build, tag and upload Docker containers
+  3. Create integration and unittests
+  4. Add RPM and createrepo support
