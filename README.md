@@ -106,7 +106,9 @@ On Debian:
 Next steps
 ----------
 If you create an aptly configuration file, you can use GoPythonGo to sign and push the package to, for example,
-Amazon S3. Just look at GoPythonGo's own `.gopythongo` folder for examples.
+Amazon S3. Just look at GoPythonGo's own `.gopythongo` folder for examples. You should also have a look at the output
+of `--debug-config` to see how GoPythonGo loads configuration from the different sources (config file, environment
+variables and command-line parameters).
 
 
 Future features
