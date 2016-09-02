@@ -97,7 +97,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
         if mode:
             umask = os.umask(0o022)
             os.umask(umask)
-            os.chmod(os.path.join(self.configfolder, filename), mode & umask)
+            os.chmod(os.path.join(self.configfolder, filename), (0o777 ^ umask) & mode)
 
         return f
 
