@@ -72,7 +72,7 @@ class AptlyVersioner(BaseVersioner):
                 return []
         elif ret.exitcode != 0:
             # we must have run into a problem
-            raise ErrorMessage("Aptly reported an unknown problem with exit code %s\n*** Output follows:\n%s" %
+            raise ErrorMessage("aptly reported an unknown problem with exit code %s\n*** Output follows:\n%s" %
                                (ret.exitcode, highlight(ret.output) if ret.output else "no output"))
         else:
             versions = []  # type: List[DebianVersion]
@@ -95,7 +95,13 @@ class AptlyVersioner(BaseVersioner):
                     return []
 
     def read(self, args: configargparse.Namespace) -> str:
-        versions = self.query_repo_versions(args.aptly_query, args)
+        versions = self.query_repo_versions(args.aptly_query, args, allow_fallback_version=True)
+
+        if not versions:
+            raise ErrorMessage("The Aptly Versioner was unable to find a base version using the specified query '%s'. "
+                               "If the query is correct, you should specify a fallback version using %s." %
+                               (highlight(args.aptly_query), highlight("--fallback-version")))
+
         return str(versions[-1])
 
 
