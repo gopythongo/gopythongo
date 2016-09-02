@@ -111,11 +111,10 @@ Amazon S3. Just look at GoPythonGo's own `.gopythongo` folder for examples.
 
 Future features
 ---------------
-In order of priority:
 
-  1. Potentially add an additional class of plug-ins "composers" which execute even before the creation of the
-     build environment to prepare the source tree for building. These might do things like: clean up temp files,
-     request/download/install stuff or clone submodules.
-  2. Add Docker Store support to build, tag and upload Docker containers
-  3. Create integration and unittests
-  4. Add RPM and createrepo support
+  * Potentially add an additional class of plug-ins "composers" which execute even before the creation of the
+    build environment to prepare the source tree for building. These might do things like: clean up temp files,
+    request/download/install stuff or clone submodules.
+  * Add Docker Store support to build, tag and upload Docker containers
+  * Create integration and unittests
+  * Add RPM and createrepo support
