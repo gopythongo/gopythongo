@@ -4,9 +4,10 @@ import sys
 import hvac
 import configargparse
 
-from typing import List, Sequence, Iterable, Union, Any
+from typing import Dict, Sequence, Iterable, Union, Any
 
 from OpenSSL import crypto
+from gopythongo.main import DebugConfigAction
 from requests.exceptions import RequestException
 
 
@@ -100,30 +101,33 @@ def get_parser() -> configargparse.ArgumentParser:
     )
 
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
-                        env_var="VAULT_URL", help="Vault URL")
+                        env_var="VAULT_URL",
+                        help="Vault API base URL (default: https://vault.local:8200/). ")
     parser.add_argument("--vault-pki", dest="vault_pki", default=None, required=True,
                         env_var="VAULT_CERT_KEY",
                         help="The PKI backend path to issue a certificate from Vault (e.g. 'pki/issue/[role]').")
-    parser.add_argument("--subject-alt-names", dest="subject_alt_names", default=None,
+    parser.add_argument("--subject-alt-names", dest="subject_alt_names", env_var="VAULT_SUBJECT_ALTNAME", default=None,
                         help="alt_names parameter to pass to Vault for the issued certificate. (Use a comma-separated "
                              "list if you want to specify more than one.)")
-    parser.add_argument("--common-name", dest="common_name", default=None, required=True,
+    parser.add_argument("--common-name", dest="common_name", env_var="VAULT_COMMON_NAME", default=None, required=True,
                         help="The CN to pass to Vault for the issued certificate.")
-    parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", default=False, action="store_true",
+    parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", env_var="VAULT_INCLUDE_CN_IN_SANS",
+                        default=False, action="store_true",
                         help="Set this if you want the value of --common-name to also show up in the issued "
-                             "certificate's SANs")
-    parser.add_argument("--certfile-out", dest="certfile", required=True,
-                        help="Path of the file where the generated certificate will be stored.")
-    parser.add_argument("--keyfile-out", dest="keyfile", required=True,
+                             "certificate's SANs.")
+    parser.add_argument("--certfile-out", dest="certfile", env_var="CERTFILE_OUT", required=True,
+                        help="Path of the file where the generated certificate will be stored. ")
+    parser.add_argument("--keyfile-out", dest="keyfile", env_var="KEYFILE_OUT", required=True,
                         help="Path of the file where the generated private key will be stored. Permissions for this "
                              "file will be set to 600.")
-    parser.add_argument("--certchain-out", dest="certchain", default=None,
+    parser.add_argument("--certchain-out", dest="certchain", env_var="CERTCHAIN_OUT", default=None,
                         help="Save the issuer CA certificate, which is likely the intermediate CA that you need to "
                              "provide in the certificate chain.")
-    parser.add_argument("--overwrite", dest="overwrite", default=False, action="store_true",
-                        help="When set, this program will overwrite existing certificates and keys on disk.")
+    parser.add_argument("--overwrite", dest="overwrite", env_var="OVERWRITE", default=False, action="store_true",
+                        help="When set, this program will overwrite existing certificates and keys on disk. ")
     parser.add_argument("--help-verbose", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultgetcert.")
+    parser.add_argument("--debug-config", action=DebugConfigAction)
 
     gp_xsign = parser.add_argument_group("Handling cross-signing CAs")
     gp_xsign.add_argument("--xsign-cacert", dest="xsigners", default=[], action="append",
@@ -166,13 +170,14 @@ def get_parser() -> configargparse.ArgumentParser:
                           help="Set the CA certificate for Vault (i.e. the server certificate MUST be signed by a CA "
                                "in this file). The file should contain a list of CA certificates. The default is the "
                                "location of the Debian Linux CA bundle (Default: '/etc/ssl/certs/ca-certificates.crt')")
-    gp_https.add_argument("--tls-skip-verify", dest="verify", default=True, action="store_false",
+    gp_https.add_argument("--tls-skip-verify", dest="verify", env_var="SSL_SKIP_VERIFY", default=True,
+                          action="store_false",
                           help="Skip SSL verification (only use this during debugging or development!)")
 
     gp_auth = parser.add_argument_group("Vault authentication options")
     gp_auth.add_argument("--token", dest="vault_token", env_var="VAULT_TOKEN", default=None,
                          help="A Vault access token with a valid lease. This is one way of authenticating the wrapper "
-                              "to Vault. This is mutually exclusive with --app-id/--user-id.")
+                              "to Vault. This is mutually exclusive with --app-id/--user-id. ")
     gp_auth.add_argument("--app-id", dest="vault_appid", env_var="VAULT_APPID", default=None,
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,

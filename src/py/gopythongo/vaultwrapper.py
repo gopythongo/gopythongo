@@ -9,6 +9,7 @@ from typing import List, Sequence, Iterable, Union, Any
 
 import sys
 
+from gopythongo.main import DebugConfigAction
 from requests.exceptions import RequestException
 
 args_for_setting_config_path = ["--vault-wrapper-config"]  # type: List[str]
@@ -120,6 +121,7 @@ def get_parser() -> configargparse.ArgumentParser:
                         help="The key path to read from Vault. The value found there will be used as the passphrase.")
     parser.add_argument("--help-policies", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultwrapper.")
+    parser.add_argument("--debug-config", action=DebugConfigAction)
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
