@@ -47,8 +47,9 @@ aptly-distribution=jessie
 
 # Change the lines below to read your project's version from somewhere else
 # if you want to.
-versioner=pymodule
-pymodule-read=mypackage.version
+versioner=aptly
+aptly-query=Name (mypackage)
+aptly-fallback-version=1.0.dev1
 version-parser=pep440
 version-action=bump-revision
 

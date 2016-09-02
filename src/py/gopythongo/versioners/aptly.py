@@ -29,7 +29,7 @@ class AptlyVersioner(BaseVersioner):
         _aptly_args.add_shared_args(parser)
 
         gr_aptly = parser.add_argument_group("Aptly Versioner options")
-        gr_aptly.add_argument("--fallback-version", dest="aptly_fallback_version", default=None,
+        gr_aptly.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
                               help="If the APT repository does not yet contain a package with the name specified by "
                                    "--aptly-query, the Aptly Versioner can return a fallback value. This is useful "
                                    "for fresh repositories.")
@@ -66,8 +66,8 @@ class AptlyVersioner(BaseVersioner):
         # FIXME: add error code handling, because no results is not the only possible error message
         # FIXME: There can only be one instance of a package in an APT repo
         if ret.exitcode != 0 and "ERROR: no results" in ret.output:
-            if allow_fallback_version and args.fallback_version:
-                return [DebianVersion.fromstring(args.fallback_version)]
+            if allow_fallback_version and args.aptly_fallback_version:
+                return [DebianVersion.fromstring(args.aptly_fallback_version)]
             else:
                 return []
         elif ret.exitcode != 0:
@@ -89,8 +89,8 @@ class AptlyVersioner(BaseVersioner):
                 versions.sort()
                 return versions
             else:
-                if allow_fallback_version and args.fallback_version:
-                    return [DebianVersion.fromstring(args.fallback_version)]
+                if allow_fallback_version and args.aptly_fallback_version:
+                    return [DebianVersion.fromstring(args.aptly_fallback_version)]
                 else:
                     return []
 
