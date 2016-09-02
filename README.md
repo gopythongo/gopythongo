@@ -23,48 +23,46 @@ On Debian:
 
   1. Install the GoPythonGo and Aptly distribution keys
 
-    apt-key adv --keyserver hkp://keys.gnupg.net --recv-key DDB131CF1DF6A9CF8200799002CBD940A78049AF
-    apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
+        apt-key adv --keyserver hkp://keys.gnupg.net --recv-key DDB131CF1DF6A9CF8200799002CBD940A78049AF
+        apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
 
   2. Install GoPythonGo, [aptly](https://aptly.info), pbuilder and fpm. As `root`:
 
-    echo "deb http://repo.gopythongo.com/nightly jessie main" > /etc/apt/sources.list.d/gopythongo.list
-    echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
-    apt-get update
-    apt-get --no-install-recommends install gopythongo aptly pbuilder ruby ruby-dev
-    gem install fpm
+        echo "deb http://repo.gopythongo.com/nightly jessie main" > /etc/apt/sources.list.d/gopythongo.list
+        echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
+        apt-get update
+        apt-get --no-install-recommends install gopythongo aptly pbuilder ruby ruby-dev
+        gem install fpm
 
   3. create a simple example project:
 
-    ```
         mkdir -p /tmp/helloworld/helloworld
         cat > /tmp/helloworld/helloworld/__init__.py <<EOF
-# -* encoding: utf-8
+        # -* encoding: utf-8
 
-def main():
-    print("hello world!")
+        def main():
+            print("hello world!")
 
-if __name__ == "__main__":
-    main()
-EOF
+        if __name__ == "__main__":
+            main()
+        EOF
 
-            cat > /tmp/helloworld/setup.py <<EOF
-#!/usr/bin/env python -u
-import os
-from setuptools import setup
+        cat > /tmp/helloworld/setup.py <<EOF
+        #!/usr/bin/env python -u
+        import os
+        from setuptools import setup
 
-setup(
-    name='helloworld',
-    version="1.0",
-    packages=["helloworld",],
-    entry_points={
-        "console_scripts": [
-            "helloworld = helloworld:main"
-        ],
-    },
-)
-EOF
-    ```
+        setup(
+            name='helloworld',
+            version="1.0",
+            packages=["helloworld",],
+            entry_points={
+                "console_scripts": [
+                    "helloworld = helloworld:main"
+                ],
+            },
+        )
+        EOF
 
   4. Create a GoPythonGo configuration:
 
