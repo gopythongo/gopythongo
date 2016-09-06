@@ -100,7 +100,7 @@ On Debian:
 
         /opt/helloworld/bin/helloworld
 
- 10. Go party!
+  10. Go party!
 
 
 Next steps
