@@ -9,7 +9,7 @@ include a slide with a diagram that looks something like this:
 GoPythonGo is a opinionated, extensible, well-structured and highly configurable implementation of the arrow
 that says "magic".
 
-This is still *under very active development*. Currently you can use it to build .deb packages to deploy virtual
+**This is still under very active development.** Currently you can use it to build .deb packages to deploy virtual
 environments using Apt. It will use pbuilder or Docker to do so, it can auto-increment your version strings or integrate
 with other tools that do that, it can integrate with aptly to publish your packages to your server or Amazon S3. It
 includes tools to integrate with Hashicorp Vault for secure package signing using GPG and implementing build server
@@ -21,7 +21,7 @@ Basic philosophy
 GoPythonGo is built to allow you to put things where they make the most sense. In practice, this means that the
 command-line tool takes it's parameters from three sources: a configuration file, environment variables and
 command-line parameters. This way, keep the configuration for *how to build* with your code in a checked-in config
-file, but the configuration for *assembling* your build onm your build server server in environment variables or on
+file, but the configuration for *assembling* your build on your build server server in environment variables or on
 the command-line or a second configuration file that will be merged.
 
 
