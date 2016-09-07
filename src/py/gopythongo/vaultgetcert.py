@@ -11,6 +11,15 @@ from gopythongo.main import DebugConfigAction
 from requests.exceptions import RequestException
 
 
+out_target = sys.stdout
+
+
+def _res(*args: Any, **kwargs: Any) -> None:
+    if "file" not in kwargs:
+        kwargs["file"] = out_target
+    print(*args, **kwargs)
+
+
 def _out(*args: Any, **kwargs: Any) -> None:
     if "file" not in kwargs:
         kwargs["file"] = sys.stderr
@@ -100,6 +109,8 @@ def get_parser() -> configargparse.ArgumentParser:
         default_config_files=[".gopythongo/vaultgetcert",]
     )
 
+    parser.add_argument("-o", "--output", dest="output", default=None,
+                        help="Direct output to this file (default: stdout). ")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VAULT_URL",
                         help="Vault API base URL (default: https://vault.local:8200/). ")
@@ -271,6 +282,8 @@ def validate_args(args: configargparse.Namespace) -> None:
 
 
 def main() -> None:
+    global out_target
+
     _out("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
     parser = get_parser()
     args = parser.parse_args()
@@ -372,15 +385,19 @@ def main() -> None:
             bundle.write(x509str.strip())
             bundle.write("\n")
 
+    if args.output:
+        out_target = open(args.output, mode="wt", encoding="utf-8")
+        _out("writing output to %s" % args.output)
+
     for bundleref in bundle_vars.keys():
-        # print goes to stdout
+        # _res goes to stdout or --ourput
         fn = bundleref
         if args.bundlepath and not os.path.isabs(bundleref):
             fn = os.path.join(args.bundlepath, bundleref)
-        print("%s=\"%s\"" %
-              (bundle_vars[bundleref]["envvar"],
-               fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
-                  if bundle_vars[bundleref]["altpath"] else fn))
+        _res("%s=\"%s\"" %
+             (bundle_vars[bundleref]["envvar"],
+              fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
+                 if bundle_vars[bundleref]["altpath"] else fn))
 
     for keyvar in args.key_envvars:
         if ":" in keyvar:
@@ -388,9 +405,12 @@ def main() -> None:
         else:
             envvar, altpath = keyvar, None
 
-        print("%s=\"%s\"" %
-              (envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath)
-                  if altpath else args.keyfile))
+        _res("%s=\"%s\"" %
+             (envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath)
+                 if altpath else args.keyfile))
+
+    if args.output:
+        out_target.close()
 
     _out("*** Done.")
 
