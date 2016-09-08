@@ -9,20 +9,20 @@ import os
 from typing import List, Iterable, Union, Any, cast, IO
 
 import colorama
-from colorama import Fore
+from colorama import Fore, Style
 
 
-success_color = Fore.LIGHTGREEN_EX  # type: str
+success_color = Fore.GREEN  # type: str
 debug_hl = Fore.LIGHTMAGENTA_EX  # type: str
 debug_color = Fore.MAGENTA  # type: str
 info_hl = Fore.LIGHTCYAN_EX  # type: str
 info_color = Fore.LIGHTBLUE_EX  # type: str
-warning_hl = Fore.LIGHTYELLOW_EX  # type: str
+warning_hl = Fore.LIGHTWHITE_EX  # type: str
 warning_color = Fore.YELLOW  # type: str
 error_hl = Fore.LIGHTRED_EX  # type: str
 error_color = Fore.RED  # type: str
 highlight_color = Fore.LIGHTWHITE_EX  # type: str
-color_reset = Fore.RESET  # type: str
+color_reset = Style.RESET_ALL  # type: str
 
 debug_donotexecute = False  # type: bool
 prepend_exec = None  # type: List[str]
