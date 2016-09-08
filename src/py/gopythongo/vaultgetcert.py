@@ -1,5 +1,6 @@
 # -* encoding: utf-8 *-
 import os
+import subprocess
 import sys
 import hvac
 import configargparse
@@ -182,7 +183,7 @@ def get_parser() -> configargparse.ArgumentParser:
                                "output.")
 
     gp_filemode = parser.add_argument_group("File mode options")
-    gp.filemode.add_argument("--mode-mkdir-output", dest="mode_output_dir", default="0o755",
+    gp_filemode.add_argument("--mode-mkdir-output", dest="mode_output_dir", default="0o755",
                              help="If the output folder for the environment variable configuration (--output) doesn't "
                                   "exist yet, create it with these permissions (will be umasked). (default: 0o755)")
     gp_filemode.add_argument("--mode-mkdir-certs", dest="mode_certs_dir", default="0o755",
@@ -224,6 +225,13 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,
                          help="Set the user-id for Vault app-id authentication.")
+
+    gp_git = parser.add_argument_group("Git integration")
+    gp_git.add_argument("--use-git", dest="git_binary", default="/usr/bin/git",
+                        help="Specify an alternate git binary to call for git integration. (default: /usr/bin/git)")
+    gp_git.add_argument("--git-include-commit-san", dest="git_include_commit_san", default=".", action="store_true",
+                        help="If 'git rev-parse HEAD' returns a commit hash, add a certificate SAN called "
+                             "'[commithash].git'.")
 
     return parser
 
@@ -279,6 +287,11 @@ def validate_args(args: configargparse.Namespace) -> None:
     if os.path.exists(os.path.dirname(args.keyfile)) and not os.access(os.path.dirname(args.keyfile), os.W_OK):
         _out("* ERR VAULT CERT UTIL *: %s already exists and is not writable (--keyfile-out)" %
              os.path.dirname(args.keyfile))
+        sys.exit(1)
+
+    if args.git_include_commit_san and (not os.path.exists(args.git_binary) or not os.access(args.git_binary, os.X_OK)):
+        _out("* ERR VAULT CERT UTIL *: --git-include-commit-san is set, but Git binary %s does not exist or is not "
+             "executable" % args.git_binary)
         sys.exit(1)
 
     for xcertspec in args.xsigners:
@@ -361,8 +374,29 @@ def main() -> None:
              ":(.")
         sys.exit(1)
 
+    alt_names = args.subject_alt_names or ""
+    if args.git_include_commit_san:
+        try:
+            output = subprocess.check_output([args.git_binary, "rev-parse", "HEAD"],
+                                             stderr=subprocess.STDOUT, universal_newlines=True)
+        except subprocess.CalledProcessError as e:
+            _out("* ERR VAULT CERT UTIL *: Error %s. trying to get the Git commit hash (git rev-parse HEAD) failed "
+                 "with\n%s" % (e.returncode, e.output))
+            sys.exit(e.returncode)
+
+        output = output.strip()
+        if len(output) != 40:
+            _out("* ERR VAULT CERT UTIL *: Git returned a commit-hash of length %s (%s) instead of 40." %
+                 (len(output), output))
+            sys.exit(1)
+
+        if alt_names == "":
+            alt_names = "%s.git" % output
+        else:
+            alt_names = "%s.git,%s" % (output, alt_names)
+
     try:
-        res = vcl.write(args.vault_pki, common_name=args.common_name, alt_names=args.subject_alt_names or "",
+        res = vcl.write(args.vault_pki, common_name=args.common_name, alt_names=alt_names,
                         exclude_cn_from_sans=not args.include_cn_in_sans)
     except RequestException as e:
         _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.cert_key, str(e)))
