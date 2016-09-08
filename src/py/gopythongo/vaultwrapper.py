@@ -124,10 +124,6 @@ def get_parser() -> configargparse.ArgumentParser:
     parser.add_argument("--debug-config", action=DebugConfigAction)
 
     gp_https = parser.add_argument_group("HTTPS options")
-    gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
-                          help="Use a HTTPS client certificate to connect.")
-    gp_https.add_argument("--client-key", dest="client_key", default=None, env_var="VAULT_CLIENTKEY",
-                          help="Set the HTTPS client certificate private key.")
     gp_https.add_argument("--pin-cacert", dest="pin_cacert", default="/etc/ssl/certs/ca-certificates.crt",
                           env_var="VAULT_CACERT",
                           help="Set the CA certificate for Vault (i.e. the server certificate MUST be signed by a CA "
@@ -144,6 +140,11 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,
                          help="Set the user-id for Vault app-id authentication.")
+    gp_auth.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
+                         help="Use a HTTPS client certificate to connect.")
+    gp_auth.add_argument("--client-key", dest="client_key", default=None, env_var="VAULT_CLIENTKEY",
+                         help="Set the HTTPS client certificate private key.")
+
     return parser
 
 
