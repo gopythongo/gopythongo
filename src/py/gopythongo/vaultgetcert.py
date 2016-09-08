@@ -408,10 +408,10 @@ def main() -> None:
              str(res))
 
     if not os.path.exists(os.path.dirname(args.certfile)):
-        os.mkdir(os.path.dirname(args.certfile), mode=_get_masked_mode(args.mode_certs_dir))
+        os.makedirs(os.path.dirname(args.certfile), mode=_get_masked_mode(args.mode_certs_dir), exist_ok=True)
 
     if not os.path.exists(os.path.dirname(args.keyfile)):
-        os.mkdir(os.path.dirname(args.keyfile), mode=_get_masked_mode(args.mode_key_dir))
+        os.makedirs(os.path.dirname(args.keyfile), mode=_get_masked_mode(args.mode_key_dir), exist_ok=True)
 
     with open(args.certfile, "wt", encoding="ascii") as certfile, \
             open(args.keyfile, "wt", encoding="ascii") as keyfile:
@@ -444,7 +444,7 @@ def main() -> None:
     ).get_subject().get_components()
 
     if args.bundlepath and not os.path.exists(args.bundlepath):
-        os.mkdir(args.bundlepath, mode=args.mode_certs_dir)
+        os.makedirs(args.bundlepath, mode=args.mode_certs_dir, exist_ok=True)
 
     for bundlename in xsign_bundles.keys():
         if xsign_bundles[bundlename] is None:
@@ -481,7 +481,7 @@ def main() -> None:
 
     if args.output:
         if not os.path.exists(os.path.dirname(args.output)):
-            os.mkdir(os.path.dirname(args.output), mode=_get_masked_mode(0o755))
+            os.makedirs(os.path.dirname(args.output), mode=_get_masked_mode(0o755), exist_ok=True)
         out_target = open(args.output, mode="wt", encoding="utf-8")
         _out("writing output to %s" % args.output)
 
