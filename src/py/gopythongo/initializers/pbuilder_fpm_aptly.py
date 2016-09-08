@@ -6,8 +6,7 @@ from typing import Any, Type
 from gopythongo.initializers import BaseInitializer
 from gopythongo.utils import highlight, success
 
-configtpl = """
-builder=pbuilder
+configtpl = """builder=pbuilder
 distribution=jessie
 
 # if you use your own package mirror, you MUST add the Debian release keys to
@@ -61,8 +60,7 @@ run-fpm=template:CONFIGFOLDER/fpm_opts
 #eatmydata-path=/usr/bin/eatmydata
 """
 
-installfpm = """
-#!/bin/bash
+installfpm = """#!/bin/bash
 
 # This script is used to create a pbuilder build environment that has FPM
 # installed so GoPythonGo can create a .deb package of your project
@@ -84,8 +82,7 @@ fi
 $EATMYDATA gem install fpm
 """
 
-fpm_opts = """
--p PACKAGENAME_{{debian_version.version}}.deb
+fpm_opts = """-p PACKAGENAME_{{debian_version.version}}.deb
 -n PACKAGENAME
 --provides PACKAGENAME
 -v "{{debian_version.version}}"
