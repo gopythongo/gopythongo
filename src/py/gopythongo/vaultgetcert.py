@@ -120,39 +120,40 @@ def get_parser() -> configargparse.ArgumentParser:
         default_config_files=[".gopythongo/vaultgetcert",]
     )
 
-    parser.add_argument("-o", "--output", dest="output", default=None,
+    parser.add_argument("-o", "--output", dest="output", default=None, env_var="VGC_OUTPUT",
                         help="Direct output to this file (default: stdout). ")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
-                        env_var="VAULT_URL",
+                        env_var="VGC_VAULT_URL",
                         help="Vault API base URL (default: https://vault.local:8200/). ")
     parser.add_argument("--vault-pki", dest="vault_pki", default=None, required=True,
-                        env_var="VAULT_PKI",
+                        env_var="VGC_VAULT_PKI",
                         help="The PKI backend path to issue a certificate from Vault (e.g. 'pki/issue/[role]').")
-    parser.add_argument("--subject-alt-names", dest="subject_alt_names", env_var="VAULT_SUBJECT_ALTNAME", default=None,
+    parser.add_argument("--subject-alt-names", dest="subject_alt_names", env_var="VGC_SUBJECT_ALTNAME",
+                        default=None,
                         help="alt_names parameter to pass to Vault for the issued certificate. (Use a comma-separated "
                              "list if you want to specify more than one.)")
-    parser.add_argument("--common-name", dest="common_name", env_var="VAULT_COMMON_NAME", default=None, required=True,
+    parser.add_argument("--common-name", dest="common_name", env_var="VGC_COMMON_NAME", default=None, required=True,
                         help="The CN to pass to Vault for the issued certificate.")
-    parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", env_var="VAULT_INCLUDE_CN_IN_SANS",
+    parser.add_argument("--include-cn-in-sans", dest="include_cn_in_sans", env_var="VGC_INCLUDE_CN_IN_SANS",
                         default=False, action="store_true",
                         help="Set this if you want the value of --common-name to also show up in the issued "
                              "certificate's SANs.")
-    parser.add_argument("--certfile-out", dest="certfile", env_var="CERTFILE_OUT", required=True,
+    parser.add_argument("--certfile-out", dest="certfile", env_var="VGC_CERTFILE_OUT", required=True,
                         help="Path of the file where the generated certificate will be stored. ")
-    parser.add_argument("--keyfile-out", dest="keyfile", env_var="KEYFILE_OUT", required=True,
+    parser.add_argument("--keyfile-out", dest="keyfile", env_var="VGC_KEYFILE_OUT", required=True,
                         help="Path of the file where the generated private key will be stored. Permissions for this "
                              "file will be set to 600.")
-    parser.add_argument("--certchain-out", dest="certchain", env_var="CERTCHAIN_OUT", default=None,
+    parser.add_argument("--certchain-out", dest="certchain", env_var="VGC_CERTCHAIN_OUT", default=None,
                         help="Save the issuer CA certificate, which is likely the intermediate CA that you need to "
                              "provide in the certificate chain.")
-    parser.add_argument("--overwrite", dest="overwrite", env_var="OVERWRITE", default=False, action="store_true",
+    parser.add_argument("--overwrite", dest="overwrite", env_var="VGC_OVERWRITE", default=False, action="store_true",
                         help="When set, this program will overwrite existing certificates and keys on disk. ")
     parser.add_argument("--help-verbose", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultgetcert.")
     parser.add_argument("--debug-config", action=DebugConfigAction)
 
     gp_xsign = parser.add_argument_group("Handling cross-signing CAs")
-    gp_xsign.add_argument("--xsign-cacert", dest="xsigners", default=[], action="append",
+    gp_xsign.add_argument("--xsign-cacert", dest="xsigners", default=[], action="append", env_var="VGC_XSIGN_CACERT",
                           help="Can be set multiple times. The argument must be in the form 'bundlename=certificate'. "
                                "For each certificate specified, vaultgetcert will verify that it uses the same public "
                                "key as the issuer certificate returned by Vault. It will then create a bundle "
@@ -164,10 +165,11 @@ def get_parser() -> configargparse.ArgumentParser:
                                "That bundlename will be handled like --xsign-cacert bundlenames. It can also be used "
                                "in --output-bundle-envvar, thereby allowing you to use whichever CA Vault returns like "
                                "any other well-known CA.")
-    gp_xsign.add_argument("--xsign-bundle-path", dest="bundlepath", default=None,
+    gp_xsign.add_argument("--xsign-bundle-path", dest="bundlepath", default=None, env_var="VGC_XSIGN_BUNDLE_PATH",
                           help="A folder where all of the generated files without absolute paths from specified "
                                "--xsign-cacert parameters will be stored. Existing bundles will be overwritten.")
     gp_xsign.add_argument("--output-bundle-envvar", dest="bundle_envvars", default=[], action="append",
+                          env_var="VGC_OUTPUT_BUNDLE_ENVVAR",
                           help="Can be specified multiple times. The argument must be in the form "
                                "'envvar=bundlename[:altpath]' (altpath is optional). "
                                "For each envvar specified vaultgetcert will output 'envvar=bundlepath' to stdout. If "
@@ -176,6 +178,7 @@ def get_parser() -> configargparse.ArgumentParser:
                                "environment variables for your program and can be shipped, for example, for usage in "
                                "/etc/default.")
     gp_xsign.add_argument("--output-key-envvar", dest="key_envvars", default=[], action="append",
+                          env_var="VGC_OUTPUT_KEY_ENVVAR",
                           help="Can be specified multiple times. Output one or more key/value pairs to stdout in the "
                                "form 'envvar=keyfile' where 'keyfile' is the file specified by --keyfile-out. Each "
                                "argument should be formatted like 'envvar[:altpath]' where 'altpath' is optional. If "
@@ -184,32 +187,38 @@ def get_parser() -> configargparse.ArgumentParser:
 
     gp_filemode = parser.add_argument_group("File mode options")
     gp_filemode.add_argument("--mode-mkdir-output", dest="mode_output_dir", default="0o755",
+                             env_var="VGC_MODE_MKDIR_OUTPUT",
                              help="If the output folder for the environment variable configuration (--output) doesn't "
                                   "exist yet, create it with these permissions (will be umasked). (default: 0o755)")
     gp_filemode.add_argument("--mode-mkdir-certs", dest="mode_certs_dir", default="0o755",
+                             env_var="VGC_MODE_MKDIR_CERTS",
                              help="If the output folders for certificates and bundles (--certfile-out, "
                                   "--certchain-out, --xsign-bundle-path) doesn't exist yet, create them with these "
                                   "permissions (will be umasked). (default: 0o755)")
     gp_filemode.add_argument("--mode-mkdir-key", dest="mode_key_dir", default="0o700",
+                             env_var="VGC_MODE_MKDIR_KEY",
                              help="If the output folder for the private key (--keyfile-out) doesn't exist yet, "
                                   "create it with these permissions (will be umasked). (default: 0o700)")
     gp_filemode.add_argument("--mode-file-output", dest="mode_output_file", default="0o644",
+                             env_var="VGC_MODE_FILE_OUTPUT",
                              help="Create the output file (--output) with these permissions (will be umasked). "
                                   "(default: 0o644)")
     gp_filemode.add_argument("--mode-certbundles", dest="mode_certbundle_files", default="0o644",
+                             env_var="VGC_MODE_CERTBUNDLES",
                              help="Create the certbundle files (--xsign-cacert) with these permissions (will be "
                                   "umasked). (default: 0o644)")
     gp_filemode.add_argument("--mode-keyfile", dest="mode_key_file", default="0o600",
+                             env_var="VGC_MODE_KEYFILE",
                              help="Create the private key file (--keyfile-out) with these permissions (will be "
                                   "umasked). (default: 0o600)")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--pin-cacert", dest="pin_cacert", default="/etc/ssl/certs/ca-certificates.crt",
-                          env_var="VAULT_CACERT",
+                          env_var="VGC_VAULT_CACERT",
                           help="Set the CA certificate for Vault (i.e. the server certificate MUST be signed by a CA "
                                "in this file). The file should contain a list of CA certificates. The default is the "
                                "location of the Debian Linux CA bundle (Default: '/etc/ssl/certs/ca-certificates.crt')")
-    gp_https.add_argument("--tls-skip-verify", dest="verify", env_var="SSL_SKIP_VERIFY", default=True,
+    gp_https.add_argument("--tls-skip-verify", dest="verify", env_var="VGC_SSL_SKIP_VERIFY", default=True,
                           action="store_false",
                           help="Skip SSL verification (only use this during debugging or development!)")
 
@@ -227,9 +236,10 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the HTTPS client certificate private key.")
 
     gp_git = parser.add_argument_group("Git integration")
-    gp_git.add_argument("--use-git", dest="git_binary", default="/usr/bin/git",
+    gp_git.add_argument("--use-git", dest="git_binary", default="/usr/bin/git", env_var="VGC_GIT",
                         help="Specify an alternate git binary to call for git integration. (default: /usr/bin/git)")
     gp_git.add_argument("--git-include-commit-san", dest="git_include_commit_san", default=".", action="store_true",
+                        env_var="VGC_INCLUDE_COMMIT_SAN",
                         help="If 'git rev-parse HEAD' returns a commit hash, add a certificate SAN called "
                              "'[commithash].git'.")
 
