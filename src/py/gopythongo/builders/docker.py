@@ -7,12 +7,11 @@ import configargparse
 
 from typing import Any, Type
 
-import dockerpty
 import sys
 from gopythongo import utils
 from gopythongo.shared import docker_args as _docker_args
 from gopythongo.utils import print_info, highlight, ErrorMessage, template, run_process, print_debug, targz, print_error, \
-    ProcessOutput
+    ProcessOutput, print_warning
 from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils.buildcontext import the_context
 from requests.exceptions import RequestException
@@ -174,6 +173,7 @@ class DockerBuilder(BaseBuilder):
                 volumes.append(mount)
 
         import gopythongo.main  # import for later use of break_handlers
+        import dockerpty  # dockerpty imports fcntl which will fail on Windows, so we can't import it at the top
 
         if args.builder_debug_login:
             print_info("Without --builder-debug-login, inside this container GoPythonGo would have run: %s" %
@@ -209,7 +209,6 @@ class DockerBuilder(BaseBuilder):
                         "PYTHONUNBUFFERED": "0"
                     },
                 )
-
 
                 def killlambda() -> None:
                     print_info("Stopping and removing build container %s" % build_container["Id"])
@@ -296,4 +295,20 @@ class DockerBuilder(BaseBuilder):
               (",\n".join(["                           %s" % x for x in get_dependencies()["debian/jessie"]])))
 
 
-builder_class = DockerBuilder  # type: Type[DockerBuilder]
+class DockerBuilderWin32(DockerBuilder):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        print_warning("Docker builder is unavailable on Win32 for lack of fcntl")
+        super().__init__(*args, **kwargs)
+
+    def validate_args(self, args: configargparse.Namespace) -> None:
+        return
+
+    def build(self, args: configargparse.Namespace) -> None:
+        print_error("Docker builder is unavailable on Win32 for lack of fcntl")
+        sys.exit(1)
+
+
+if sys.platform.startswith("win32"):
+    builder_class = DockerBuilderWin32  # type: Type[DockerBuilder]
+else:
+    builder_class = DockerBuilder  # type: Type[DockerBuilder]
