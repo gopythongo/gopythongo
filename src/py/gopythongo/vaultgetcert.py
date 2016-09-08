@@ -12,6 +12,8 @@ from requests.exceptions import RequestException
 
 
 out_target = sys.stdout
+umask_cur = os.umask(0o022)
+os.umask(umask_cur)
 
 
 def _res(*args: Any, **kwargs: Any) -> None:
@@ -24,6 +26,14 @@ def _out(*args: Any, **kwargs: Any) -> None:
     if "file" not in kwargs:
         kwargs["file"] = sys.stderr
     print(*args, **kwargs)
+
+
+def _get_masked_mode(mode: Union[int, str]):
+    if isinstance(mode, str):
+        m = int(mode, base=8)
+    else:
+        m = mode
+    return (0o777 ^ umask_cur) & m
 
 
 class HelpAction(configargparse.Action):
@@ -115,7 +125,7 @@ def get_parser() -> configargparse.ArgumentParser:
                         env_var="VAULT_URL",
                         help="Vault API base URL (default: https://vault.local:8200/). ")
     parser.add_argument("--vault-pki", dest="vault_pki", default=None, required=True,
-                        env_var="VAULT_CERT_KEY",
+                        env_var="VAULT_PKI",
                         help="The PKI backend path to issue a certificate from Vault (e.g. 'pki/issue/[role]').")
     parser.add_argument("--subject-alt-names", dest="subject_alt_names", env_var="VAULT_SUBJECT_ALTNAME", default=None,
                         help="alt_names parameter to pass to Vault for the issued certificate. (Use a comma-separated "
@@ -170,6 +180,27 @@ def get_parser() -> configargparse.ArgumentParser:
                                "argument should be formatted like 'envvar[:altpath]' where 'altpath' is optional. If "
                                "'altpath' is specified, the keyfile's path will be replaced by 'altpath' in the "
                                "output.")
+
+    gp_filemode = parser.add_argument_group("File mode options")
+    gp.filemode.add_argument("--mode-mkdir-output", dest="mode_output_dir", default="0o755",
+                             help="If the output folder for the environment variable configuration (--output) doesn't "
+                                  "exist yet, create it with these permissions (will be umasked). (default: 0o755)")
+    gp_filemode.add_argument("--mode-mkdir-certs", dest="mode_certs_dir", default="0o755",
+                             help="If the output folders for certificates and bundles (--certfile-out, "
+                                  "--certchain-out, --xsign-bundle-path) doesn't exist yet, create them with these "
+                                  "permissions (will be umasked). (default: 0o755)")
+    gp_filemode.add_argument("--mode-mkdir-key", dest="mode_key_dir", default="0o700",
+                             help="If the output folder for the private key (--keyfile-out) doesn't exist yet, "
+                                  "create it with these permissions (will be umasked). (default: 0o700)")
+    gp_filemode.add_argument("--mode-file-output", dest="mode_output_file", default="0o644",
+                             help="Create the output file (--output) with these permissions (will be umasked). "
+                                  "(default: 0o644)")
+    gp_filemode.add_argument("--mode-certbundles", dest="mode_certbundle_files", default="0o644",
+                             help="Create the certbundle files (--xsign-cacert) with these permissions (will be "
+                                  "umasked). (default: 0o644)")
+    gp_filemode.add_argument("--mode-keyfile", dest="mode_key_file", default="0o600",
+                             help="Create the private key file (--keyfile-out) with these permissions (will be "
+                                  "umasked). (default: 0o600)")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
@@ -236,8 +267,18 @@ def validate_args(args: configargparse.Namespace) -> None:
         _out("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.certfile)
         sys.exit(1)
 
+    if os.path.exists(os.path.dirname(args.certfile)) and not os.access(os.path.dirname(args.certfile), os.W_OK):
+        _out("* ERR VAULT CERT UTIL *: %s already exists and is not writable (--certfile-out)" %
+             os.path.dirname(args.certfile))
+        sys.exit(1)
+
     if os.path.exists(args.keyfile) and not args.overwrite:
         _out("* ERR VAULT CERT UTIL *: %s already exists and --overwrite is not specified" % args.keyfile)
+        sys.exit(1)
+
+    if os.path.exists(os.path.dirname(args.keyfile)) and not os.access(os.path.dirname(args.keyfile), os.W_OK):
+        _out("* ERR VAULT CERT UTIL *: %s already exists and is not writable (--keyfile-out)" %
+             os.path.dirname(args.keyfile))
         sys.exit(1)
 
     for xcertspec in args.xsigners:
@@ -258,8 +299,8 @@ def validate_args(args: configargparse.Namespace) -> None:
         xsign_bundles[args.issuer_bundle] = None
 
     if args.bundlepath:
-        if not os.path.exists(args.bundlepath) or not os.access(args.bundlepath, os.W_OK):
-            _out("* ERR VAULT CERT UTIL *: %s does not exist or is not writable" % args.bundlepath)
+        if os.path.exists(args.bundlepath) and not os.access(args.bundlepath, os.W_OK):
+            _out("* ERR VAULT CERT UTIL *: %s is not writable" % args.bundlepath)
 
     for benvspec in args.bundle_envvars:
         if "=" not in benvspec:
@@ -279,6 +320,15 @@ def validate_args(args: configargparse.Namespace) -> None:
             "envvar": envvar,
             "altpath": altpath,
         }
+
+    for perms in [args.mode_output_dir, args.mode_certs_dir, args.mode_key_dir, args.mode_output_file,
+                  args.mode_certbundle_files, args.mode_key_file]:
+        try:
+            int(perms, base=8)
+        except ValueError:
+            _out("* ERR VAULT CERT UTIL *: %s is not a vaild permission string (must be octal unix file/folder "
+                 "permissions" % perms)
+            sys.exit(1)
 
 
 def main() -> None:
@@ -323,9 +373,16 @@ def main() -> None:
              "(data->certificate,private_key). Returned dict was:\n%s" %
              str(res))
 
+    if not os.path.exists(os.path.dirname(args.certfile)):
+        os.mkdir(os.path.dirname(args.certfile), mode=_get_masked_mode(args.mode_certs_dir))
+
+    if not os.path.exists(os.path.dirname(args.keyfile)):
+        os.mkdir(os.path.dirname(args.keyfile), mode=_get_masked_mode(args.mode_key_dir))
+
     with open(args.certfile, "wt", encoding="ascii") as certfile, \
             open(args.keyfile, "wt", encoding="ascii") as keyfile:
-        os.chmod(args.keyfile, 0o0600)
+        os.chmod(args.certfile, _get_masked_mode(args.mode_certbundle_files))
+        os.chmod(args.keyfile, _get_masked_mode(args.mode_key_file))
 
         certfile.write(res["data"]["certificate"].strip())
         certfile.write("\n")
@@ -351,6 +408,9 @@ def main() -> None:
         crypto.FILETYPE_PEM,
         res["data"]["issuing_ca"]
     ).get_subject().get_components()
+
+    if args.bundlepath and not os.path.exists(args.bundlepath):
+        os.mkdir(args.bundlepath, mode=args.mode_certs_dir)
 
     for bundlename in xsign_bundles.keys():
         if xsign_bundles[bundlename] is None:
@@ -386,11 +446,13 @@ def main() -> None:
             bundle.write("\n")
 
     if args.output:
+        if not os.path.exists(os.path.dirname(args.output)):
+            os.mkdir(os.path.dirname(args.output), mode=_get_masked_mode(0o755))
         out_target = open(args.output, mode="wt", encoding="utf-8")
         _out("writing output to %s" % args.output)
 
     for bundleref in bundle_vars.keys():
-        # _res goes to stdout or --ourput
+        # _res goes to stdout or --output
         fn = bundleref
         if args.bundlepath and not os.path.isabs(bundleref):
             fn = os.path.join(args.bundlepath, bundleref)
