@@ -32,6 +32,7 @@ class VirtualEnvAssembler(BaseAssembler):
 
         gr_python = parser.add_argument_group("Python ecosystem options")
         gr_python.add_argument("--use-virtualenv", dest="virtualenv_binary", default="/usr/bin/virtualenv",
+                               env_var="VIRTUALENV_EXECUTABLE",
                                help="Set an alternative virtualenv binary to use inside the builder container")
         gr_python.add_argument("--python-binary", dest="python_binary", default="python3",
                                help="Force virtualenv to use a certain Python version (Default: 'python3'). This will "

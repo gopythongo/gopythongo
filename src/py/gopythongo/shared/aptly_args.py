@@ -16,6 +16,7 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
     if not _aptly_shared_args_added:
         gr_aptly_shared = parser.add_argument_group("Aptly shared options (Store and Versioners)")
         gr_aptly_shared.add_argument("--use-aptly", dest="aptly_executable", default="/usr/bin/aptly",
+                                     env_var="APTLY_EXECUTABLE",
                                      help="The full path to the aptly executable to use")
         gr_aptly_shared.add_argument("--aptly-config", dest="aptly_config", default=None, env_var="APTLY_CONFIG",
                                      help="Path to the aptly config file to use")

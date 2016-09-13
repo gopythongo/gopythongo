@@ -21,6 +21,7 @@ class PbuilderBuilder(BaseBuilder):
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_pbuilder = parser.add_argument_group("Pbuilder Builder options")
         gr_pbuilder.add_argument("--use-pbuilder", dest="pbuilder_executable", default="/usr/sbin/pbuilder",
+                                 env_var="PBUILDER_EXECUTABLE",
                                  help="Specify an alternative pbuilder executable")
         gr_pbuilder.add_argument("--basetgz", dest="basetgz", default="/var/cache/pbuilder/base.tgz", env_var="BASETGZ",
                                  help="Cache and reuse the pbuilder base environment. gopythongo will call pbuilder "

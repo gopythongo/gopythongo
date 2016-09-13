@@ -61,6 +61,7 @@ class FPMPacker(BasePacker):
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_fpm = parser.add_argument_group("FPM Packer options")
         gr_fpm.add_argument("--use-fpm", dest="fpm", default="/usr/local/bin/fpm",
+                            env_var="FPM_EXECUTABLE",
                             help="The full path to the fpm executable to use")
         gr_fpm.add_argument("--run-fpm", dest="run_fpm", action="append", metavar="OPTS_FILE",
                             default=[], const=".gopythongo/fpm_opts", nargs="?",

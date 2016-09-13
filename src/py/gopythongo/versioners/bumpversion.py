@@ -22,6 +22,7 @@ class BumpVersioner(BaseVersioner):
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_bv = parser.add_argument_group("Bumpversion Versioner options")
         gr_bv.add_argument("--use-bumpversion", dest="bumpversion_executable", default=None,
+                           env_var="BUMPVERSION_EXECUTABLE",
                            help="Set the path to the bumpversion shellscript. Required if you want to use the "
                                 "bumpversion Versioner.")
         gr_bv.add_argument("--bumpversion-config", dest="bumpversion_config", default=None,
