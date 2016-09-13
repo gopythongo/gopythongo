@@ -16,19 +16,27 @@ def get_assemblers() -> Dict[str, 'BaseAssembler']:
     return _assemblers
 
 
+def get_assemblers_by_type(type: str) -> Dict[str, 'BaseAssembler']:
+    return {k: v for k, v in _assemblers.items() if v.assembler_type == type}
+
+
 def init_subsystem() -> None:
     global _assemblers
 
-    from gopythongo.assemblers import django, virtualenv
+    from gopythongo.assemblers import django, virtualenv, certifybuild
     _assemblers = {
         "django": django.assembler_class(),
         "virtualenv": virtualenv.assembler_class(),
+        "certifybuild": certifybuild.assembler_class(),
     }
 
     plugins.load_plugins("gopythongo.assemblers", _assemblers, "assembler_class", BaseAssembler, "assembler_name")
 
 
 class BaseAssembler(CommandLinePlugin):
+    TYPE_ISOLATED = "isolated"
+    TYPE_PREISOLATION = "preisolation"
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -38,6 +46,14 @@ class BaseAssembler(CommandLinePlugin):
         **@property**
         """
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
+
+    @property
+    def assembler_type(self) -> str:
+        """
+        **@property**
+        """
+        raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_type")
+
 
     def assemble(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assemble")
@@ -78,6 +94,7 @@ def validate_args(args: configargparse.Namespace) -> None:
         raise ErrorMessage("build_path must be an absolute path. %s is not absolute." % highlight(args.build_path))
 
 
-def assemble(args: configargparse.Namespace) -> None:
+def assemble(args: configargparse.Namespace, assembler_type: str) -> None:
     for asm in args.assemblers:
-        _assemblers[asm].assemble(args)
+        if _assemblers[asm].assembler_type == assembler_type:
+            _assemblers[asm].assemble(args)

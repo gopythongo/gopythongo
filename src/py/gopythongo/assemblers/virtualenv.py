@@ -13,6 +13,10 @@ class VirtualEnvAssembler(BaseAssembler):
     def assembler_name(self) -> str:
         return "virtualenv"
 
+    @property
+    def assembler_type(self) -> str:
+        return BaseAssembler.TYPE_ISOLATED
+
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_pip = parser.add_argument_group("PIP Assembler options")
         gr_pip.add_argument("--pip-opts", dest="pip_opts", action="append", default=[], env_var="PIP_OPTS",

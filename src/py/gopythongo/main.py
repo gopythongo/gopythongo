@@ -250,6 +250,7 @@ def route() -> None:
         if not args.is_inner:
             # STEP 1: Start the build, which will execute gopythongo.main --inner for step 2
             versioners.version(args)
+            assemblers.assemble(args, assemblers.BaseAssembler.TYPE_PREISOLATION)
             the_context.save_state()
             builders.build(args)
 
@@ -261,7 +262,7 @@ def route() -> None:
             the_context.read(args.read_state)
             # STEP 2: ... which will land here and execute inside the build environment
             versioners.version(args)
-            assemblers.assemble(args)
+            assemblers.assemble(args, assemblers.BaseAssembler.TYPE_ISOLATED)
             packers.pack(args)
             # write the state to be read in STEP 3 above
             print_debug("Writing state to %s before returning from build environment" %

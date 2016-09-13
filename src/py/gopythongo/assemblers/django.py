@@ -19,6 +19,10 @@ class DjangoAssembler(BaseAssembler):
     def assembler_name(self) -> str:
         return u"django"
 
+    @property
+    def assembler_type(self) -> str:
+        return BaseAssembler.TYPE_ISOLATED
+
     def add_parser(self, parser: configargparse.ArgumentParser) -> None:
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
