@@ -5,7 +5,7 @@ import sys
 import hvac
 import configargparse
 
-from typing import Dict, Sequence, Iterable, Union, Any
+from typing import Dict, Sequence, Iterable, Union, Any, cast, TextIO
 
 from OpenSSL import crypto
 from gopythongo.main import DebugConfigAction
@@ -29,7 +29,7 @@ def _out(*args: Any, **kwargs: Any) -> None:
     print(*args, **kwargs)
 
 
-def _get_masked_mode(mode: Union[int, str]):
+def _get_masked_mode(mode: Union[int, str]) -> int:
     if isinstance(mode, str):
         m = int(mode, base=8)
     else:
@@ -492,7 +492,7 @@ def main() -> None:
     if args.output:
         if not os.path.exists(os.path.dirname(args.output)):
             os.makedirs(os.path.dirname(args.output), mode=_get_masked_mode(0o755), exist_ok=True)
-        out_target = open(args.output, mode="wt", encoding="utf-8")
+        out_target = cast(TextIO, open(args.output, mode="wt", encoding="utf-8"))
         _out("writing output to %s" % args.output)
 
     for bundleref in bundle_vars.keys():

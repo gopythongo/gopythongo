@@ -1,4 +1,6 @@
 # -* encoding: utf-8 *-
+from typing import Type
+
 import configargparse
 
 from gopythongo.assemblers import BaseAssembler
@@ -38,4 +40,4 @@ class CertifyBuildAssembler(BaseAssembler):
               "deployment environment.\n")
 
 
-assembler_class = CertifyBuildAssembler
+assembler_class = CertifyBuildAssembler  # type: Type[CertifyBuildAssembler]
