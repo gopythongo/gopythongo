@@ -100,9 +100,11 @@ class HelpAction(configargparse.Action):
               "    allow_ip_sans=false server_flag=false client_flag=true \\\n"
               "    allow_any_name=true key_type=rsa\n"
               "\n"
-              "# Request a build certificate for a build\n"
+              "# Request a build certificate for a build.\n"
+              "# This is basically what vaultgetcert does! So instead of running this command\n"
+              "# use vaultgetcert :)\n"
               "# We \"hack\" the git hash into a domain name SAN because Vault currently\n"
-              "# doesn't support freetext SANs. This should run in your build scripts.\n"
+              "# doesn't support freetext SANs.\n"
               "vault write pki-dev/issue/build common_name=\"vaultadmin\" \\\n"
               "    alt_names=\"024572834273498734.git\" exclude_cn_from_sans=true\n")
         parser.exit(0)
