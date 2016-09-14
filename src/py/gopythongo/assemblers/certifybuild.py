@@ -4,7 +4,7 @@ from typing import Type
 import configargparse
 
 from gopythongo.assemblers import BaseAssembler
-from gopythongo.utils import create_script_path, run_process, cmdargs_unquote_split
+from gopythongo.utils import create_script_path, run_process, cmdargs_unquote_split, print_info
 from gopythongo.utils.buildcontext import the_context
 
 
@@ -26,6 +26,7 @@ class CertifyBuildAssembler(BaseAssembler):
         pass
 
     def assemble(self, args: configargparse.Namespace) -> None:
+        print_info("Certifying build...")
         cmdargs = [create_script_path(the_context.gopythongo_path, "vaultgetcert")]
         cmdargs += cmdargs_unquote_split(args.vaultgetcert_opts)
         run_process(*cmdargs)
