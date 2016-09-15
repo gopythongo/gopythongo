@@ -26,14 +26,14 @@ class DjangoAssembler(BaseAssembler):
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_django = parser.add_argument_group("Django Assembler options")
-        gr_django.add_argument("--collect-static", dest="collect_static", action="store_true",
+        gr_django.add_argument("--collect-static", dest="collect_static", action="store_true", default=False,
                                help="If set, run 'django-admin.py collectstatic' inside the bundle")
         gr_django.add_argument("--static-relative-paths", dest="static_relative",
                                default=False, action="store_true",
                                help="Write relative paths to the resulting static content .tar.gz archive (UNUSED)")
         gr_django.add_argument("--static-root", dest="static_root", default="static/",
                                help="Where to collect static files from (Django's STATIC_ROOT)")
-        gr_django.add_argument("--assert-static-root-empty", dest="fresh_static", action="store_true",
+        gr_django.add_argument("--assert-static-root-empty", dest="fresh_static", action="store_true", default=False,
                                help="If set, this script will make sure that STATIC_ROOT is empty " +
                                     "before running collectstatic by DELETING it (be careful!)")
         gr_django.add_argument("--django-settings", dest="django_settings_module", default=None,
