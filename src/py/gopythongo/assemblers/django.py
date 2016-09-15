@@ -69,7 +69,7 @@ class DjangoAssembler(BaseAssembler):
 
             with open(args.django_secret_key_file, "wt", encoding="utf-8") as sf:
                 os.chmod(args.django_secret_key_file, get_umasked_mode(0o600))
-                sf.write("SECRET_KEY=\"%s\"\n" % secret)
+                sf.write("SECRET_KEY=%s\n" % secret)
 
         if args.collect_static:
             envpy = utils.create_script_path(args.build_path, "python")
