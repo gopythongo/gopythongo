@@ -26,7 +26,7 @@ class CertifyBuildAssembler(BaseAssembler):
         pass
 
     def assemble(self, args: configargparse.Namespace) -> None:
-        print_info("Certifying build...")
+        print_info("Certifying build with vaultgetcert")
         cmdargs = [create_script_path(the_context.gopythongo_path, "vaultgetcert")]
         cmdargs += cmdargs_unquote_split(args.vaultgetcert_opts)
         run_process(*cmdargs)
