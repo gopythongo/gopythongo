@@ -9,7 +9,7 @@ import configargparse
 
 from gopythongo import utils
 from gopythongo.assemblers import BaseAssembler
-from gopythongo.utils import highlight, ErrorMessage
+from gopythongo.utils import highlight, ErrorMessage, get_umasked_mode
 
 
 class DjangoAssembler(BaseAssembler):
@@ -48,27 +48,36 @@ class DjangoAssembler(BaseAssembler):
                                     "(and/or using the django12factor library).")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        if args.static_outfile or args.collect_static:
-            if not (args.static_outfile and args.collect_static):
-                raise ErrorMessage("%s and %s must be used together" %
-                                   (highlight("--static-out"), highlight("--collect-static")))
+        if args.django_secret_key_file:
+            if os.path.exists(os.path.dirname(args.django_secret_key_file)):
+                if not os.access(os.path.dirname(args.django_secret_key_file), os.W_OK):
+                    raise ErrorMessage("GoPythonGo can't write to %s" % os.path.dirname(args.django_secret_key_file))
+
+                if os.path.exists(args.django_secret_key_file) and not os.access(args.django_secret_key_file, os.W_OK):
+                    raise ErrorMessage("GoPythonGo can't write to %s" % args.django_secret_key_file)
 
     def assemble(self, args: configargparse.Namespace) -> None:
         if args.django_secret_key_file:
-            secret = base64.b64encode(os.urandom(48))
+            utils.print_info("Creating SECRET_KEY configuration for Django in %s" %
+                             utils.highlight(args.django_secret_key_file))
+            if not os.path.exists(os.path.dirname(args.django_secret_key_file)):
+                utils.umasked_makedirs(os.path.dirname(args.django_secret_key_file), 0o755)
+
+            secret = base64.b64encode(os.urandom(48)).decode("utf-8")
             if args.django_settings_module and 'SECRET_KEY' not in os.environ:
                 os.environ['SECRET_KEY'] = secret
 
             with open(args.django_secret_key_file, "wt", encoding="utf-8") as sf:
+                os.chmod(args.django_secret_key_file, get_umasked_mode(0o600))
                 sf.write("SECRET_KEY=\"%s\"\n" % secret)
 
         if args.collect_static:
             envpy = utils.create_script_path(args.build_path, "python")
-            print("Collecting static artifacts")
+            utils.print_info("Collecting static artifacts")
             if os.path.exists(args.static_root):
-                print("    %s exists." % args.static_root)
+                utils.print_debug("    %s exists." % args.static_root)
                 if args.fresh_static:
-                    print("removing stale static artifacts in %s" % args.static_root)
+                    utils.print_info("removing stale static artifacts in %s" % args.static_root)
                     shutil.rmtree(args.static_root)
 
             django_admin = utils.create_script_path(args.build_path, 'django-admin.py')
