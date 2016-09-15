@@ -178,6 +178,19 @@ def cmdargs_unquote_split(arg: str) -> List[str]:
         arg = arg[1:-1]
     return shlex.split(arg)
 
+
+umask = os.umask(0o022)
+os.umask(umask)
+
+
+def get_umasked_mode(mode: int) -> int:
+    return (0o777 ^ umask) & mode
+
+
+def umasked_makedirs(path: str, mode: int) -> None:
+    os.makedirs(path, mode=get_umasked_mode(mode), exist_ok=True)
+
+
 class GoPythonGoEnableSuper(object):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         pass

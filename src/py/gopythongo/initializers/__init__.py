@@ -6,7 +6,7 @@ import os
 from typing import Dict, TextIO, Sequence, Any, cast
 
 from gopythongo.initializers.help import InitializerHelpAction
-from gopythongo.utils import plugins, GoPythonGoEnableSuper, highlight, ErrorMessage
+from gopythongo.utils import plugins, GoPythonGoEnableSuper, highlight, ErrorMessage, get_umasked_mode
 
 _initializers = {}  # type: Dict[str, 'BaseInitializer']
 
@@ -93,9 +93,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
         f = cast(TextIO, io.open(os.path.join(self.configfolder, filename), mode="wt", encoding="utf-8"))
 
         if mode:
-            umask = os.umask(0o022)
-            os.umask(umask)
-            os.chmod(os.path.join(self.configfolder, filename), (0o777 ^ umask) & mode)
+            os.chmod(os.path.join(self.configfolder, filename), get_umasked_mode(mode))
 
         return f
 
