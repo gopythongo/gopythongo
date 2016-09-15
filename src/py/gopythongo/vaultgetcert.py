@@ -530,7 +530,7 @@ def main() -> None:
         fn = bundleref
         if args.bundlepath and not os.path.isabs(bundleref):
             fn = os.path.join(args.bundlepath, bundleref)
-        _res("%s=\"%s\"" %
+        _res("%s=%s" %
              (bundle_vars[bundleref]["envvar"],
               fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
                  if bundle_vars[bundleref]["altpath"] else fn))
@@ -541,7 +541,7 @@ def main() -> None:
         else:
             envvar, altpath = keyvar, None
 
-        _res("%s=\"%s\"" %
+        _res("%s=%s" %
              (envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath)
                  if altpath else args.keyfile))
 
