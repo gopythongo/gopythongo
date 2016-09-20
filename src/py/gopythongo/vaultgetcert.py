@@ -1,4 +1,5 @@
 # -* encoding: utf-8 *-
+import functools
 import os
 import subprocess
 import sys
@@ -17,16 +18,23 @@ umask_cur = os.umask(0o022)
 os.umask(umask_cur)
 
 
-def _res(*args: Any, **kwargs: Any) -> None:
-    if "file" not in kwargs:
-        kwargs["file"] = out_target
-    print(*args, **kwargs)
-
-
 def _out(*args: Any, **kwargs: Any) -> None:
     if "file" not in kwargs:
         kwargs["file"] = sys.stderr
     print(*args, **kwargs)
+
+
+def _result_output(envvar: str, value: str):
+    print("%s=%s" % (envvar, value,), file=out_target)
+
+
+def _result_envdir(envdir: str, envvar: str, value: str):
+    fn = os.path.join(envdir, envvar)
+    _out("writing %s" % fn)
+    with open(fn, mode="wt", encoding="utf-8") as envf:
+        envf.write(value)
+
+_result = _result_output
 
 
 def _get_masked_mode(mode: Union[int, str]) -> int:
@@ -151,7 +159,10 @@ def get_parser() -> configargparse.ArgumentParser:
     )
 
     parser.add_argument("-o", "--output", dest="output", default=None, env_var="VGC_OUTPUT",
-                        help="Direct output to this file (default: stdout). ")
+                        help="Direct output to this file or folder (when in envdir mode). (default: stdout)")
+    parser.add_argument("--envdir", dest="envdir_mode", default=False, action="store_true", env_var="VGC_ENVDIR",
+                        help="When this is set, vaultgetcert will write each environment variable setting into its "
+                             "own file, creating a DJB daemontools compatible envdir.")
     parser.add_argument("--address", dest="vault_address", default="https://vault.local:8200",
                         env_var="VGC_VAULT_URL",
                         help="Vault API base URL (default: https://vault.local:8200/). ")
@@ -383,9 +394,13 @@ def validate_args(args: configargparse.Namespace) -> None:
                  "permissions" % perms)
             sys.exit(1)
 
+    if args.envdir_mode and os.path.exists(args.output) and not os.path.isdir(args.output):
+        _out("* ERR VAULT CERT UTIL *: %s already exists and is not a directory. --envdir requires the output path "
+             "to be a directory or not exist.")
+
 
 def main() -> None:
-    global out_target
+    global out_target, _result
 
     _out("* INF VAULT CERT UTIL *: cwd is %s" % os.getcwd())
     parser = get_parser()
@@ -519,21 +534,25 @@ def main() -> None:
             bundle.write(x509str.strip())
             bundle.write("\n")
 
-    if args.output:
+    if args.output and args.envdir_mode:
+        if not os.path.exists(args.output):
+            os.makedirs(args.output, mode=_get_masked_mode(0o755), exist_ok=True)
+        _result = functools.partial(_result_envdir, args.output)
+        _out("writing envdir to %s" % args.output)
+    elif args.output:
         if not os.path.exists(os.path.dirname(args.output)):
             os.makedirs(os.path.dirname(args.output), mode=_get_masked_mode(0o755), exist_ok=True)
         out_target = cast(TextIO, open(args.output, mode="wt", encoding="utf-8"))
         _out("writing output to %s" % args.output)
 
     for bundleref in bundle_vars.keys():
-        # _res goes to stdout or --output
+        # _result goes to stdout or --output
         fn = bundleref
         if args.bundlepath and not os.path.isabs(bundleref):
             fn = os.path.join(args.bundlepath, bundleref)
-        _res("%s=%s" %
-             (bundle_vars[bundleref]["envvar"],
-              fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
-                 if bundle_vars[bundleref]["altpath"] else fn))
+        _result(bundle_vars[bundleref]["envvar"],
+                fn.replace(os.path.dirname(fn), bundle_vars[bundleref]["altpath"])
+                if bundle_vars[bundleref]["altpath"] else fn)
 
     for keyvar in args.key_envvars:
         if ":" in keyvar:
@@ -541,9 +560,7 @@ def main() -> None:
         else:
             envvar, altpath = keyvar, None
 
-        _res("%s=%s" %
-             (envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath)
-                 if altpath else args.keyfile))
+        _result(envvar, args.keyfile.replace(os.path.dirname(args.keyfile), altpath) if altpath else args.keyfile)
 
     if args.output:
         out_target.close()
