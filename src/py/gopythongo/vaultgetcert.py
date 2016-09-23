@@ -129,7 +129,7 @@ class HelpAction(configargparse.Action):
               "postgresql://vaultadmin:(PASSWORD)@postgresql.local:5432/YourAppDatabase\n"
               "\n"
               "vault write db-YourApplication/roles/fullaccess sql=-\n"
-              "    CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID\n"
+              "    CREATE ROLE \"{{name}}\" WITH LOGIN ENCRYPTED PASSWORD '{{password}}' VALID\n"
               "        UNTIL '{{expiration}}' IN ROLE \"YourAppDBOwner\" INHERIT NOCREATEROLE\n"
               "        NOCREATEDB NOSUPERUSER NOREPLICATION NOBYPASSRLS;\n"
               "\n"
