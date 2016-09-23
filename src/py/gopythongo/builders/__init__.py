@@ -17,8 +17,9 @@ _builders = {}  # type: Dict[str, 'BaseBuilder']
 
 # a list of common dependencies as a convenience
 _dependencies = {
-    "debian/jessie": ["python", "python-pip", "python-dev", "python3-dev", "python-virtualenv",
-                      "virtualenv", "binutils", "libssl-dev", "libffi-dev"]
+    "debian/jessie": ["python3", "python3-pip", "python3-dev", "python3-virtualenv", "libpython3-stdlib",
+                      "virtualenv", "binutils", "libssl-dev", "libffi-dev", "zlib1g-dev", "libpython3-dev",
+                      "libc6-dev", "libc6", "python3.4-dev"]
 }  # type: Dict[str, List[str]]
 
 
