@@ -198,19 +198,20 @@ def main() -> None:
                           args.client_key
                       ) if args.client_cert else None)
 
-    try:
-        if args.client_cert:
-            vcl.auth_tls()
+    if not vcl.is_authenticated():  # client is authenticated if we have a valid token
+        try:
+            if args.client_cert:
+                vcl.auth_tls()
 
-        if args.vault_appid:
-            vcl.auth_app_id(args.vault_appid, args.vault_userid)
-    except RequestException as e:
-        _out("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
-        sys.exit(1)
-    if not vcl.is_authenticated():
-        _out("* ERR VAULT WRAPPER *: vaultwrapper was unable to authenticate with Vault, but no error occured "
-             ":(.")
-        sys.exit(1)
+            if args.vault_appid:
+                vcl.auth_app_id(args.vault_appid, args.vault_userid)
+        except RequestException as e:
+            _out("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
+            sys.exit(1)
+        if not vcl.is_authenticated():
+            _out("* ERR VAULT WRAPPER *: vaultwrapper was unable to authenticate with Vault, but no error occured "
+                 ":(.")
+            sys.exit(1)
 
     try:
         res = vcl.read(args.read_key)
