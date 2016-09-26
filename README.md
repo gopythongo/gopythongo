@@ -120,3 +120,44 @@ Future features
   * Add Docker Store support to build, tag and upload Docker containers
   * Create integration and unittests
   * Add RPM and createrepo support
+
+
+License
+=======
+
+GoPythonGo, meaning:
+
+  1. It's source code as published on https://github.com/gopythongo/gopythongo
+  2. It's documentation as published on https://github.com/gopythongo/gopythongo
+
+is wholly subject to the Mozilla Public License v. 2.0 as published by the Mozilla Foundation and included with this
+source code in the file "LICENSE". You can find a copy of the full license at https://www.mozilla.org/en-US/MPL/2.0/.
+
+```
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2
+
+owGbwMvMwMHYcmwh8703tVcYT79MYgh/uf6QT2Zyal5xKi+XLQTwcvFyuecHVJZk
+5Oe55+so5KYm5mXmpVuBxBUUDPUUPEvUixWK80uLklMVkvNTUhUSixUKSpNyMosz
+UlMU8vMUMkpKCoqt9PXTM0sySpP0kvNz9dPzC8AGpucjMUHmGUHNS8lPLs1NzStJ
+LMkEmkC+ibxcmcUK5Rn5OTmVCsWlSVmpySUKJfkKJRmpCr75VZk5OYkKASCTkxWg
+/lYo0wM6wgDVyqRKFB1u+aV5KVCX5aUoZOYl55SmAJWVA50DVJhZzMuFHB6ZeWDd
+aZk5qQpKPp7Orn7Brkp6CpH5pQrJiXlAcaAZiUClBZUK+WkQpaU5OQo5UAcllsD9
+W15erpcLcYReflG6fmqebmiwvm+Ajz7Qyfp6IO8CI6soMa8EZFIOLCZ10QAvl2Mx
+2J7ifKCTEkuBgVUEDJUGsNsVgD5L1VHwVEhML0pNBQUWzCGIVKAA9H9qEdiIktSi
+3GKYu/EGKdB5ugrBqQUKRuY6CkYGhmYKugpe+XnAgPZNLC0qBQZaJ5MMCwMjBwMb
+KxMwJR5h4OIUgCXPD578/z0W7Jo72f+aqvuyWVOSOr8wxYquDLkXHyTsaMi+x0r2
+wW73X/5ap3l50u+VsYUyVF5+9/Xn7m8PzfzOPzO5u3lSgnVx75UbJWztsznWTP/g
++95NpYxBtf6FUppTT+ItC8f8NMH0n11f37A8Oli7OFqjStZ7Qv6rcwf1fGZfPl65
+54T1loCm9LPCln2VhTeYL8kWhTYVCvw3U3aZK1FY0Vy54ATnP/Wq/OTEzQvuz7H9
+cVTC6KT4Mvbnmq+29y358DpafJuGRPjBrG2KViIWkXMi9/5KdTlUdnBF0cP+yyt8
+MuZcz6s7Xfm49kGEYa54dMm195/LhWZcZMldc+m7/gemNVsUDumtk9q8Z0vkpzX/
+nyaEd5efOea0qMGEPSgkyazSZkVD87oN227OztyyPPloROaCd7kT2By/6n/WtVHf
+wbLyA1vekSAfW9f/qeIOiSrG58tlHvBueLBv7k5vi+p7/9v7/Cvlz2REb72quLfh
+4S3Hun21Ry1jynoqTI3z/xQeeRk3z3VBnK6Tor+bMr9ebMrGQ+s63Xb/VF/tVBeb
+U1FpMU3m31/bvaslpt0tnr9tYTar+PKJd6e3XxHumdd1bcMUTx7r1//bHljHvciM
+tNp4V5CtYf5db5WuwIgHUWlntEsjEperCUiEn+T6my5zn8ti09JtVYcnXli5MHz6
+5poS68ifh5sW8Oqu4Vz+Tus5vynDtoTSlsm6AA==
+=Z94o
+-----END PGP MESSAGE-----
+```

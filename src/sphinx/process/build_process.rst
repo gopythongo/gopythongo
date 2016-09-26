@@ -1,5 +1,9 @@
 .. _process:
 
+.. This Source Code Form is subject to the terms of the Mozilla Public
+   License, v. 2.0. If a copy of the MPL was not distributed with this
+   file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 The development, build and deployment chain
 ===========================================
 
@@ -26,8 +30,8 @@ then execute further steps:
   them in a virtual environment inside the chroot and packaging that virtual environment as a package then
   moving that package into, for example, an apt package repository. Alternatively a Docker container might be
   provisioned with the application and uploaded to a Docker registry.
-* An application build might trigger an automatic deployment build job which uses `Fabric <http://www.fabfile.org/>`_ 
-  or similar toolkits like `mcollective` or `salt` to trigger application servers to download and install the updated 
+* An application build might trigger an automatic deployment build job which uses `Fabric <http://www.fabfile.org/>`_
+  or similar toolkits like `mcollective` or `salt` to trigger application servers to download and install the updated
   packages or containers as well as execute a blue/green deployment strategy.
 
 

@@ -1,5 +1,10 @@
 #!/usr/bin/python
 # -* encoding: utf-8 *-
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 import re
 import sys
 
@@ -60,7 +65,7 @@ setup(
         "Intended Audience :: System Administrators",
         "Environment :: Console",
         "Programming Language :: Python :: 3 :: Only",
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Operating System :: POSIX",
     ],
     author="Jonas Maurus (@jdelic)",

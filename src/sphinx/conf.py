@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -* encoding: utf-8 *-
+
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 #
 # GoPythonGo documentation build configuration file, created by
 # sphinx-quickstart on Mon Jul 27 08:40:42 2015.
