@@ -131,9 +131,12 @@ GoPythonGo, meaning:
   2. It's documentation as published on https://github.com/gopythongo/gopythongo
 
 is wholly subject to the Mozilla Public License v. 2.0 as published by the Mozilla Foundation and included with this
-source code in the file "LICENSE". You can find a copy of the full license at https://www.mozilla.org/en-US/MPL/2.0/.
+source code in the file "LICENSE". You can also find a copy of the full license at
+https://www.mozilla.org/en-US/MPL/2.0/.
 
 ```
+"Grant of license" PGP signature.
+
 -----BEGIN PGP MESSAGE-----
 Version: GnuPG v2
 
