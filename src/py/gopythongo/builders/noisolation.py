@@ -43,12 +43,16 @@ class NoIsolationBuilder(BaseBuilder):
         print("No isolation Builder\n"
               "====================\n"
               "\n"
+              "Run a build without any isolation.\n"
+              "\n"
+              "GoPythonGo can use Pbuilder or Docker to isolate builds. However, many build\n"
+              "servers already isolate builds. Since you can't run containers in containers,\n"
+              "this builder allows GoPythonGo to do its job without isolation.\n"
+              "\n"
               "As the name says, this Builder basically just runs all --after-create arguments\n"
               "and then executes the 'inner' build, i.e. the part of GoPythonGo that would run\n"
               "in a container with other Builders. This will definitely modify the build host's\n"
-              "filesystem. You should only really use this for build servers which already\n"
-              "isolate your builds (like TravisCI) and often don't give you the privileges to\n"
-              "run your own isolation layers anyway.\n")
+              "filesystem.\n")
 
 
 builder_class = NoIsolationBuilder  # type: Type[NoIsolationBuilder]
