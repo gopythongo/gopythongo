@@ -34,9 +34,6 @@ class DockerBuilder(BaseBuilder):
         _docker_args.add_shared_args(parser)
 
         gp_docker = parser.add_argument_group("Docker Builder options")
-        # FIXME: reimplement this using docker-py? docker-py supports streaming so we can output progress
-        gp_docker.add_argument("--use-docker", dest="docker_executable", default="/usr/bin/docker",
-                               help="Specify an alternative Docker client executable.")
         gp_docker.add_argument("--docker-buildfile", dest="docker_buildfile", default=None,
                                help="Specify a Dockerfile to build the the build environment. The build commands will "
                                     "then be executed inside the resulting container. The file is always processed as "
@@ -64,11 +61,6 @@ class DockerBuilder(BaseBuilder):
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _docker_args.validate_shared_args(args)
-
-        if not os.path.exists(args.docker_executable) or not os.access(args.docker_executable, os.X_OK):
-            raise ErrorMessage("docker not found in path or not executable (%s).\n"
-                               "You can specify an alternative path using %s" %
-                               (args.docker_executable, highlight("--use-docker")))
 
         if not args.docker_buildfile:
             raise ErrorMessage("Using the docker builder requires you to specify a Dockerfile template via "
