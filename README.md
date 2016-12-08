@@ -55,7 +55,7 @@ On Debian:
 
         mkdir -p /tmp/helloworld/helloworld
         cat > /tmp/helloworld/helloworld/__init__.py <<EOF
-        # -* encoding: utf-8
+        # -* encoding: utf-8 *-
 
         def main():
             print("hello world!")
