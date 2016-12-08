@@ -9,7 +9,7 @@ import sys
 from typing import Any, Type
 
 from gopythongo.initializers import BaseInitializer
-from gopythongo.utils import highlight
+from gopythongo.utils import highlight, print_error
 
 
 class DockerCopyDockerInitializer(BaseInitializer):
@@ -21,7 +21,7 @@ class DockerCopyDockerInitializer(BaseInitializer):
         return "docker"
 
     def build_config(self) -> None:
-        pass
+        print_error("Not implemented yet :(")
 
     def print_help(self) -> None:
         print("Docker quick start\n"
