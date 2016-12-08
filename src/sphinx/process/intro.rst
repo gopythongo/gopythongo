@@ -105,4 +105,4 @@ GoPythonGo also uses a variety of supporting software to reach its goals:
   * The GoPythonGo build helper tools themselves
   * DjangoPyPi2, a pypi compatible server for serving Python packages
   * The docker registry project to keep pre-built Docker containers
-  * Aptly, the excellent Debian repository management tool by @xxx
+  * Aptly, the excellent Debian repository management tool by `@smira <https://github.com/smira>`_

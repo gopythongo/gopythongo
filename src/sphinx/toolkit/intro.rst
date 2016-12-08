@@ -5,16 +5,16 @@
 GoPythonGo
 ==========
 
-GoPythonGo delivers a build script that helps with realizing a build system that implements
+GoPythonGo delivers a build system that helps with realizing a build system that implements
 `the GoPythonGo build process`
 
-The builder
------------
-The builder is designed to run inside a build environment in which it can
-freely install operating system distribution packages and other build
-artifacts. That means that it should run:
+Premise
+-------
+GoPythonGo is built around 4 ideas:
 
-  * In a chroot, using a tool like pbuilder or
-  * in a dedicated build VM or container (like it's the case on TravisCI or
-    CircleCI).
+ 1. Python applications should always be run from a virtual environment.
+ 2. Builds should be as fast as possible, so Python Wheels should be used and should be cached.
+ 3. Applications should be deployed using manageable binary artifacts, like DEBs, RPMs or Docker containers and it
+    should be easy to switch between their type.
+ 4. The binary artifacts should be as small as possible.
 
