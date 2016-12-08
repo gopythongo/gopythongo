@@ -259,7 +259,7 @@ def route() -> None:
             the_context.save_state()
             builders.build(args)
 
-            # STEP 3: After the 2nd gopythongo process is finished, we end up here
+            # STEP 3: After the inner, 2nd gopythongo process is finished, we end up here
             the_context.load_state()
             stores.store(args)
         else:

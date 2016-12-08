@@ -9,6 +9,14 @@ include a slide with a diagram that looks something like this:
 GoPythonGo is a opinionated, extensible, well-structured and highly configurable implementation of the arrow
 that says "magic".
 
+GoPythonGo is built around 4 ideas:
+
+  1. Python applications should always be run from a virtual environment.
+  2. Builds should be as fast as possible, so Python Wheels should be used and should be cached.
+  3. Applications should be deployed using manageable binary artifacts, like DEBs, RPMs or Docker containers and it
+     should be easy to switch between their type.
+  4. The binary artifacts should be as small as possible.
+
 **This is still under very active development.** Currently you can use it to build .deb packages to deploy virtual
 environments using Apt. It will use pbuilder or Docker to do so, it can auto-increment your version strings or integrate
 with other tools that do that, it can integrate with aptly to publish your packages to your server or Amazon S3. It
@@ -16,10 +24,11 @@ includes tools to integrate with Hashicorp Vault for secure package signing usin
 SSL credential management. BUT, it's still changing all the time. That said, GoPythonGo is used to distribute
 GoPythonGo, so there.
 
+
 Basic philosophy
 ----------------
-GoPythonGo is built to allow you to put things where they make the most sense. In practice, this means that the
-command-line tool takes it's parameters from three sources: a configuration file, environment variables and
+GoPythonGo is built to allow you to put build configuration where it makes the most sense. In practice, this means 
+that the command-line tool takes it's parameters from three sources: a configuration file, environment variables and
 command-line parameters. This way, keep the configuration for *how to build* with your code in a checked-in config
 file, but the configuration for *assembling* your build on your build server server in environment variables or on
 the command-line or a second configuration file that will be merged.
