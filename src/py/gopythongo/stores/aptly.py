@@ -75,7 +75,7 @@ class AptlyStore(BaseStore):
                                  "protection. Using the command-line parameter however will expose the passphrase to "
                                  "every user on the system. You're better of passing --passphrase-file to aptly via "
                                  "--aptly-publish-opts in that case. The most secure option would be to use "
-                                 "--use-aptly-wrapper.")
+                                 "--use-aptly-vault-wrapper.")
         gp_ast.add_argument("--use-aptly-vault-wrapper", dest="use_aptly_wrapper", env_var="APTLY_USE_WRAPPER",
                             default=False, action="store_true",
                             help="When you set this, GoPythonGo will not directly invoke aptly to publish or update "
@@ -83,7 +83,7 @@ class AptlyStore(BaseStore):
                                  "'aptly' mode, which can be configured by environment variables or its own "
                                  "configuration file or both (Default: .gopythongo/vaultwrapper). This program will "
                                  "load the GnuPG signing passphrase for aptly-managed repos from Hashicorp Vault. You "
-                                 "can find out more by running 'vault_wraper --help'.")
+                                 "can find out more by running 'vaultwrapper --help'.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         _aptly_args.validate_shared_args(args)
