@@ -28,17 +28,17 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 
 _requirements = [
     'Jinja2==2.8',
-    'ConfigArgParse==0.9.3',
-    'Sphinx==1.3.1',
+    'ConfigArgParse==0.11.0',
+    'Sphinx==1.5.1',
     'sphinx-rtd-theme==0.1.9',
     'colorama==0.3.7',
-    'semantic_version==2.5.0',
-    'packaging==16.6',
+    'semantic-version==2.6.0',
+    'packaging==16.8',
     'typing==3.5.2.2',
-    'hvac==0.2.16',
-    'docker-py==1.9.0',
+    'hvac==0.2.17',
+    'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==16.1.0',
+    'pyopenssl==16.2.0',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
