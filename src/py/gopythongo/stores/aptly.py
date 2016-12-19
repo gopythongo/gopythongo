@@ -235,6 +235,8 @@ class AptlyStore(BaseStore):
                                        highlight(args.aptly_publish_endpoint))
                             cmd = "update"
 
+            cmdline += [cmd,]
+
             if args.aptly_passphrase:
                 # save the passphrase to a temporary file for aptly to read so we don't expose the passphrase on
                 # the process list
