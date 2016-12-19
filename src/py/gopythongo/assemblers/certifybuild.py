@@ -25,10 +25,9 @@ class CertifyBuildAssembler(BaseAssembler):
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gp_cert = parser.add_argument_group("Certify build options")
-        gp_cert = parser.add_argument("--vaultgetcert-config", dest="vaultgetcert_config",
-                                      default=None,
-                                      env_var="CERTIFYBUILD_CONFIG",
-                                      help="Specify a config file for vaultgetcert.")
+        gp_cert.add_argument("--vaultgetcert-config", dest="vaultgetcert_config", default=None,
+                             env_var="CERTIFYBUILD_CONFIG",
+                             help="Specify a config file for vaultgetcert.")
         gp_cert.add_argument("--vaultgetcert-opts", dest="vaultgetcert_opts", default="",
                              env_var="CERTIFYBUILD_OPTS",
                              help="Specify arguments for the execution of vaultgetcert.")
