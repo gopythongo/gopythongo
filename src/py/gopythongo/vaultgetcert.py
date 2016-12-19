@@ -531,7 +531,7 @@ def main() -> None:
 
         fn = bundlename
         if args.bundlepath and not os.path.isabs(bundlename):
-            fn = os.path.join(args.bundlepath, bundlename)
+            fn = os.path.join(args.bundlepath, os.path.basename(bundlename))
 
         with open(fn, "wt", encoding="ascii") as bundle:
             _out("* INF VAULT CERT UTIL *: Creating bundle %s" % fn)
