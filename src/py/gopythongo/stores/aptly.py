@@ -251,7 +251,7 @@ class AptlyStore(BaseStore):
             # when publishing the repo for the first time we need to add the -distribution flag
             if cmd == "repo":
                 cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
-                cmdline += ["-distribution", args.aptly_distribution]
+                cmdline += ["-distribution=%s" % args.aptly_distribution]
                 cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
             else:
                 cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
