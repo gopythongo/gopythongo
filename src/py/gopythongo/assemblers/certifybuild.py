@@ -60,7 +60,11 @@ class CertifyBuildAssembler(BaseAssembler):
               "\n"
               "It is good practice to configure this so your build server provides\n"
               "configuration files for your individual Vault-backed CAs and passes them into\n"
-              "the builds using the CERTIFYBUILD_CONFIG environment variable.\n")
+              "the builds using the CERTIFYBUILD_CONFIG environment variable.\n"
+              "\n"
+              "Alternatively, you can also jsut standardize your build environments and\n"
+              "certification Vault instances to a point where one vaultgetcert configuration\n"
+              "file fits your need and you can include it into your SCM.\n")
 
 
 assembler_class = CertifyBuildAssembler  # type: Type[CertifyBuildAssembler]
