@@ -35,7 +35,7 @@ def _result_output(envvar: str, value: str):
 
 def _result_envdir(envdir: str, envvar: str, value: str):
     fn = os.path.join(envdir, envvar)
-    _out("writing %s" % fn)
+    _out("writing %s=%s" % (envvar, fn))
     with open(fn, mode="wt", encoding="utf-8") as envf:
         envf.write(value)
 
@@ -384,6 +384,8 @@ def validate_args(args: configargparse.Namespace) -> None:
         if bundleref not in xsign_bundles.keys():
             _out("* ERR VAULT CERT UTIL *: --output-bundle-envvar argument %s references a bundle name %s which has "
                  "not been specified as an argument to --xsign-cacert." % (benvspec, bundleref))
+
+        _out("* INF VAULT CERT UTIL *: registered environment %s" % envvar)
 
         bundle_vars[bundleref] = {
             "envvar": envvar,
