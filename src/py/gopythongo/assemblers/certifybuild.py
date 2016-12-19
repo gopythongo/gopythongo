@@ -35,11 +35,11 @@ class CertifyBuildAssembler(BaseAssembler):
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         if args.vaultgetcert_config:
-            if not os.path.exists(args.vaultgetcert_config) or
-               not os.path.isfile(args.vaultgetcert_config) or
-               not os.access(args.vaultgetcert_config, os.R_OK):
-               raise ErrorMessage("%s is not a file or not readable for gopythongo (%s)" %
-                                  (highlight(args.vaultgetcert_config), highlight("--vaultgetcert-config")))
+            if not os.path.exists(args.vaultgetcert_config) or \
+                    not os.path.isfile(args.vaultgetcert_config) or \
+                    not os.access(args.vaultgetcert_config, os.R_OK):
+                raise ErrorMessage("%s is not a file or not readable for gopythongo (%s)" %
+                                   (highlight(args.vaultgetcert_config), highlight("--vaultgetcert-config")))
 
     def assemble(self, args: configargparse.Namespace) -> None:
         print_info("Certifying build with vaultgetcert")
