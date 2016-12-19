@@ -232,7 +232,7 @@ def main() -> None:
     passphrase = res['data']['value']
 
     if args.wrap_mode == "aptly":
-        cmdline = [args.wrap_program, "--passphrase-file", "/dev/stdin"] + wrapped_args
+        cmdline = [args.wrap_program, "-passphrase-file", "/dev/stdin"] + wrapped_args
     else:
         cmdline = [args.wrap_program] + wrapped_args
 
