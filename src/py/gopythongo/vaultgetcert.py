@@ -375,6 +375,7 @@ def validate_args(args: configargparse.Namespace) -> None:
         if "=" not in benvspec:
             _out("* ERR VAULT CERT UTIL *: each --output-bundle-envvar must be formed as 'envvar=bundlename[:altpath]' "
                  "with altpath being optional. %s is not." % benvspec)
+            sys.exit(1)
         envvar, bundlespec = benvspec.split("=", 1)
         if ":" in bundlespec:
             bundleref, altpath = bundlespec.split(":", 1)
@@ -384,6 +385,7 @@ def validate_args(args: configargparse.Namespace) -> None:
         if bundleref not in xsign_bundles.keys():
             _out("* ERR VAULT CERT UTIL *: --output-bundle-envvar argument %s references a bundle name %s which has "
                  "not been specified as an argument to --xsign-cacert." % (benvspec, bundleref))
+            sys.exit(1)
 
         _out("* INF VAULT CERT UTIL *: registered environment %s" % envvar)
 
