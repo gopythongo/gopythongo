@@ -33,7 +33,7 @@ class DjangoAssembler(BaseAssembler):
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true", default=False,
                                help="If set, run 'django-admin.py collectstatic' inside the bundle")
-        gr_django.add_argument("--static-root", dest="static_root", default="static/",
+        gr_django.add_argument("--static-root", dest="static_root", default=None,
                                help="Where to collect static files from (Django's STATIC_ROOT)")
         gr_django.add_argument("--assert-static-root-empty", dest="fresh_static", action="store_true", default=False,
                                help="If set, this script will make sure that STATIC_ROOT is empty " +
@@ -81,7 +81,7 @@ class DjangoAssembler(BaseAssembler):
         if args.collect_static:
             envpy = utils.create_script_path(args.build_path, "python")
             utils.print_info("Collecting static artifacts")
-            if os.path.exists(args.static_root):
+            if args.static_root and os.path.exists(args.static_root):
                 utils.print_debug("    %s exists." % args.static_root)
                 if args.fresh_static:
                     utils.print_info("removing stale static artifacts in %s" % args.static_root)
@@ -95,7 +95,7 @@ class DjangoAssembler(BaseAssembler):
             run_dja.append("--traceback")
             utils.run_process(*run_dja)
 
-            if not os.path.exists(args.static_root):
+            if args.static_root and not os.path.exists(args.static_root):
                 raise ErrorMessage("%s should now exist, but it doesn't" % args.static_root)
 
 
