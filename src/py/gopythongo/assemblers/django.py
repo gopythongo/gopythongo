@@ -58,6 +58,11 @@ class DjangoAssembler(BaseAssembler):
                 if os.path.exists(args.django_secret_key_file) and not os.access(args.django_secret_key_file, os.W_OK):
                     raise ErrorMessage("GoPythonGo can't write to %s" % args.django_secret_key_file)
 
+        if args.collect_static:
+            if not args.django_settings_module:
+                raise ErrorMessage("%s requires %s, you must specify the module path of your settings module" %
+                                   (highlight("--collect-static"), highlight("--django-settings")))
+
     def assemble(self, args: configargparse.Namespace) -> None:
         if args.django_secret_key_file:
             utils.print_info("Creating SECRET_KEY configuration for Django in %s" %
