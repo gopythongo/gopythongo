@@ -39,6 +39,7 @@ _requirements = [
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
     'pyopenssl==16.2.0',
+    'bumpversion==0.5.3',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
