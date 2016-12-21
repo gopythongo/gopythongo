@@ -11,13 +11,15 @@ import configargparse
 
 from typing import Any, Type
 
-from gopythongo.utils import highlight, ErrorMessage, run_process, cmdargs_unquote_split
+from gopythongo.utils import highlight, ErrorMessage, run_process, cmdargs_unquote_split, create_script_path
+from gopythongo.utils.buildcontext import the_context
 from gopythongo.versioners import BaseVersioner
 
 
 class BumpVersioner(BaseVersioner):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
+        self.bumpversion_executable = None  # type: str
 
     @property
     def versioner_name(self) -> str:
@@ -28,7 +30,7 @@ class BumpVersioner(BaseVersioner):
         gr_bv.add_argument("--use-bumpversion", dest="bumpversion_executable", default=None,
                            env_var="BUMPVERSION_EXECUTABLE",
                            help="Set the path to the bumpversion shellscript. Required if you want to use the "
-                                "bumpversion Versioner.")
+                                "bumpversion Versioner. By default GoPythonGo will use the version it shipped with.")
         gr_bv.add_argument("--bumpversion-config", dest="bumpversion_config", default=None,
                            help="Set the path to a bumpversion config file to use.")
         gr_bv.add_argument("--bumpversion-part", dest="bumpversion_part", default=None,
@@ -40,6 +42,9 @@ class BumpVersioner(BaseVersioner):
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         if not args.bumpversion_executable:
+            bv_cmd = create_script_path(the_context.gopythongo_path, "bumpversion")
+            if os.path.exists(bv_cmd) and os.access(bv_cmd, os.X_OK):
+                self.bumpversion_executable = bv_cmd
             raise ErrorMessage("To use the bumpversion Versioner, you must set %s to the bumpversion executable" %
                                highlight("--use-bumpversion"))
 
@@ -60,7 +65,7 @@ class BumpVersioner(BaseVersioner):
         return True
 
     def read(self, args: configargparse.Namespace) -> str:
-        bumpcmd = [args.bumpversion_executable, "--list"]
+        bumpcmd = [self.bumpversion_executable, "--list"]
 
         if args.bumpversion_config:
             bumpcmd += ["--config-file", args.bumpversion_config]
