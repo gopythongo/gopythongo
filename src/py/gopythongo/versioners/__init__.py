@@ -29,7 +29,7 @@ def get_version_parsers() -> Dict[str, BaseVersionParser]:
 
 def init_subsystem() -> None:
     global _versioners, _version_parsers
-    from gopythongo.versioners import aptly, pymodule, bumpversion, static
+    from gopythongo.versioners import aptly, pymodule, bumpversion, static, searchfile
     from gopythongo.versioners.parsers import regexparser, semverparser, debianparser, pep440parser
 
     _versioners = {
@@ -37,6 +37,7 @@ def init_subsystem() -> None:
         "pymodule": pymodule.versioner_class(),
         "bumpversion": bumpversion.versioner_class(),
         "static": static.versioner_class(),
+        "searchfile": searchfile.versioner_class(),
     }
 
     _version_parsers = {
