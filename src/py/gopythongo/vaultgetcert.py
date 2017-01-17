@@ -205,7 +205,9 @@ def get_parser() -> configargparse.ArgumentParser:
                                "key as the issuer certificate returned by Vault. It will then create a bundle "
                                "(concatenated PEM file) for each xsign-cacert with the specified name. MUST be used "
                                "together with --xsign-bundle-path. You can specify an absolute path for bundlename in "
-                               "which case --xsign-bundle-path will not be used for that bundlename.")
+                               "which case --xsign-bundle-path will not be used for that bundlename. This option has "
+                               "hacky support for multiple values in its environment variable. You can specify "
+                               "multiple comma-separated values.")
     gp_xsign.add_argument("--issuer-bundle", dest="issuer_bundle", default=None,
                           help="The argument for this is the bundlename for the issuer certificate returned by Vault. "
                                "That bundlename will be handled like --xsign-cacert bundlenames. It can also be used "
@@ -351,6 +353,9 @@ def validate_args(args: configargparse.Namespace) -> None:
         sys.exit(1)
 
     for xcertspec in args.xsigners:
+        if "," in xcertspec:
+            xcertspec, y = xcertspec.split(",", 1)[0].strip(), xcertspec.split(",", 1)[1].strip()
+            args.xsigners += [y]
         if "=" not in xcertspec:
             _out("* ERR VAULT CERT UTIL *: each --xsign-cacert argument must be formed as 'bundlename=certificate'. "
                  "%s is not." % xcertspec)
@@ -473,10 +478,18 @@ def main() -> None:
              str(res))
 
     if not os.path.exists(os.path.dirname(args.certfile)):
+        _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(args.certfile))
         os.makedirs(os.path.dirname(args.certfile), mode=_get_masked_mode(args.mode_certs_dir), exist_ok=True)
 
     if not os.path.exists(os.path.dirname(args.keyfile)):
+        _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(args.keyfile))
         os.makedirs(os.path.dirname(args.keyfile), mode=_get_masked_mode(args.mode_key_dir), exist_ok=True)
+
+    for bundlename in xsign_bundles.keys():
+        if not os.path.exists(os.path.dirname(bundlename)):
+            _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(bundlename))
+            os.makedirs(os.path.dirname(bundlename), mode=_get_masked_mode(args.mode_certs_dir),
+                        exist_ok=True)
 
     with open(args.certfile, "wt", encoding="ascii") as certfile, \
             open(args.keyfile, "wt", encoding="ascii") as keyfile:
@@ -509,7 +522,7 @@ def main() -> None:
     ).get_subject().get_components()
 
     if args.bundlepath and not os.path.exists(args.bundlepath):
-        os.makedirs(args.bundlepath, mode=args.mode_certs_dir, exist_ok=True)
+        os.makedirs(args.bundlepath, mode=_get_masked_mode(args.mode_certs_dir), exist_ok=True)
 
     for bundlename in xsign_bundles.keys():
         if xsign_bundles[bundlename] is None:
