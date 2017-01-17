@@ -25,28 +25,32 @@ class CertifyBuildAssembler(BaseAssembler):
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gp_cert = parser.add_argument_group("Certify build options")
-        gp_cert.add_argument("--vaultgetcert-config", dest="vaultgetcert_config", default=None,
+        gp_cert.add_argument("--vaultgetcert-config", dest="vaultgetcert_config", default=[], action="append",
                              env_var="CERTIFYBUILD_CONFIG",
-                             help="Specify a config file for vaultgetcert.")
+                             help="Specify one or more config files for vaultgetcert.")
         gp_cert.add_argument("--vaultgetcert-opts", dest="vaultgetcert_opts", default="",
                              env_var="CERTIFYBUILD_OPTS",
                              help="Specify arguments for the execution of vaultgetcert.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         if args.vaultgetcert_config:
-            if not os.path.exists(args.vaultgetcert_config) or \
-                    not os.path.isfile(args.vaultgetcert_config) or \
-                    not os.access(args.vaultgetcert_config, os.R_OK):
-                raise ErrorMessage("%s is not a file or not readable for gopythongo (%s)" %
-                                   (highlight(args.vaultgetcert_config), highlight("--vaultgetcert-config")))
+            for cfg in args.vaultgetcert_config:
+                if not os.path.exists(cfg) or not os.path.isfile(cfg) or not os.access(cfg, os.R_OK):
+                    raise ErrorMessage("%s is not a file or not readable for gopythongo (%s)" %
+                                       (highlight(cfg), highlight("--vaultgetcert-config")))
 
     def assemble(self, args: configargparse.Namespace) -> None:
-        print_info("Certifying build with vaultgetcert")
         cmdargs = [create_script_path(the_context.gopythongo_path, "vaultgetcert")]
         if args.vaultgetcert_config:
-            cmdargs += ["-c", args.vaultgetcert_config]
-        cmdargs += cmdargs_unquote_split(args.vaultgetcert_opts)
-        run_process(*cmdargs)
+            for ix, cfg in enumerate(args.vaultgetcert_config):
+                print_info("Certifying build with vaultgetcert %s/%s" % (ix + 1, len(args.vaultgetcert_config)))
+                cmd = cmdargs + ["-c", cfg]
+                cmd += cmdargs_unquote_split(args.vaultgetcert_opts)
+                run_process(*cmd)
+        else:
+            print_info("Certifying build with vaultgetcert")
+            cmd = cmdargs + cmdargs_unquote_split(args.vaultgetcert_opts)
+            run_process(*cmd)
 
     def print_help(self) -> None:
         print("Certify build Assembler\n"
