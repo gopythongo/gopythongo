@@ -477,16 +477,16 @@ def main() -> None:
              "(data->certificate,private_key). Returned dict was:\n%s" %
              str(res))
 
-    if not os.path.exists(os.path.dirname(args.certfile)):
+    if os.path.dirname(args.certfile) != "" and not os.path.exists(os.path.dirname(args.certfile)):
         _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(args.certfile))
         os.makedirs(os.path.dirname(args.certfile), mode=_get_masked_mode(args.mode_certs_dir), exist_ok=True)
 
-    if not os.path.exists(os.path.dirname(args.keyfile)):
+    if os.path.dirname(args.keyfile) != "" and not os.path.exists(os.path.dirname(args.keyfile)):
         _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(args.keyfile))
         os.makedirs(os.path.dirname(args.keyfile), mode=_get_masked_mode(args.mode_key_dir), exist_ok=True)
 
     for bundlename in xsign_bundles.keys():
-        if not os.path.exists(os.path.dirname(bundlename)):
+        if os.path.dirname(bundlename) != "" and not os.path.exists(os.path.dirname(bundlename)):
             _out("* INF VAULT CERT UTIL *: Creating folder %s" % os.path.dirname(bundlename))
             os.makedirs(os.path.dirname(bundlename), mode=_get_masked_mode(args.mode_certs_dir),
                         exist_ok=True)
