@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import tempfile
+import re
 
 from typing import Dict, Any, List
 
@@ -53,6 +54,29 @@ class ProcessedStringWithTemplates(GoPythonGoEnableSuper):
         self.original = original  # type: str
         self.format_str = format_str  # type: str
         self.templates = templates or []  # type: List[str]
+
+
+def strip_comments(instr: str) -> str:
+    """
+    Remove comments in the style of '# to the end of the line is a comment'.
+    :param input: the string to strip
+    :return: the string without comments
+    """
+    if '#' not in instr:
+        return instr
+
+    # blatantly copied from
+    # http://stackoverflow.com/questions/17791143/removing-hash-comments-that-are-not-inside-quotes
+    stripre = re.compile(r'(?:"(?:[^"\\]|\\.)*"|[^"#])*(#|$)')
+
+    # the following list comprehension removes lines that are empty after comment removal, but leaves input newlines
+    # alone if they didn't contain a comment in the first place, preserving whitespace.
+    stripped = [
+        line[:stripre.match(line).start(1)].strip() for line in instr.split("\n")
+            if "#" in line and line[:stripre.match(line).start(1)].strip() != "" or "#" not in line
+        ]
+
+    return "\n".join(stripped)
 
 
 def parse_template_prefixes(input: str) -> ProcessedStringWithTemplates:

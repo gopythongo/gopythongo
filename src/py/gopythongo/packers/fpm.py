@@ -109,9 +109,9 @@ class FPMPacker(BasePacker):
             opts = f.readlines()
 
         if process_templates:
-            for ix in range(0, len(opts)):
-                opts[ix] = opts[ix].strip()
-                pswt = template.parse_template_prefixes(opts[ix])
+            for ix, line in enumerate(opts):
+                opts[ix] = template.strip_comments(line).strip()
+                pswt = template.parse_template_prefixes(line)
                 if pswt:
                     tplfn = []  # type: List[str]
                     for tpl in pswt.templates:
