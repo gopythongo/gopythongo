@@ -224,7 +224,7 @@ def main() -> None:
         _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
         sys.exit(1)
 
-    if "data" not in res or "value" not in res["data"]:
+    if res is None or "data" not in res or "value" not in res["data"]:
         _out("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
              "dict was:\n%s" %
               str(res))
