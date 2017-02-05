@@ -15,8 +15,8 @@ aptly-distribution=jessie
 aptly-publish-opts="-config=/etc/aptly/aptly.conf -architectures=amd64 -keyring=/etc/gpg-managed-keyring/pubring.gpg -secret-keyring=/etc/gpg-managed-keyring/secring.gpg -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF"
 aptly-publish-endpoint=s3:gopythongo:nightly
 
-versioner=pymodule
-pymodule-read=gopythongo.version
+versioner=searchfile
+pymodule-read=src/py/gopythongo/__init__.py
 version-parser=pep440
 version-action=bump-revision
 
