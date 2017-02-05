@@ -16,7 +16,7 @@ aptly-publish-opts="-config=/etc/aptly/aptly.conf -architectures=amd64 -keyring=
 aptly-publish-endpoint=s3:gopythongo:nightly
 
 versioner=searchfile
-pymodule-read=src/py/gopythongo/__init__.py
+search-version-in=src/py/gopythongo/__init__.py
 version-parser=pep440
 version-action=bump-revision
 
