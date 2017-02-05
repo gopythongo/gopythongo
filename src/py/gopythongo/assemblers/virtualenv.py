@@ -59,6 +59,13 @@ class VirtualEnvAssembler(BaseAssembler):
                                (args.virtualenv_binary, highlight("--use-virtualenv")))
 
     def assemble(self, args: configargparse.Namespace) -> None:
+        print_info("Initializing virtualenv in %s" % args.build_path)
+        venv = [args.virtualenv_binary]
+        if args.python_binary:
+            venv += ["-p", args.python_binary]
+        venv += [args.build_path]
+        run_process(*venv)
+
         pip_binary = create_script_path(args.build_path, "pip")
         run_pip = [pip_binary, "install"]
         if args.pip_opts:
@@ -67,13 +74,6 @@ class VirtualEnvAssembler(BaseAssembler):
         if args.upgrade_pip:
             print_info("Making sure that pip and virtualenv are up to date")
             run_process(*run_pip + ["--upgrade", "pip", "virtualenv"])
-
-        print_info("Initializing virtualenv in %s" % args.build_path)
-        venv = [args.virtualenv_binary]
-        if args.python_binary:
-            venv += ["-p", args.python_binary]
-        venv += [args.build_path]
-        run_process(*venv)
 
         print_info("Installing pip packages")
         if args.packages:
