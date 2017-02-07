@@ -11,7 +11,7 @@ import sys
 import hvac
 import configargparse
 
-from typing import Dict, Sequence, Iterable, Union, Any, cast, TextIO
+from typing import Dict, Sequence, Iterable, Union, Any, cast, TextIO, Callable
 
 from OpenSSL import crypto
 from gopythongo.main import DebugConfigAction
@@ -29,17 +29,17 @@ def _out(*args: Any, **kwargs: Any) -> None:
     print(*args, **kwargs)
 
 
-def _result_output(envvar: str, value: str):
+def _result_output(envvar: str, value: str) -> None:
     print("%s=%s" % (envvar, value,), file=out_target)
 
 
-def _result_envdir(envdir: str, envvar: str, value: str):
+def _result_envdir(envdir: str, envvar: str, value: str) -> None:
     fn = os.path.join(envdir, envvar)
     _out("writing %s=%s" % (envvar, fn))
     with open(fn, mode="wt", encoding="utf-8") as envf:
         envf.write(value)
 
-_result = _result_output
+_result = _result_output  # type: Callable[..., None]
 
 
 def _get_masked_mode(mode: Union[int, str]) -> int:
@@ -560,7 +560,7 @@ def main() -> None:
     if args.output and args.envdir_mode:
         if not os.path.exists(args.output):
             os.makedirs(args.output, mode=_get_masked_mode(0o755), exist_ok=True)
-        _result = functools.partial(_result_envdir, args.output)
+        _result = cast(Callable[..., None], functools.partial(_result_envdir, args.output))
         _out("writing envdir to %s" % args.output)
     elif args.output:
         if not os.path.exists(os.path.dirname(args.output)):
