@@ -18,7 +18,7 @@ from typing import List, Tuple, Union, Any, Type, Callable
 class InvalidDebianVersionString(Exception):
     def __init__(self, msg: str, *args: Any) -> None:
         message = "%s\nPlease see https://www.debian.org/doc/debian-policy/ch-controlfields.html for details." % msg
-        self.args = ([message] + list(args)) if msg else args
+        self.passed_args = ([message] + list(args)) if msg else list(args)  # type: List[Any]
 
 
 def debian_substr_compare(a: str, b: str) -> int:
