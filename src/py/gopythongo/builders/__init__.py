@@ -24,7 +24,10 @@ _builders = {}  # type: Dict[str, 'BaseBuilder']
 _dependencies = {
     "debian/jessie": ["python3", "python3-pip", "python3-dev", "python3-virtualenv", "libpython3-stdlib",
                       "virtualenv", "binutils", "libssl-dev", "libffi-dev", "zlib1g-dev", "libpython3-dev",
-                      "libc6-dev", "libc6", "python3.4-dev"]
+                      "libc6-dev", "libc6", "python3.4-dev"],
+    "debian/stretch": ["python3", "python3-pip", "python3-dev", "python3-virtualenv", "libpython3-stdlib",
+                       "virtualenv", "binutils", "libssl-dev", "libffi-dev", "zlib1g-dev", "libpython3-dev",
+                       "libc6-dev", "libc6", "python3.5-dev"],
 }  # type: Dict[str, List[str]]
 
 
