@@ -45,7 +45,7 @@ On Debian:
 
   2. Install GoPythonGo, [aptly](https://aptly.info), pbuilder and fpm. As `root`:
 
-        echo "deb http://repo.gopythongo.com/nightly jessie main" > /etc/apt/sources.list.d/gopythongo.list
+        echo "deb http://repo.gopythongo.com/nightly/stretch gopythongo main" > /etc/apt/sources.list.d/gopythongo.list
         echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
         apt-get update
         apt-get --no-install-recommends install gopythongo aptly pbuilder ruby ruby-dev
