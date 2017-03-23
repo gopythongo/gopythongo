@@ -12,7 +12,7 @@ from gopythongo.initializers import BaseInitializer
 from gopythongo.utils import highlight, success
 
 configtpl = """builder=pbuilder
-distribution=jessie
+distribution=stretch
 
 # if you use your own package mirror, you MUST add the Debian release keys to
 # /etc/apt/trusted.gpg first, otherwise debootstrap will be unable to
@@ -30,7 +30,7 @@ packer=fpm
 
 store=aptly
 repo=mypackage
-aptly-distribution=jessie
+aptly-distribution=stretch
 # To sign your own packages and publish them on your own APT repository, you
 # should create a signing keypair, like this:
 #   gpg --no-default-keyring --keyring /root/mypackage_sign_pub.gpg --secret-keyring /root/mypackage_sign_secret.gpg --gen-key
