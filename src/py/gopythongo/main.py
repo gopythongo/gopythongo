@@ -238,6 +238,7 @@ def route() -> None:
     if len(sys.argv) > 1:
         args = get_parser().parse_args()
         atexit.register(_cleanup_tempfiles, args)
+        break_handlers["cleanup-tempfiles"] = lambda: _cleanup_tempfiles(args)
         init_color(args.no_color)
 
         validate_args(args)
