@@ -121,9 +121,12 @@ def get_parser() -> configargparse.ArgumentParser:
                         help="Select a mode of operation. 'aptly' will append '-passphrase-file /dev/stdin' to the "
                              "wrapped program's parameters and output the passphrase twice, because aptly requires "
                              "that for package signing.")
-    parser.add_argument("--read-key", dest="read_key", default=None, required=True,
-                        env_var="VAULTWRAPPER_READ_KEY",
-                        help="The key path to read from Vault. The value found there will be used as the passphrase.")
+    parser.add_argument("--read-path", dest="read_path", default=None, required=True,
+                        env_var="VAULTWRAPPER_READ_PATH",
+                        help="The path to read from Vault. vaultwrapper will look for a key 'passphrase' under this "
+                             "path.")
+    parser.add_argument("--field", dest="read_field", default="passphrase", env_var="VAULTWRAPPER_FIELD",
+                        help="The key to read from the specified path.")
     parser.add_argument("--help-policies", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultwrapper.")
     parser.add_argument("--debug-config", action=DebugConfigAction)
@@ -219,17 +222,18 @@ def main() -> None:
             sys.exit(1)
 
     try:
-        res = vcl.read(args.read_key)
+        res = vcl.read(args.read_path)
     except RequestException as e:
-        _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_key, str(e)))
+        _out("* ERR VAULT WRAPPER *: Unable to read Vault path %s. (%s)" % (args.read_path, str(e)))
         sys.exit(1)
 
-    if res is None or "data" not in res or "value" not in res["data"]:
-        _out("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->value). Returned "
-             "dict was:\n%s" %
-              str(res))
+    if res is None or "data" not in res or args.read_field not in res["data"]:
+        _out("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->%s). Returned "
+             "dict for path %s was:\n%s" %
+              args.read_field, args.read_path, str(res))
+        sys.exit(1)
 
-    passphrase = res['data']['value']
+    passphrase = res['data'][args.read_field]
 
     if args.wrap_mode == "aptly":
         cmdline = [args.wrap_program, "-passphrase-file", "/dev/stdin"] + wrapped_args
