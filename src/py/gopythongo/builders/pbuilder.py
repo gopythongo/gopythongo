@@ -98,6 +98,15 @@ class PbuilderBuilder(BaseBuilder):
             os.unlink(args.basetgz)
 
         if do_create:
+            def pbuilder_cleanup() -> None:
+                print_info("Removing probably broken basetgz %s" % args.basetgz)
+                os.unlink(args.basetgz)
+
+            import gopythongo.main
+            # if anything happens while we provision the basetgz, pbuilder likes to leave the
+            # unfinished result lying around.
+            gopythongo.main.break_handlers["pbuilder-tgz-cleanup"] = pbuilder_cleanup
+
             create_cmdline = [args.pbuilder_executable, "--create"]
             create_cmdline += cmdargs_unquote_split(args.pbuilder_opts)
             create_cmdline += cmdargs_unquote_split(args.pbuilder_create_opts)
@@ -116,6 +125,9 @@ class PbuilderBuilder(BaseBuilder):
                 create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
 
             run_process(*create_cmdline)
+
+            # once we're here, we're out of the woods, so we remove the cleanup handler
+            del gopythongo.main.break_handlers["pbuilder-tgz-cleanup"]
 
         build_args = []  # type: List[str]
         build_args += cmdargs_unquote_split(args.pbuilder_opts)
