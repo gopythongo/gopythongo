@@ -38,7 +38,7 @@ _requirements = [
     'hvac==0.2.17',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==16.2.0',
+    'pyopenssl==17.0.0',
     'bumpversion==0.5.3',
 ]
 
