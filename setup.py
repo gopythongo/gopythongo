@@ -31,7 +31,7 @@ _requirements = [
     'ConfigArgParse==0.11.0',
     'Sphinx==1.5.5',
     'sphinx-rtd-theme==0.2.4',
-    'colorama==0.3.8',
+    'colorama==0.3.9',
     'semantic-version==2.6.0',
     'packaging==16.8',
     'typing==3.6.1',
