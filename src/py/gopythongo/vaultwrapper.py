@@ -123,10 +123,10 @@ def get_parser() -> configargparse.ArgumentParser:
                              "that for package signing.")
     parser.add_argument("--read-path", dest="read_path", default=None, required=True,
                         env_var="VAULTWRAPPER_READ_PATH",
-                        help="The path to read from Vault. vaultwrapper will look for a key 'passphrase' under this "
-                             "path.")
+                        help="The path to read from Vault. By default, vaultwrapper will look for a key 'passphrase' "
+                             "under this path (see --field).")
     parser.add_argument("--field", dest="read_field", default="passphrase", env_var="VAULTWRAPPER_FIELD",
-                        help="The key to read from the specified path.")
+                        help="The key to read from the specified path. (Default: 'passphrase')")
     parser.add_argument("--help-policies", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultwrapper.")
     parser.add_argument("--debug-config", action=DebugConfigAction)
@@ -230,7 +230,7 @@ def main() -> None:
     if res is None or "data" not in res or args.read_field not in res["data"]:
         _out("* ERR VAULT WRAPPER *: Vault returned a value without the necessary fields (data->%s). Returned "
              "dict for path %s was:\n%s" %
-              args.read_field, args.read_path, str(res))
+             (args.read_field, args.read_path, str(res)))
         sys.exit(1)
 
     passphrase = res['data'][args.read_field]
