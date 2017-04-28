@@ -14,7 +14,7 @@ aptly-config=/etc/aptly/aptly.conf
 aptly-distribution=gopythongo
 # reference for build server
 aptly-publish-opts="-batch -config=/etc/aptly/aptly.conf -architectures=amd64 -keyring=/etc/gpg-managed-keyring/pubring.gpg -secret-keyring=/etc/gpg-managed-keyring/secring.gpg -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF"
-aptly-publish-endpoint=s3:gopythongo:nightly
+aptly-publish-endpoint=s3:gopythongo:nightly/stretch
 
 versioner=searchfile
 search-version-in=src/py/gopythongo/__init__.py
