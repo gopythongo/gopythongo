@@ -130,6 +130,9 @@ def get_parser() -> configargparse.ArgumentParser:
     parser.add_argument("--help-policies", action=HelpAction,
                         help="Show additional information about how to set up Vault for using vaultwrapper.")
     parser.add_argument("--debug-config", action=DebugConfigAction)
+    parser.add_argument("--gpg-homedir", dest="gpg_homedir", default=None,
+                        help="Set $GNUPGHOME before executing the wrapped program, which helps to run aptly with "
+                             "gpg2.")
 
     gp_https = parser.add_argument_group("HTTPS options")
     gp_https.add_argument("--pin-cacert", dest="pin_cacert", default="/etc/ssl/certs/ca-certificates.crt",
@@ -240,8 +243,12 @@ def main() -> None:
     else:
         cmdline = [args.wrap_program] + wrapped_args
 
+    modenv = {}
+    if args.gpg_homedir:
+        modenv = {"GNUPGHOME": args.gpg_homedir}
+
     with subprocess.Popen(cmdline, universal_newlines=True, stdin=subprocess.PIPE, bufsize=0, stdout=sys.stdout,
-                          stderr=sys.stderr) as proc:
+                          stderr=sys.stderr, env=dict(os.environ, **modenv)) as proc:
         if args.wrap_mode == "aptly":
             proc.communicate(input="%s\n%s\n" % (passphrase, passphrase))
         else:
