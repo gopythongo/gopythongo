@@ -53,33 +53,33 @@ On Debian:
 
   3. create a simple example project:
 
-        mkdir -p /tmp/helloworld/helloworld
-        cat > /tmp/helloworld/helloworld/__init__.py <<EOF
-        # -* encoding: utf-8 *-
+            mkdir -p /tmp/helloworld/helloworld
+            cat > /tmp/helloworld/helloworld/__init__.py <<EOF
+            # -* encoding: utf-8 *-
 
-        def main():
-            print("hello world!")
+            def main():
+                print("hello world!")
 
-        if __name__ == "__main__":
-            main()
-        EOF
+            if __name__ == "__main__":
+                main()
+            EOF
 
-        cat > /tmp/helloworld/setup.py <<EOF
-        #!/usr/bin/env python -u
-        import os
-        from setuptools import setup
+            cat > /tmp/helloworld/setup.py <<EOF
+            #!/usr/bin/env python -u
+            import os
+            from setuptools import setup
 
-        setup(
-            name='helloworld',
-            version="1.0",
-            packages=["helloworld",],
-            entry_points={
-                "console_scripts": [
-                    "helloworld = helloworld:main"
-                ],
-            },
-        )
-        EOF
+            setup(
+                name='helloworld',
+                version="1.0",
+                packages=["helloworld",],
+                entry_points={
+                    "console_scripts": [
+                        "helloworld = helloworld:main"
+                    ],
+                },
+            )
+            EOF
 
   4. Create a GoPythonGo configuration:
 
