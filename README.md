@@ -40,16 +40,16 @@ On Debian:
 
   1. Install the GoPythonGo and Aptly distribution keys
 
-        apt-key adv --keyserver hkp://keys.gnupg.net --recv-key DDB131CF1DF6A9CF8200799002CBD940A78049AF
-        apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
+            apt-key adv --keyserver hkp://keys.gnupg.net --recv-key DDB131CF1DF6A9CF8200799002CBD940A78049AF
+            apt-key adv --keyserver keys.gnupg.net --recv-keys 9E3E53F19C7DE460
 
   2. Install GoPythonGo, [aptly](https://aptly.info), pbuilder and fpm. As `root`:
 
-        echo "deb http://repo.gopythongo.com/nightly/stretch gopythongo main" > /etc/apt/sources.list.d/gopythongo.list
-        echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
-        apt-get update
-        apt-get --no-install-recommends install gopythongo aptly pbuilder ruby ruby-dev
-        gem install fpm
+            echo "deb http://repo.gopythongo.com/nightly/stretch gopythongo main" > /etc/apt/sources.list.d/gopythongo.list
+            echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list
+            apt-get update
+            apt-get --no-install-recommends install gopythongo aptly pbuilder ruby ruby-dev
+            gem install fpm
 
   3. create a simple example project:
 
@@ -83,31 +83,31 @@ On Debian:
 
   4. Create a GoPythonGo configuration:
 
-        cd /tmp/helloworld
-        /opt/gopythongo/bin/gopythongo --init pbuilder_deb
-        sed -e 's/mypackage/helloworld/g' .gopythongo/config > .gopythongo/config.1
-        mv .gopythongo/config.1 .gopythongo/config
-        sed -e 's/PACKAGENAME/helloworld/g' .gopythongo/fpm_opts > .gopythongo/fpm_opts.1
-        mv .gopythongo/fpm_opts.1 .gopythongo/fpm_opts
+            cd /tmp/helloworld
+            /opt/gopythongo/bin/gopythongo --init pbuilder_deb
+            sed -e 's/mypackage/helloworld/g' .gopythongo/config > .gopythongo/config.1
+            mv .gopythongo/config.1 .gopythongo/config
+            sed -e 's/PACKAGENAME/helloworld/g' .gopythongo/fpm_opts > .gopythongo/fpm_opts.1
+            mv .gopythongo/fpm_opts.1 .gopythongo/fpm_opts
 
   5. Create a Debian repository managed by aptly
 
-        aptly repo create helloworld
+            aptly repo create helloworld
 
   6. Build the helloworld package (-v enables verbose output):
 
-        /opt/gopythongo/bin/gopythongo -v /opt/helloworld /tmp/helloworld
+            /opt/gopythongo/bin/gopythongo -v /opt/helloworld /tmp/helloworld
 
   7. You know what? Build it again and watch how the version number changes as GoPythonGo appends a revision number!
      Also, the second build will go much faster now that the initial setup is out of the way.
 
   8. Now install your creation
 
-        dpkg -i helloworld_1.0~dev1-1.deb
+            dpkg -i helloworld_1.0~dev1-1.deb
 
   9. And run it:
 
-        /opt/helloworld/bin/helloworld
+            /opt/helloworld/bin/helloworld
 
   10. Go party!
 
