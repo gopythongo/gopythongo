@@ -48,16 +48,13 @@ class PbuilderBuilder(BaseBuilder):
         gr_pbuilder.add_argument("--pbuilder-execute-opts", dest="pbuilder_execute_opts", default="",
                                  env_var="PBUILDER_EXECUTE_OPTS",
                                  help="Options which will be appended to the pbuilder --execute command-line")
-        gr_pbuilder.add_argument("--apt-get", dest="build_deps", action="append", default=[],
-                                 help="Packages to install using apt-get prior to creating the virtualenv (e.g. driver "
-                                      "libs for databases so that Python C extensions compile correctly")
         gr_pbuilder.add_argument("--no-install-defaults", dest="install_defaults", action="store_false",
                                  default=True,
                                  help="By default GoPythonGo will always install python, python-virtualenv, "
                                       "python-pip, python[3]-dev, virtualenv and possibly eatmydata. If you set this "
-                                      "flag you will have to install python using --apt-get, or GoPythonGo will not be "
-                                      "able to run inside the container, but this gives you more control about what "
-                                      "Python version runs.")
+                                      "flag you will have to install python using --install-pkg, or GoPythonGo will "
+                                      "not be able to run inside the container, but this gives you more control about "
+                                      "what Python version runs.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         if args.is_inner:
@@ -117,12 +114,12 @@ class PbuilderBuilder(BaseBuilder):
                 create_cmdline += ["--basetgz", args.basetgz]
 
             if args.install_defaults:
-                args.build_deps += get_dependencies()["debian/%s" % args.pbuilder_distribution]
+                args.install_pkgs += get_dependencies()["debian/%s" % args.pbuilder_distribution]
                 if args.eatmydata:
-                    args.build_deps += ["eatmydata"]
+                    args.install_pkgs += ["eatmydata"]
 
-            if args.build_deps:
-                create_cmdline += ["--extrapackages", " ".join(args.build_deps)]
+            if args.install_pkgs:
+                create_cmdline += ["--extrapackages", " ".join(args.install_pkgs)]
 
             run_process(*create_cmdline)
 

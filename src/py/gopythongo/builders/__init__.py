@@ -88,17 +88,21 @@ def add_args(parser: configargparse.ArgumentParser) -> None:
     gr_builder = parser.add_argument_group("Common Builder options")
     gr_builder.add_argument("--mount", dest="mounts", action="append", default=[],
                             help="Additional folders to mount into the build environment. Due to limitations of "
-                                 "the builders all paths will be mounted in place, i.e. in the same location where they "
-                                 "exist on the host system.")
+                                 "the builders all paths will be mounted in place, i.e. in the same location where "
+                                 "they exist on the host system.")
     gr_builder.add_argument("--builder-debug-login", dest="builder_debug_login", action="store_true",
                             default=False,
                             help="Instead of executing the '--inner' build, if the Builder supports it, run an "
                                  "interactive shell inside the build environment for debug purposes")
     gr_builder.add_argument("--run-after-create", dest="run_after_create", action="append",
                             help="Specify commands (e.g. shell scripts) which will be run using inside a build "
-                                 "environment e.g. pbuilder or docker  after a build environment is created. This "
+                                 "environment e.g. pbuilder or docker after a build environment is created. This "
                                  "allows you to perform additional necessary build configuration, which shouldn't be "
                                  "repeated for each subsequent build (e.g. 'gem install fpm')")
+    gr_builder.add_argument("--install-pkg", dest="install_pkgs", action="append", default=[],
+                            help="Packages to install using the system's package manager (e.g. apt-get) prior to "
+                                 "creating the virtualenv (e.g. driver libs for databases so that Python C extensions "
+                                 "compile correctly")
 
     parser.add_argument("--help-builder", choices=_builders.keys(), default=None,
                         action=_builder_help.BuilderHelpAction)

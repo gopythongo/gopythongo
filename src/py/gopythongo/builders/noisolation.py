@@ -7,7 +7,7 @@
 import os
 import configargparse
 from typing import Type, Any
-from gopythongo.builders import BaseBuilder
+from gopythongo.builders import BaseBuilder, get_dependencies
 from gopythongo.utils import print_info, highlight, run_process, print_debug
 from gopythongo.utils.buildcontext import the_context
 
@@ -29,6 +29,13 @@ class NoIsolationBuilder(BaseBuilder):
     def build(self, args: configargparse.Namespace) -> None:
         print_info("Building with %s" % highlight("no isolation"))
 
+        if args.install_pkgs:
+            create_cmdline = ["apt-get", "--no-install-recommends", "-q", "-y" , "-o",
+                              "DPkg::Options::=--force-confold", "-o", "DPkg::Options::=--force-confdef", "install"]
+            create_cmdline += args.install_pkgs
+
+            run_process(*create_cmdline)
+
         for ix, runspec in enumerate(args.run_after_create):
             print_info("Running preparation commands for build environment %s of %s" %
                        (highlight(str(ix + 1)), highlight(str(len(args.run_after_create)))))
@@ -46,8 +53,8 @@ class NoIsolationBuilder(BaseBuilder):
               "Run a build without any isolation.\n"
               "\n"
               "GoPythonGo can use Pbuilder or Docker to isolate builds. However, many build\n"
-              "servers already isolate builds. Since you can't run containers in containers,\n"
-              "this builder allows GoPythonGo to do its job without isolation.\n"
+              "servers already isolate builds. Since it's senseless  run containers in\n"
+              "containers, this builder allows GoPythonGo to do its job without isolation.\n"
               "\n"
               "As the name says, this Builder basically just runs all --after-create arguments\n"
               "and then executes the 'inner' build, i.e. the part of GoPythonGo that would run\n"
