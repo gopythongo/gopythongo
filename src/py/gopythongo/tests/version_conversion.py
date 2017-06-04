@@ -8,14 +8,14 @@ import argparse
 
 from unittest.case import TestCase
 from collections import namedtuple
-from typing import Any, cast
+from typing import Any, cast, NamedTuple
 
 from gopythongo.versioners.parsers.debianparser import DebianVersionParser
 from gopythongo.versioners.parsers.pep440parser import PEP440VersionParser
 from gopythongo.versioners.parsers.semverparser import SemVerVersionParser
 
 
-_Args = namedtuple("_Args", ["semver_partial", "semver_coerce"])
+_Args = NamedTuple("_Args", [("semver_partial", bool), ("semver_coerce", bool)])
 args = cast(argparse.Namespace, _Args(semver_partial=False, semver_coerce=False))
 
 
