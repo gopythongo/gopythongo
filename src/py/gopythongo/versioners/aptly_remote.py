@@ -31,9 +31,7 @@ class RemoteAptlyVersioner(BaseVersioner):
         pass
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
-
         gr_aptly = parser.add_argument_group("Aptly Versioner options")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
