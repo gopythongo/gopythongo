@@ -28,6 +28,22 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
         gr_aptly_shared.add_argument("--repo", dest="aptly_repo", default=None, env_var="REPO",
                                      help="Name of the aptly repository to place the package in.")
 
+        gr_aptly_shared.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
+                                     help="If the APT repository does not yet contain a package with the name "
+                                          "specified by --aptly-query, the Aptly Versioner can return a fallback "
+                                          "value. This is useful for fresh repositories.")
+        gr_aptly_shared.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default="",
+                                     help="Specify additional command-line parameters which will be appended to every "
+                                          "invocation of aptly by the Aptly Versioner.")
+        gr_aptly_shared.add_argument("--aptly-query", dest="aptly_query", default=None,
+                                     help="Set the query to run on the aptly repo. For example: get the latest "
+                                          "revision of a specific version through --aptly-query='Name ([yourpackage]), "
+                                          "$Version (>=0.9.5), Version (<=0.9.6)'). More information on the query "
+                                          "syntax can be found on https://aptly.info. To find the overall latest "
+                                          "version of GoPythonGo in a repo, you would use "
+                                          "--aptly-query='Name (gopythongo)'")
+
+
     _aptly_shared_args_added = True
 
 
