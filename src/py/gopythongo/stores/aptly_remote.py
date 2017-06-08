@@ -4,17 +4,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
-
 import configargparse
 import tempfile
 
 from typing import Any, Sequence, Union, Dict, cast, List, Type
 
-import gopythongo.shared.aptly_args as _aptly_args
-
 from gopythongo.shared.aptly_args import get_aptly_cmdline
-from gopythongo.stores import BaseStore
+from gopythongo.shared.aptly_base import AptlyBaseStore
 from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
     create_script_path, cmdargs_unquote_split
 from gopythongo.utils.buildcontext import the_context
@@ -24,69 +20,26 @@ from gopythongo.versioners.parsers.debianparser import DebianVersionParser
 from gopythongo.versioners.aptly import AptlyVersioner
 
 
-class RemoteAptlyStore(BaseStore):
+class RemoteAptlyStore(AptlyBaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.aptly_wrapper_cmd = None  # type: str
 
     @property
     def store_name(self) -> str:
-        return u"remote-aptly"
+        return "remote-aptly"
 
     @property
     def supported_version_parsers(self) -> List[str]:
         return ["debian"]
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _aptly_args.add_shared_args(parser)
+        super().add_args(parser)
 
-        gp_ast = parser.add_argument_group("Aptly Store options")
-        gp_ast.add_argument("--aptly-distribution", dest="aptly_distribution", default="", env_var="APTLY_DISTRIBUTION",
-                            help="Set the target distribution for aptly builds.")
-        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default="", env_var="APTLY_REPO_OPTS",
-                            help="Specify additional command-line parameters which will be appended to every "
-                                 "'aptly repo' command executed by the Aptly Store.")
-        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default="", env_var="APTLY_PUBLISH_OPTS",
-                            help="Specify additional command-line parameters which will be appended to every "
-                                 "'aptly publish' command executed by the Aptly Store.")
-        gp_ast.add_argument("--aptly-publish-endpoint", dest="aptly_publish_endpoint", metavar="ENDPOINT", default=None,
-                            env_var="APTLY_PUBLISH_ENDPOINT",
-                            help="Publish the Aply repo to the specified endpoint after generated packages have been "
-                                 "added to the repo. Please note that you will have to add additional configuration to "
-                                 "the aptly config file, for example when you want to publish to S3. It's also likely "
-                                 "that you want to set --aptly-publish-opts and pass aptly -passphrase-file, -keyring "
-                                 "and other necessary arguments for signing the repo. Please note: You will probably "
-                                 "want to set these arguments using environment variables on your build server if "
-                                 "you're using a CI environment.")
-        gp_ast.add_argument("--aptly-dont-remove", dest="aptly_dont_remove", action="store_true", default=False,
-                            env_var="APTLY_DONT_REMOVE",
-                            help="By default, if a created package already exists in the repo specified by --repo, "
-                                 "the aptly store will overwrite it. Setting --aptly-dont-remove will instead lead "
-                                 "to an error if the package already exists.")
-        gp_ast.add_argument("--aptly-overwrite-newer", dest="aptly_overwrite_newer", action="store_true", default=False,
-                            env_var="APTLY_OVERWRITE_NEWER",
-                            help="If set, the aptly Store will store newly generated packages in the repo which are "
-                                 "older than the packages already there. By default, it will raise an error message "
-                                 "instead.")
-        gp_ast.add_argument("--aptly-passphrase", dest="aptly_passphrase", env_var="APTLY_PASSPHRASE", default=None,
-                            help="Set this to pass the GPG signing passphrase to the aptly Store. This is primarily "
-                                 "useful when you use the environment variable. This way your build server can read "
-                                 "the passphrase from secure storage it pass it to GoPythonGo with a modicum of "
-                                 "protection. Using the command-line parameter however will expose the passphrase to "
-                                 "every user on the system. You're better of passing --passphrase-file to aptly via "
-                                 "--aptly-publish-opts in that case. The most secure option would be to use "
-                                 "--use-aptly-vault-wrapper.")
-        gp_ast.add_argument("--use-aptly-vault-wrapper", dest="use_aptly_wrapper", env_var="APTLY_USE_WRAPPER",
-                            default=False, action="store_true",
-                            help="When you set this, GoPythonGo will not directly invoke aptly to publish or update "
-                                 "aptly-managed repos. Instead it will call GoPythonGo's vault_wrapper program in"
-                                 "'aptly' mode, which can be configured by environment variables or its own "
-                                 "configuration file or both (Default: .gopythongo/vaultwrapper). This program will "
-                                 "load the GnuPG signing passphrase for aptly-managed repos from Hashicorp Vault. You "
-                                 "can find out more by running 'vaultwrapper --help'.")
+        gp_ast = parser.add_argument_group("Aptly Remote Store options")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _aptly_args.validate_shared_args(args)
+        super().validate_args(args)
 
         from gopythongo.versioners import get_version_parsers
         debvp = cast(DebianVersionParser, get_version_parsers()["debian"])  # type: DebianVersionParser
@@ -96,19 +49,6 @@ class RemoteAptlyStore(BaseStore):
                                "It only supports: %s." %
                                (highlight(args.version_action), highlight(args.version_action),
                                 highlight(", ".join(debvp.supported_actions))))
-
-        if "-distribution" in args.aptly_publish_opts:
-            print_warning("You are using %s in your Aptly Store options. You should use the %s GoPythonGo argument "
-                          "instead, since using -distribution in the aptly command line is invalid when GoPythonGo "
-                          "tries to update a published repo." %
-                          (highlight("-distribution"), highlight("--aptly-distribution")))
-
-        if args.use_aptly_wrapper:
-            wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
-            if not os.path.exists(wrapper_cmd) or not os.access(wrapper_cmd, os.X_OK):
-                raise ErrorMessage("%s can either not be found or is not executable. The vault wrapper seems to "
-                                   "be unavailable." % wrapper_cmd)
-            self.aptly_wrapper_cmd = wrapper_cmd
 
     @staticmethod
     def _get_aptly_versioner() -> AptlyVersioner:
@@ -192,6 +132,7 @@ class RemoteAptlyStore(BaseStore):
         return ret
 
     def store(self, args: configargparse.Namespace) -> None:
+        self.aptly_wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
         # add each package to the repo
         for pkg in the_context.packer_artifacts:
             if not args.aptly_dont_remove:  # aptly DO remove

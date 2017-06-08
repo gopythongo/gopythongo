@@ -9,13 +9,13 @@ import configargparse
 from typing import List, Any, Type
 
 import gopythongo.shared.aptly_args as _aptly_args
+from gopythongo.shared.aptly_base import AptlyBaseVersioner
 
-from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, flatten, cmdargs_unquote_split
+from gopythongo.utils import highlight, run_process, ErrorMessage, print_info, cmdargs_unquote_split
 
 
-class AptlyVersioner(BaseVersioner):
+class AptlyVersioner(AptlyBaseVersioner):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -31,25 +31,15 @@ class AptlyVersioner(BaseVersioner):
         pass
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _aptly_args.add_shared_args(parser)
+        super().add_args(parser)
 
-        gr_aptly = parser.add_argument_group("Aptly Versioner options")
-        gr_aptly.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
-                              help="If the APT repository does not yet contain a package with the name specified by "
-                                   "--aptly-query, the Aptly Versioner can return a fallback value. This is useful "
-                                   "for fresh repositories.")
+        gr_aptly = parser.add_argument_group("Aptly Local Versioner options")
         gr_aptly.add_argument("--aptly-versioner-opts", dest="aptly_versioner_opts", default="",
                               help="Specify additional command-line parameters which will be appended to every "
                                    "invocation of aptly by the Aptly Versioner.")
-        gr_aptly.add_argument("--aptly-query", dest="aptly_query", default=None,
-                              help="Set the query to run on the aptly repo. For example: get the latest revision of a "
-                                   "specific version through --aptly-query='Name ([yourpackage]), $Version (>=0.9.5), "
-                                   "Version (<=0.9.6)'). More information on the query syntax can be found on "
-                                   "https://aptly.info. To find the overall latest version of GoPythonGo in a repo, "
-                                   "you would use --aptly-query='Name (gopythongo)'")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _aptly_args.validate_shared_args(args)
+        super().validate_args(args)
 
         if args.aptly_fallback_version:
             try:
@@ -98,16 +88,6 @@ class AptlyVersioner(BaseVersioner):
                     return [DebianVersion.fromstring(args.aptly_fallback_version)]
                 else:
                     return []
-
-    def read(self, args: configargparse.Namespace) -> str:
-        versions = self.query_repo_versions(args.aptly_query, args, allow_fallback_version=True)
-
-        if not versions:
-            raise ErrorMessage("The Aptly Versioner was unable to find a base version using the specified query '%s'. "
-                               "If the query is correct, you should specify a fallback version using %s." %
-                               (highlight(args.aptly_query), highlight("--fallback-version")))
-
-        return str(versions[-1])
 
 
 versioner_class = AptlyVersioner  # type: Type[AptlyVersioner]

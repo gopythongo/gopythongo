@@ -3,24 +3,21 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from typing import Sequence
 
 import configargparse
 
 from typing import List, Any, Type
 
-import gopythongo.shared.aptly_args as _aptly_args
 import aptly_api
+from gopythongo.shared.aptly_base import AptlyBaseVersioner
 
-from gopythongo.versioners import BaseVersioner
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 from gopythongo.utils import highlight, ErrorMessage, print_info
 
 
-class RemoteAptlyVersioner(BaseVersioner):
+class RemoteAptlyVersioner(AptlyBaseVersioner):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self._aptly = None  # type: aptly_api.Client
 
     @property
     def versioner_name(self) -> str:
@@ -34,20 +31,22 @@ class RemoteAptlyVersioner(BaseVersioner):
         pass
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
-        _aptly_args.add_shared_args(parser)
-        gr_aptly = parser.add_argument_group("Remote Aptly Versioner options")
+        super().add_args(parser)
+        gr_aptly = parser.add_argument_group("Aptly Remote Versioner options")
         gr_aptly.add_argument("--aptly-server-url", dest="aptly_server_url", default=None,
                               help="HTTP URL or socket path pointing to the Aptly API server you want to use.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        _aptly_args.validate_shared_args(args)
+        super().validate_args(args)
         if not args.aptly_server_url:
             raise ErrorMessage("When using the remote-aptly, you must provide %s" % highlight("--aptly-server-url"))
 
     def query_repo_versions(self, query: str, args: configargparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:
+        _aptly = aptly_api.Client(args.aptly_server_url)
+
         try:
-            packages = self._aptly.repos.search_packages(args.aptly_repo, query, detailed=True)
+            packages = _aptly.repos.search_packages(args.aptly_repo, query, detailed=True)
         except aptly_api.AptlyAPIException as e:
             # we must have run into a problem
             raise ErrorMessage("aptly reported an unknown problem:\n%s" % str(e)) from e
@@ -76,17 +75,6 @@ class RemoteAptlyVersioner(BaseVersioner):
                     return [DebianVersion.fromstring(args.aptly_fallback_version)]
                 else:
                     return []
-
-    def read(self, args: configargparse.Namespace) -> str:
-        self._aptly = aptly_api.Client(args.aptly_server_url)
-        versions = self.query_repo_versions(args.aptly_query, args, allow_fallback_version=True)
-
-        if not versions:
-            raise ErrorMessage("The Remote Aptly Versioner was unable to find a base version using the specified "
-                               "query '%s'. If the query is correct, you should specify a fallback version using %s." %
-                               (highlight(args.aptly_query), highlight("--fallback-version")))
-
-        return str(versions[-1])
 
 
 versioner_class = RemoteAptlyVersioner  # type: RemoteAptlyVersioner
