@@ -23,9 +23,9 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
         gr_aptly_shared = parser.add_argument_group("Aptly shared options (Store and Versioners)")
         gr_aptly_shared.add_argument("--use-aptly", dest="aptly_executable", default="/usr/bin/aptly",
                                      env_var="APTLY_EXECUTABLE",
-                                     help="The full path to the aptly executable to use")
+                                     help="The full path to the aptly executable to use when using a local aptly.")
         gr_aptly_shared.add_argument("--aptly-config", dest="aptly_config", default=None, env_var="APTLY_CONFIG",
-                                     help="Path to the aptly config file to use")
+                                     help="Path to the aptly config file to use.")
         gr_aptly_shared.add_argument("--repo", dest="aptly_repo", default=None, env_var="REPO",
                                      help="Name of the aptly repository to place the package in.")
 
@@ -39,7 +39,7 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
                                           "$Version (>=0.9.5), Version (<=0.9.6)'). More information on the query "
                                           "syntax can be found on https://aptly.info. To find the overall latest "
                                           "version of GoPythonGo in a repo, you would use "
-                                          "--aptly-query='Name (gopythongo)'")
+                                          "--aptly-query='Name (gopythongo)'.")
 
         gr_ast = parser.add_argument_group("Aptly shared options (Stores)")
         gr_ast.add_argument("--aptly-distribution", dest="aptly_distribution", default="", env_var="APTLY_DISTRIBUTION",
