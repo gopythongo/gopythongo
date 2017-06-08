@@ -42,7 +42,7 @@ class AptlyBaseVersioner(BaseVersioner):
 
 class AptlyBaseStore(BaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super()..__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
