@@ -10,7 +10,7 @@ import os
 from typing import List
 
 from gopythongo.utils import highlight, ErrorMessage
-
+from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
 
 _aptly_shared_args_added = False  # type: bool
 
@@ -42,8 +42,6 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
                                           "syntax can be found on https://aptly.info. To find the overall latest "
                                           "version of GoPythonGo in a repo, you would use "
                                           "--aptly-query='Name (gopythongo)'")
-
-
     _aptly_shared_args_added = True
 
 
@@ -56,6 +54,16 @@ def validate_shared_args(args: configargparse.Namespace) -> None:
     if not args.aptly_repo:
         raise ErrorMessage("To use the aptly Versioner or Store, you MUST provide the name of the aptly repository to "
                            "operate on via %s" % highlight("--repo"))
+
+    if args.aptly_fallback_version:
+        try:
+            DebianVersion.fromstring(args.aptly_fallback_version)
+        except InvalidDebianVersionString as e:
+            raise ErrorMessage("The fallback version string you specified via %s is not a valid Debian version "
+                               "string. (%s)" % (highlight("--fallback-version"), str(e))) from e
+
+    if not args.aptly_query:
+        raise ErrorMessage("To use the Aptly Versioner, you must specify --aptly-query.")
 
 
 def get_aptly_cmdline(args: configargparse.Namespace, *, override_aptly_cmd: str=None) -> List[str]:
