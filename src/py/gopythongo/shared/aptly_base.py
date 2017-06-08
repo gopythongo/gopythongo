@@ -39,7 +39,6 @@ class AptlyBaseVersioner(BaseVersioner):
         return str(versions[-1])
 
 
-
 class AptlyBaseStore(BaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)

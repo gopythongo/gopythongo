@@ -3,7 +3,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import uuid
 
+import os
+
+import aptly_api
 import configargparse
 import tempfile
 
@@ -132,24 +136,22 @@ class RemoteAptlyStore(AptlyBaseStore):
         return ret
 
     def store(self, args: configargparse.Namespace) -> None:
-        self.aptly_wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
+        _aptly = aptly_api.Client(args.aptly_server_url)
+        _tmpfolder = str(uuid.uuid4())
         # add each package to the repo
         for pkg in the_context.packer_artifacts:
-            if not args.aptly_dont_remove:  # aptly DO remove
-                if self._check_package_exists(pkg.artifact_metadata["package_name"], args):
-                    print_info("Removing existing package %s from repo %s" %
-                               (highlight(pkg.artifact_metadata["package_name"]), args.aptly_repo))
-                    cmdline = get_aptly_cmdline(args)
-                    cmdline += ["repo", "remove", args.aptly_repo, pkg.artifact_metadata["package_name"]]
-                    run_process(*cmdline)
-
             print_info("Adding %s to repo %s" % (highlight(pkg.artifact_filename), highlight(args.aptly_repo)))
-            cmdline = get_aptly_cmdline(args)
-            cmdline += cmdargs_unquote_split(args.aptly_repo_opts)
+            try:
+                _aptly.files.upload(_tmpfolder, pkg.artifact_filename)
+            except aptly_api.AptlyAPIException as e:
+                raise ErrorMessage("Unable to upload package file %s to Aptly temporary folder %s. Error was: %s" %
+                                   (pkg.artifact_filename, _tmpfolder, str(e))) from e
 
-            cmdline += ["repo", "add", args.aptly_repo, pkg.artifact_filename]
-            run_process(*cmdline)
+            report = _aptly.repos.add_uploaded_file(args.aptly_repo, _tmpfolder, pkg.artifact_filename,
+                                                    remove_processed_files=True,
+                                                    force_replace=not args.aptly_dont_remove)
 
+        # TODO: CONTINUE IMPLEMENTATION HERE
         # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
