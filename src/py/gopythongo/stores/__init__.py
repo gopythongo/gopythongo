@@ -22,10 +22,11 @@ def get_stores() -> Dict[str, 'BaseStore']:
 def init_subsystem() -> None:
     global _stores
 
-    from gopythongo.stores import aptly, docker
+    from gopythongo.stores import aptly, aptly_remote, docker
     _stores = {
-        u"aptly": aptly.store_class(),
-        u"docker": docker.store_class(),
+        "aptly": aptly.store_class(),
+        "remote-aptly": aptly_remote.store_class(),
+        "docker": docker.store_class(),
     }
 
     plugins.load_plugins("gopythongo.stores", _stores, "store_class", BaseStore, "store_name")
