@@ -40,7 +40,7 @@ _requirements = [
     'dockerpty==0.4.1',
     'pyopenssl==17.1.0',
     'bumpversion==0.5.3',
-    'aptly-api-client==0.1.0',
+    'aptly-api-client==0.1.1',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
