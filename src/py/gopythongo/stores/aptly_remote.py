@@ -3,9 +3,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import shutil
 import uuid
-
-import os
 
 import aptly_api
 import configargparse
@@ -27,7 +26,6 @@ from gopythongo.versioners.aptly import AptlyVersioner
 class RemoteAptlyStore(AptlyBaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.aptly_wrapper_cmd = None  # type: str
 
     @property
     def store_name(self) -> str:
@@ -41,6 +39,9 @@ class RemoteAptlyStore(AptlyBaseStore):
         super().add_args(parser)
 
         gp_ast = parser.add_argument_group("Aptly Remote Store options")
+        gp_ast.add_argument("--aptly-architecture", dest="aptly_architectures", action="append", default=[],
+                            help="Define what architectures to publish via aptly.")
+        # TODO: add aptly_api parameters for GPG
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
@@ -157,41 +158,34 @@ class RemoteAptlyStore(AptlyBaseStore):
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
             # override to use vault_wrapper if specified on the command-line
-            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd)
-            if args.use_aptly_wrapper:
-                cmdline += ["--wrap-mode", "aptly"]
-                cmdline += ["--wrap-program", args.aptly_executable]
-            cmdline += ["publish"]
+            _aptly_wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
+            cmdline = [_aptly_wrapper_cmd, "--wrap-program", shutil.which("cat")]
+
+            if args.aptly_passphrase:
+                passphrase = args.aptly_passphrase
+            elif args.use_aptly_wrapper:
+                # TODO: read passphrase from Vault using vaultwrapper's stdout (via cat, see above)
+                pass
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
-            query_publish = get_aptly_cmdline(args) + ["publish"] + ["list", "-raw"]
-            out = run_process(*query_publish)
-            cmd = "repo"
-            if out.output:
-                lines = out.output.split("\n")  # type: List[str]
-                for l in lines:
-                    if l.strip() != "":
-                        endpoint, dist = l.split(" ", 1)
-                        if endpoint == args.aptly_publish_endpoint:
-                            print_info("Publishing endpoint %s already in use. Executing update..." %
-                                       highlight(args.aptly_publish_endpoint))
-                            cmd = "update"
+            publish_kwargs = {
+                "sources": {"name": args.aptly_repo},
+                "architectures": args.aptly_architectures,
+            }
+            aptly_kwargs = {
+                "distribution": args.aptly_distribution,
+                "prefix": args.aptly_publish_endpoint,
+            }
+            publish_kwargs.update(aptly_kwargs)
+            aptly_oper = lambda: _aptly.publish.publish(**publish_kwargs)
+            for published in  _aptly.publish.list():
+                if "%s:%s" % (published.storage, published.prefix) == args.aptly_publish_endpoint:
+                    print_info("Publishing endpoint %s already in use. Executing update..." %
+                               highlight(args.aptly_publish_endpoint))
+                    aptly_oper = lambda: _aptly.publish.update(**aptly_kwargs)
 
-            cmdline += [cmd,]
-
-            if args.aptly_passphrase:
-                # save the passphrase to a temporary file for aptly to read so we don't expose the passphrase on
-                # the process list
-                import gopythongo.main
-                tfd, tfn = tempfile.mkstemp()
-                gopythongo.main.tempfiles.append(tfn)
-                with open(tfd, "wt", encoding="utf-8") as tf:
-                    tf.write(args.aptly_publish_passphrase)
-
-                cmdline += ["-passphrase-file", tfn]
-
-            # when publishing the repo for the first time we need to add the -distribution flag
+            # TODO: call aptly_oper with the correct parameters for signing
             if cmd == "repo":
                 cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
                 cmdline += ["-distribution=%s" % args.aptly_distribution]
