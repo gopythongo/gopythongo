@@ -182,6 +182,10 @@ def validate_args(args: configargparse.Namespace) -> None:
             _out("* INF VAULT WRAPPER *: client_key is set")
         sys.exit(1)
 
+    if not args.wrap_program:
+        _out("* ERR VAULT WRAPPER *: You must specify an executable for vaultwrapper to wrap")
+        sys.exit(1)
+
     if args.wrap_program and (not os.path.exists(args.wrap_program) or not os.access(args.wrap_program, os.X_OK)):
         _out("* ERR VAULT WRAPPER *: Wrapped executable %s doesn't exist or is not executable." % args.wrap_program)
         sys.exit(1)
