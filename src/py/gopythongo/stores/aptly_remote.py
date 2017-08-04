@@ -187,8 +187,10 @@ class RemoteAptlyStore(AptlyBaseStore):
                     print_info("Publishing endpoint %s already in use. Executing update..." %
                                highlight(args.aptly_publish_endpoint))
                     aptly_oper = lambda: _aptly.publish.update(**aptly_kwargs)
+                    break
 
             # TODO: call aptly_oper with the correct parameters for signing
+
             if cmd == "repo":
                 cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
                 cmdline += ["-distribution=%s" % args.aptly_distribution]
