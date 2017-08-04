@@ -39,7 +39,13 @@ class RemoteAptlyStore(AptlyBaseStore):
         gp_ast = parser.add_argument_group("Aptly Remote Store options")
         gp_ast.add_argument("--aptly-architecture", dest="aptly_architectures", action="append", default=[],
                             help="Define what architectures to publish via aptly.")
-        # TODO: add aptly_api parameters for GPG
+        gp_ast.add_argument("--aptly-skip-signing", dest="aptly_skip_signing", action="store_true", default=False,
+                            help="Tell aptly via API to skip signing the repo.")
+        gp_ast.add_argument("--aptly-gpgkey", dest="aptly_gpgkey", default=None,
+                            help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
+                                 "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
+                                 "the secret keyring on the server. The best way to achieve this is by setting the "
+                                 "GNUPGHOME environment variable on the 'aptly api serve' command.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
@@ -52,6 +58,13 @@ class RemoteAptlyStore(AptlyBaseStore):
                                "It only supports: %s." %
                                (highlight(args.version_action), highlight(args.version_action),
                                 highlight(", ".join(debvp.supported_actions))))
+
+        if args.aptly_skip_signing and args.aptly_gpgkey:
+            raise ErrorMessage("Don't specify to skip signing (--aptly-skip-signing) and also specify a GPG key for "
+                               "signing (--aptly-gpgkey).")
+        if not args.aptly_skip_signing and not args.aptly_gpgkey:
+            raise ErrorMessage("You must specify the key id or fingerprint of the GPG key to use to sign the published "
+                               "apt repository.")
 
     @staticmethod
     def _get_aptly_versioner() -> AptlyVersioner:
@@ -150,7 +163,6 @@ class RemoteAptlyStore(AptlyBaseStore):
                                                     remove_processed_files=True,
                                                     force_replace=not args.aptly_dont_remove)
 
-        # TODO: CONTINUE IMPLEMENTATION HERE
         # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
@@ -178,6 +190,13 @@ class RemoteAptlyStore(AptlyBaseStore):
                 "distribution": args.aptly_distribution,
                 "prefix": args.aptly_publish_endpoint,
             }
+
+            if args.aptly_skip_signing:
+                aptly_kwargs["sign_skip"] = True
+            else:
+                aptly_kwargs["sign_gpgkey"] = args.aptly_gpgkey
+                aptly_kwargs["sign_passphrase"] = passphrase
+
             publish_kwargs.update(aptly_kwargs)
             aptly_oper = lambda: _aptly.publish.publish(**publish_kwargs)
             for published in  _aptly.publish.list():
@@ -186,18 +205,7 @@ class RemoteAptlyStore(AptlyBaseStore):
                                highlight(args.aptly_publish_endpoint))
                     aptly_oper = lambda: _aptly.publish.update(**aptly_kwargs)
                     break
-
-            # TODO: call aptly_oper with the correct parameters for signing
-
-            if cmd == "repo":
-                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
-                cmdline += ["-distribution=%s" % args.aptly_distribution]
-                cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
-            else:
-                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
-                cmdline += [args.aptly_distribution, args.aptly_publish_endpoint]
-
-            run_process(*cmdline)
+            aptly_oper()
 
     def print_help(self) -> None:
         print("Remove Aptly Store\n"
