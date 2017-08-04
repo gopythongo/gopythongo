@@ -25,6 +25,7 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
                                      env_var="APTLY_EXECUTABLE",
                                      help="The full path to the aptly executable to use when using a local aptly.")
         gr_aptly_shared.add_argument("--aptly-server-url", dest="aptly_server_url", default=None,
+                                     env_var="APTLY_SERVER_URL",
                                      help="HTTP URL or socket path pointing to the Aptly API server you want to use.")
         gr_aptly_shared.add_argument("--aptly-config", dest="aptly_config", default=None, env_var="APTLY_CONFIG",
                                      help="Path to the aptly config file to use.")
