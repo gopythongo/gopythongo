@@ -8,11 +8,9 @@ import uuid
 
 import aptly_api
 import configargparse
-import tempfile
 
 from typing import Any, Sequence, Union, Dict, cast, List, Type
 
-from gopythongo.shared.aptly_args import get_aptly_cmdline
 from gopythongo.shared.aptly_base import AptlyBaseStore
 from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
     create_script_path, cmdargs_unquote_split
