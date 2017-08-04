@@ -164,8 +164,11 @@ class RemoteAptlyStore(AptlyBaseStore):
             if args.aptly_passphrase:
                 passphrase = args.aptly_passphrase
             elif args.use_aptly_wrapper:
-                # TODO: read passphrase from Vault using vaultwrapper's stdout (via cat, see above)
-                pass
+                vault_ret = run_process(*cmdline, allow_nonzero_exitcode=False)
+                if vault_ret.output.strip():
+                    raise ErrorMessage("vaultwrapper returned an empty passphrase.")
+                else:
+                    passphrase = vault_ret.output.strip()
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
