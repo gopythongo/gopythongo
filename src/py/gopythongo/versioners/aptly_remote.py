@@ -32,14 +32,11 @@ class RemoteAptlyVersioner(AptlyBaseVersioner):
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         super().add_args(parser)
-        gr_aptly = parser.add_argument_group("Aptly Remote Versioner options")
-        gr_aptly.add_argument("--aptly-server-url", dest="aptly_server_url", default=None,
-                              help="HTTP URL or socket path pointing to the Aptly API server you want to use.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
         if not args.aptly_server_url:
-            raise ErrorMessage("When using the remote-aptly, you must provide %s" % highlight("--aptly-server-url"))
+            raise ErrorMessage("When using remote-aptly, you must provide %s" % highlight("--aptly-server-url"))
 
     def query_repo_versions(self, query: str, args: configargparse.Namespace, *,
                             allow_fallback_version: bool=False) -> List[DebianVersion]:

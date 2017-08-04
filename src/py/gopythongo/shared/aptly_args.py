@@ -24,6 +24,8 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
         gr_aptly_shared.add_argument("--use-aptly", dest="aptly_executable", default="/usr/bin/aptly",
                                      env_var="APTLY_EXECUTABLE",
                                      help="The full path to the aptly executable to use when using a local aptly.")
+        gr_aptly_shared.add_argument("--aptly-server-url", dest="aptly_server_url", default=None,
+                                     help="HTTP URL or socket path pointing to the Aptly API server you want to use.")
         gr_aptly_shared.add_argument("--aptly-config", dest="aptly_config", default=None, env_var="APTLY_CONFIG",
                                      help="Path to the aptly config file to use.")
         gr_aptly_shared.add_argument("--repo", dest="aptly_repo", default=None, env_var="REPO",
@@ -83,7 +85,8 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
 
 
 def validate_shared_args(args: configargparse.Namespace) -> None:
-    if not os.path.exists(args.aptly_executable) or not os.access(args.aptly_executable, os.X_OK):
+    if not args.aptly_server_url and (not os.path.exists(args.aptly_executable) or
+                                      not os.access(args.aptly_executable, os.X_OK)):
         raise ErrorMessage("aptly not found in path or not executable (%s). You can specify "
                            "an alternative path using %s" %
                            (args.aptly_executable, highlight("--use-aptly")))

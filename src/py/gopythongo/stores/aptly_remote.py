@@ -49,6 +49,8 @@ class RemoteAptlyStore(AptlyBaseStore):
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
+        if not args.aptly_server_url:
+            raise ErrorMessage("When using remote-aptly, you must provide %s" % highlight("--aptly-server-url"))
 
         from gopythongo.versioners import get_version_parsers
         debvp = cast(DebianVersionParser, get_version_parsers()["debian"])  # type: DebianVersionParser
