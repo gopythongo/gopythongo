@@ -214,5 +214,12 @@ class AptlyStore(AptlyBaseStore):
 
             run_process(*cmdline)
 
+    def print_help(self) -> None:
+        print("Aptly Store\n"
+              "===========\n"
+              "\n"
+              "Stores .deb packages in a local aptly-managed (https://aptly.info/) package\n"
+              "repository.\n")
+
 
 store_class = AptlyStore  # type: Type[AptlyStore]

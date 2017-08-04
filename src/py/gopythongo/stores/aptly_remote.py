@@ -199,5 +199,15 @@ class RemoteAptlyStore(AptlyBaseStore):
 
             run_process(*cmdline)
 
+    def print_help(self) -> None:
+        print("Remove Aptly Store\n"
+              "==================\n"
+              "\n"
+              "Stores .deb packages in a remote package repository managed by aptly\n"
+              "(https://aptly.info). The remote repository must run 'aptly api serve', i.e. an\n"
+              "aptly API server that this storage plug-in can call. This functionality is\n"
+              "especially useful if used inside an isolating build server like concourse.ci\n"
+              "where the build result can then be uploaded to the repository through the API.\n")
+
 
 store_class = RemoteAptlyStore  # type: Type[RemoteAptlyStore]

@@ -30,5 +30,8 @@ class DockerStore(BaseStore):
     def store(self, args: configargparse.Namespace) -> None:
         pass
 
+    def print_help(self) -> None:
+        pass
+
 
 store_class = DockerStore  # type: Type[DockerStore]
