@@ -41,7 +41,7 @@ class RemoteAptlyStore(AptlyBaseStore):
                             help="Define what architectures to publish via aptly.")
         gp_ast.add_argument("--aptly-skip-signing", dest="aptly_skip_signing", action="store_true", default=False,
                             help="Tell aptly via API to skip signing the repo.")
-        gp_ast.add_argument("--aptly-gpgkey", dest="aptly_gpgkey", default=None,
+        gp_ast.add_argument("--aptly-gpg-key", dest="aptly_gpgkey", default=None,
                             help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
                                  "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
                                  "the secret keyring on the server. The best way to achieve this is by setting the "
