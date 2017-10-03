@@ -112,6 +112,11 @@ On Debian:
   10. Go party!
 
 
+Examples
+--------
+[Authserver](https://github.com/jdelic/authserver/) is a full project that I'm building using gopythongo. Just look in 
+the .gopythongo folder and its README.
+
 Next steps
 ----------
 If you create an aptly configuration file, you can use GoPythonGo to sign and push the package to, for example,
