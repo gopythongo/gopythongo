@@ -28,7 +28,7 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 
 _requirements = [
     'Jinja2==2.10',
-    'ConfigArgParse==0.12.0',
+    'ConfigArgParse==0.13.0',
     'Sphinx==1.6.7',
     'sphinx-rtd-theme==0.2.4',
     'colorama==0.3.9',
