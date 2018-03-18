@@ -198,7 +198,7 @@ class FPMPacker(BasePacker):
                                highlight(parsed_args["package_file"]))
                     os.unlink(parsed_args["package_file"])
 
-            run_params = fpm_base
+            run_params = list(fpm_base)  # operate on a copy so we don't change fpm_base
             for argline in processed_args:
                 run_params += shlex.split(argline)
             fpm_out = run_process(*run_params)
