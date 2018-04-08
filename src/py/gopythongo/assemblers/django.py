@@ -91,7 +91,7 @@ class DjangoAssembler(BaseAssembler):
                     sf.write("SECRET_KEY=")
                 sf.write("%s\n" % secret)
 
-        if args.django_settings_file:
+        if args.django_settings_envfile:
             utils.print_info("Saving DJANGO_SETTINGS_MODULE %s to file %s" %
                              (utils.highlight(args.django_settings_module),
                               utils.highlight(args.django_settings_envfile)))
