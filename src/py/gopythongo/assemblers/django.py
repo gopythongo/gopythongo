@@ -95,7 +95,7 @@ class DjangoAssembler(BaseAssembler):
             utils.print_info("Saving DJANGO_SETTINGS_MODULE %s to file %s" %
                              (utils.highlight(args.django_settings_module),
                               utils.highlight(args.django_settings_envfile)))
-            if not os.path.exits(os.path.dirname(args.django_settings_envfile)):
+            if not os.path.exists(os.path.dirname(args.django_settings_envfile)):
                 utils.umasked_makedirs(os.path.dirname(args.django_settings_envfile), 0o755)
 
             with open(args.django_settings_envfile, "wt", encoding="utf-8") as sf:
