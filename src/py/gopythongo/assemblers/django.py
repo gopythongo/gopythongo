@@ -39,15 +39,26 @@ class DjangoAssembler(BaseAssembler):
                                help="If set, this script will make sure that STATIC_ROOT is empty " +
                                     "before running collectstatic by DELETING it (be careful!)")
         gr_django.add_argument("--django-settings", dest="django_settings_module", default=None,
+                               env_var="DJANGO_SETTINGS_MODULE",
                                help="'--settings' argument to pass to django-admin.py when it is called by " +
                                     "this script. If --django-generate-secret-key is set, SECRET_KEY will be set "
                                     "in the environment.")
+        gr_django.add_argument("--django-settings-envfile", dest="django_settings_envfile", default=None,
+                               help="If set to a path, GoPythonGo will write the value of '--django-settings' to the "
+                                    "specified file, resulting in a file that can be read from envdir or systemd. This "
+                                    "is useful for shipping environment configuration for projects adhering to "
+                                    "12factor. (A common use would be to set the DJANGO_SETTINGS_MODULE environment "
+                                    "variable.")
         gr_django.add_argument("--django-gen-secret-key", dest="django_secret_key_file", default=None,
                                env_var="DJANGO_GEN_SECRET_KEY",
                                help="If set, GoPythonGo will write SECRET_KEY='(random)' to the given filename. The "
                                     "resulting file can be read from envdir or systemd (EnvironmentFile). This is "
                                     "useful for shipping environment configuration for projects adhering to 12factor "
                                     "(and/or using the django12factor library).")
+        gr_django.add_argument("--envfile-mode", dest="envfile_mode", choices=["envdir", "envfile"], default="envdir",
+                               help="Sets the output format for --django-gen-secret-key and --django-settings-envfile "
+                                    "so GoPythonGo wither writes NAME=VALUE (for systemd EnvironmentFiles) to the file "
+                                    "or just VALUE (for envdirs).")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         if args.django_secret_key_file:
@@ -76,7 +87,22 @@ class DjangoAssembler(BaseAssembler):
 
             with open(args.django_secret_key_file, "wt", encoding="utf-8") as sf:
                 os.chmod(args.django_secret_key_file, get_umasked_mode(0o600))
-                sf.write("SECRET_KEY=%s\n" % secret)
+                if args.envfile_mode == "envfile":
+                    sf.write("SECRET_KEY=")
+                sf.write("%s\n" % secret)
+
+        if args.django_settings_file:
+            utils.print_info("Saving DJANGO_SETTINGS_MODULE %s to file %s" %
+                             (utils.highlight(args.django_settings_module),
+                              utils.highlight(args.django_settings_envfile)))
+            if not os.path.exits(os.path.dirname(args.django_settings_envfile)):
+                utils.umasked_makedirs(os.path.dirname(args.django_settings_envfile), 0o755)
+
+            with open(args.django_settings_envfile, "wt", encoding="utf-8") as sf:
+                os.chmod(args.django_settings_envfile, get_umasked_mode(0o644))
+                if args.envfile_mode == "envfile":
+                    sf.write("DJANGO_SETTINGS_MODULE=")
+                sf.write("%s\n" % args.django_settings_module)
 
         if args.collect_static:
             envpy = utils.create_script_path(args.build_path, "python")
