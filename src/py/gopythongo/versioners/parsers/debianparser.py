@@ -11,7 +11,7 @@ from typing import Any, Tuple, List, Type
 
 from gopythongo.utils import highlight, ErrorMessage
 from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
-from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser, UnconvertableVersion
 from gopythongo.versioners.parsers.pep440parser import PEP440Adapter
 
 
@@ -46,6 +46,7 @@ class DebianVersionParser(BaseVersionParser):
     def can_execute_action(self, version: VersionContainer, action: str) -> bool:
         if action in self.supported_actions:
             return True
+        return False
 
     def execute_action(self, version: VersionContainer[DebianVersion], action: str) -> VersionContainer[DebianVersion]:
         # make a copy of the DebianVersion object
@@ -107,6 +108,9 @@ class DebianVersionParser(BaseVersionParser):
                 raise ErrorMessage("Unable to convert PEP440 version string to valid Debian version string: %s" %
                                    highlight(str(pva))) from e
             return VersionContainer(dv, self.versionparser_name)
+        else:
+            raise UnconvertableVersion("%s does not know how to convert into %s" %
+                                       (self.versionparser_name, version.parsed_by))
 
     def print_help(self) -> None:
         print("%s\n"

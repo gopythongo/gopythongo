@@ -11,7 +11,7 @@ from typing import Any, Tuple, List, Type
 from semantic_version import Version as SemVerBase
 
 from gopythongo.utils import highlight, ErrorMessage, print_info
-from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser
+from gopythongo.versioners.parsers import VersionContainer, BaseVersionParser, UnconvertableVersion
 from gopythongo.versioners.parsers.pep440parser import PEP440Adapter
 
 
@@ -145,6 +145,9 @@ class SemVerVersionParser(BaseVersionParser):
         elif version.parsed_by == "pep440":
             return VersionContainer(SemVerAdapter.parse(SemVerVersionParser.semver_from_pep440(version.version)),
                                     self.versionparser_name)
+        else:
+            raise UnconvertableVersion("%s does not know how to convert into %s" %
+                                       (self.versionparser_name, version.parsed_by))
 
     def deserialize(self, serialized: str) -> VersionContainer[SemVerAdapter]:
         return VersionContainer(SemVerAdapter.parse(serialized), self.versionparser_name)

@@ -172,7 +172,7 @@ class AptlyStore(BaseStore):
                             "we now recursively search for an unused version string for %s" %
                             (action, highlight(str(after_action.version)), highlight(str(new_base)),
                              highlight(str(version.version)), highlight(package_name)))
-                self._find_new_version(package_name, after_action, action, args)
+                return self._find_new_version(package_name, after_action, action, args)
             else:
                 print_info("After executing action %s, the selected next version for %s is %s" %
                            (highlight(action), highlight(package_name), highlight(str(after_action.version))))
