@@ -39,6 +39,7 @@ def _result_envdir(envdir: str, envvar: str, value: str) -> None:
     with open(fn, mode="wt", encoding="utf-8") as envf:
         envf.write(value)
 
+
 _result = _result_output  # type: Callable[..., None]
 
 
