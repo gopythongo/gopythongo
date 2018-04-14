@@ -7,6 +7,8 @@
 import collections
 import shlex
 import subprocess
+from abc import ABCMeta, abstractmethod
+
 import configargparse
 import sys
 import os
@@ -201,10 +203,11 @@ class GoPythonGoEnableSuper(object):
         pass
 
 
-class CommandLinePlugin(GoPythonGoEnableSuper):
+class CommandLinePlugin(GoPythonGoEnableSuper, metaclass=ABCMeta):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
+    @abstractmethod
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         """
         Add command-line arguments to configure this plugin inside GoPythonGo. Do NOT add *required* arguments
@@ -215,6 +218,7 @@ class CommandLinePlugin(GoPythonGoEnableSuper):
         """
         pass
 
+    @abstractmethod
     def validate_args(self, args: configargparse.Namespace) -> None:
         """
         Validate the arguments added by ``add_args``. Feel free to raise ``ErrorMessage`` from here if any argument

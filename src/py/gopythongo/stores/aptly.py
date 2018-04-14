@@ -259,5 +259,13 @@ class AptlyStore(BaseStore):
 
             run_process(*cmdline)
 
+    def print_help(self) -> None:
+        print("\n"
+              "===========\n"
+              "\n"
+              "Build %s compatible Debian package repositories and signs them. It uses "
+              "the excellent %s tool for managing the repository, including GPG signing." %
+              (highlight("Aptly Store"), highlight("aptly"),))
+
 
 store_class = AptlyStore  # type: Type[AptlyStore]

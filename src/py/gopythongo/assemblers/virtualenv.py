@@ -89,5 +89,11 @@ class VirtualEnvAssembler(BaseAssembler):
                 run_spy = [envpy, "setup.py", "install"]
                 run_process(*run_spy)
 
+    def print_help(self) -> None:
+        print("VirtualEnv Assembler\n"
+              "====================\n"
+              "\n"
+              "%s\n" % (highlight("TODO"),))
+
 
 assembler_class = VirtualEnvAssembler  # type: Type[VirtualEnvAssembler]

@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 import io
@@ -103,12 +104,14 @@ class BaseInitializer(GoPythonGoEnableSuper):
         return f
 
     @property
+    @abstractmethod
     def initializer_name(self) -> str:
         """
         **@property**
         """
         raise NotImplementedError("Subclasses of BaseInitializer must override initializer_name")
 
+    @abstractmethod
     def build_config(self) -> None:
         """
         The implementation of this method should create all necessary configuration files for the quick start
@@ -116,6 +119,7 @@ class BaseInitializer(GoPythonGoEnableSuper):
         """
         raise NotImplementedError("Subclasses of BaseInitializer must override build_config")
 
+    @abstractmethod
     def print_help(self) -> None:
         raise ErrorMessage("Unfortunately %s does not provide help" % self.initializer_name)
 

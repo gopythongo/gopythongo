@@ -231,5 +231,15 @@ class FPMPacker(BasePacker):
                 self.packer_name
             ))
 
+    def print_help(self) -> None:
+        print("%s\n"
+              "==========\n"
+              "\n"
+              "The FPM packer uses the excellent fpm tool to build Debian packages. It reads\n"
+              "a file that contains one fpm command-line parameter per line, commonly located\n"
+              "in %s.\n"
+              "\n"
+              "TODO: Example\n" % (highlight("FPM Packer"), highlight(".gopythongo/fpm_opts")))
+
 
 packer_class = FPMPacker  # type: Type[FPMPacker]

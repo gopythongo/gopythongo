@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
+from abc import abstractmethod
 
 import configargparse
 
@@ -46,6 +47,7 @@ class BaseAssembler(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def assembler_name(self) -> str:
         """
         **@property**
@@ -53,16 +55,18 @@ class BaseAssembler(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_name")
 
     @property
+    @abstractmethod
     def assembler_type(self) -> str:
         """
         **@property**
         """
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assembler_type")
 
-
+    @abstractmethod
     def assemble(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement assemble")
 
+    @abstractmethod
     def print_help(self) -> None:
         raise NotImplementedError("Each subclass of BaseAssembler MUST implement print_help")
 

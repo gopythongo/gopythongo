@@ -44,6 +44,9 @@ class SemVerVersionParser(BaseVersionParser):
                                help="Try really hard to make the input version into something resembling SemVer. Use "
                                     "this with caution.")
 
+    def validate_args(self, args: configargparse.Namespace) -> None:
+        return
+
     def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer[SemVerAdapter]:
         try:
             if args.semver_coerce:

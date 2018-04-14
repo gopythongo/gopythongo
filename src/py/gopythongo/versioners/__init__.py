@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 
@@ -58,6 +59,7 @@ class BaseVersioner(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def versioner_name(self) -> str:
         """
         **@property**
@@ -69,6 +71,7 @@ class BaseVersioner(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseVersioner MUST implement versioner_name")
 
     @property
+    @abstractmethod
     def can_read(self) -> bool:
         """
         **@property**
@@ -81,6 +84,7 @@ class BaseVersioner(CommandLinePlugin):
         """
         print("Versioner %s provides no help, unfortunately." % self.versioner_name)
 
+    @abstractmethod
     def read(self, args: configargparse.Namespace) -> str:
         """
         Read a version string from wherever this Versioner reads versions. The parsed command-line arguments are
