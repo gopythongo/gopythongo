@@ -5,6 +5,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import os
 import re
 import sys
 
@@ -13,6 +14,7 @@ from setuptools import find_packages
 
 _package_root = "src/py"
 _root_package = 'gopythongo'
+_HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 with open("src/py/gopythongo/__init__.py", "rt", encoding="utf-8") as vf:
@@ -45,6 +47,11 @@ _requirements = [
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
     _requirements.append('backports.shutil_get_terminal_size==1.0.0')
 
+try:
+    long_description = open(os.path.join(_HERE, 'README.md')).read()
+except IOError:
+    long_description = None
+
 setup(
     name='gopythongo',
     version=_version,
@@ -74,4 +81,5 @@ setup(
     maintainer="GoPythonGo.com",
     maintainer_email="info@gopythongo.com",
     description="Build shippable virtualenvs",
+    long_description=long_description,
 )
