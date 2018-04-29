@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 
@@ -37,6 +38,7 @@ class BaseStore(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def store_name(self) -> str:
         """
         **@property**
@@ -48,6 +50,7 @@ class BaseStore(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BaseStore MUST implement store_name")
 
     @property
+    @abstractmethod
     def supported_version_parsers(self) -> List[str]:
         """
         **@property**
@@ -55,6 +58,7 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement supported_version_parsers")
 
+    @abstractmethod
     def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
                                  action: str,
                                  args: configargparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
@@ -72,9 +76,11 @@ class BaseStore(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseStore MUST implement generate_future_versions")
 
+    @abstractmethod
     def store(self, args: configargparse.Namespace) -> None:
         raise NotImplementedError("Each subclass of BaseStore MUST implement store")
 
+    @abstractmethod
     def print_help(self) -> None:
         raise NotImplementedError("Each subclass of BaseStore MUST implement print_help")
 

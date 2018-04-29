@@ -16,6 +16,7 @@ import sys
 
 from gopythongo.main import DebugConfigAction
 from requests.exceptions import RequestException
+from typing import Dict
 
 args_for_setting_config_path = ["--vault-wrapper-config"]  # type: List[str]
 default_config_files = [".gopythongo/vaultwrapper"]  # type: List[str]
@@ -256,7 +257,7 @@ def main() -> None:
     else:
         cmdline = [args.wrap_program] + wrapped_args
 
-    modenv = {}
+    modenv = {}  # type: Dict[str, str]
     if args.gpg_homedir:
         modenv = {"GNUPGHOME": args.gpg_homedir}
 

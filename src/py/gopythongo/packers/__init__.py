@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 
@@ -35,6 +36,7 @@ class BasePacker(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def packer_name(self) -> str:
         """
         **@property**
@@ -46,6 +48,7 @@ class BasePacker(CommandLinePlugin):
         raise NotImplementedError("Each subclass of BasePacker MUST implement packer_name")
 
     @property
+    @abstractmethod
     def provides(self) -> List[str]:
         """
         **@property**
@@ -56,6 +59,7 @@ class BasePacker(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BasePacker MUST implement provides")
 
+    @abstractmethod
     def pack(self, args: configargparse.Namespace) -> None:
         pass
 
@@ -76,6 +80,7 @@ class BasePacker(CommandLinePlugin):
         """
         return None
 
+    @abstractmethod
     def print_help(self) -> None:
         raise NotImplementedError("Each subclass of BasePacker MUST implement print_help")
 

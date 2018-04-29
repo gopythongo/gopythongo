@@ -67,3 +67,5 @@ def create_targzip(*, filename: str=None, paths: Sequence[Tuple[str, str]], verb
     else:
         tf.close()
         return cast(BytesIO, f)
+
+    return None

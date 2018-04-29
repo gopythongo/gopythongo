@@ -6,11 +6,12 @@
 
 import configargparse
 
-from typing import Any, Type
+from typing import Any, Type, Sequence, Union, Dict, List
 
 import gopythongo.shared.docker_args as _docker_args
 
 from gopythongo.stores import BaseStore
+from gopythongo.versioners import VersionContainer
 
 
 class DockerStore(BaseStore):
@@ -21,6 +22,10 @@ class DockerStore(BaseStore):
     def store_name(self) -> str:
         return u"docker"
 
+    @property
+    def supported_version_parsers(self) -> List[str]:
+        pass
+
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _docker_args.add_shared_args(parser)
 
@@ -28,6 +33,11 @@ class DockerStore(BaseStore):
         pass
 
     def store(self, args: configargparse.Namespace) -> None:
+        pass
+
+    def generate_future_versions(self, artifact_names: Sequence[str], base_version: VersionContainer,
+                                 action: str,
+                                 args: configargparse.Namespace) -> Union[Dict[str, VersionContainer], None]:
         pass
 
     def print_help(self) -> None:

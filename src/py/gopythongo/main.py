@@ -17,13 +17,14 @@ import os
 
 from gopythongo.utils.buildcontext import the_context
 from types import FrameType
-from typing import List, Any, Iterable, Set, Sequence, Union, Callable
+from typing import List, Any, Iterable, Set, Sequence, Union, Callable, Dict
 
 import gopythongo
 
 from gopythongo import initializers, builders, versioners, assemblers, packers, stores, utils
 from gopythongo.utils import highlight, print_error, print_warning, print_info, init_color, ErrorMessage, print_debug, \
     success
+
 
 tempfiles = []  # type: List[str]
 default_config_files = [".gopythongo/config"]  # type: List[str]
@@ -195,7 +196,7 @@ def _find_default_mounts() -> Set[str]:
                             default=[])
     args, _ = miniparser.parse_known_args()
 
-    # type: ignore, because mypy doesn't parse add_argument above correctly
+    # - type: ignore, because mypy doesn't parse add_argument above correctly
     if not args.config:
         args.config = default_config_files
 

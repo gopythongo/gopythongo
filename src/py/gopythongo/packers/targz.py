@@ -92,5 +92,11 @@ class TarGzPacker(BasePacker):
                 self.packer_name
             ))
 
+    def print_help(self) -> None:
+        print("%s\n"
+              "==============\n"
+              "\n"
+              "Just creates a gzipped tar archive." % highlight(".tar.gz Packer"))
+
 
 packer_class = TarGzPacker  # type: Type[TarGzPacker]

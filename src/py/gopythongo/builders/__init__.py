@@ -3,6 +3,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 import subprocess
@@ -62,12 +63,14 @@ class BaseBuilder(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def builder_name(self) -> str:
         """
         **@property**
         """
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement builder_name")
 
+    @abstractmethod
     def build(self, args: configargparse.Namespace) -> None:
         """
         Run a build environment while making sure that:
@@ -78,6 +81,7 @@ class BaseBuilder(CommandLinePlugin):
         """
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement build")
 
+    @abstractmethod
     def print_help(self) -> None:
         raise NotImplementedError("Each subclass of BaseBuilder MUST implement print_help")
 

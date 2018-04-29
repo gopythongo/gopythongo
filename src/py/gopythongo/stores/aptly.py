@@ -124,7 +124,7 @@ class AptlyStore(AptlyBaseStore):
                             "we now recursively search for an unused version string for %s" %
                             (action, highlight(str(after_action.version)), highlight(str(new_base)),
                              highlight(str(version.version)), highlight(package_name)))
-                self._find_new_version(package_name, after_action, action, args)
+                return self._find_new_version(package_name, after_action, action, args)
             else:
                 print_info("After executing action %s, the selected next version for %s is %s" %
                            (highlight(action), highlight(package_name), highlight(str(after_action.version))))
@@ -213,11 +213,13 @@ class AptlyStore(AptlyBaseStore):
             run_process(*cmdline)
 
     def print_help(self) -> None:
-        print("Aptly Store\n"
+        print("\n"
               "===========\n"
               "\n"
-              "Stores .deb packages in a local aptly-managed (https://aptly.info/) package\n"
-              "repository.\n")
+              "Build %s compatible Debian package repositories and signs them. It uses\n"
+              "the excellent %s tool for managing the repository, including GPG signing. See\n"
+              "https://aptly.info/ for more information.\n" %
+              (highlight("Aptly Store"), highlight("aptly"),))
 
 
 store_class = AptlyStore  # type: Type[AptlyStore]

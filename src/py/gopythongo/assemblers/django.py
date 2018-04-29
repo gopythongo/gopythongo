@@ -124,5 +124,11 @@ class DjangoAssembler(BaseAssembler):
             if args.static_root and not os.path.exists(args.static_root):
                 raise ErrorMessage("%s should now exist, but it doesn't" % args.static_root)
 
+    def print_help(self) -> None:
+        print("Django Assembler\n"
+              "================\n"
+              "\n"
+              "%s\n" % (highlight("TODO"),))
+
 
 assembler_class = DjangoAssembler  # type: Type[DjangoAssembler]

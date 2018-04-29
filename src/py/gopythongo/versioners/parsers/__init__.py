@@ -3,10 +3,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+from abc import abstractmethod
 
 import configargparse
 
-from typing import Tuple, Any, List, Dict, TypeVar, Generic
+from typing import Tuple, Any, List, Dict, TypeVar, Generic, Union
 
 from gopythongo.utils import CommandLinePlugin, GoPythonGoEnableSuper, ErrorMessage, highlight
 
@@ -109,6 +110,7 @@ class BaseVersionParser(CommandLinePlugin):
         super().__init__(*args, **kwargs)
 
     @property
+    @abstractmethod
     def versionparser_name(self) -> str:
         """
         **@property**
@@ -126,6 +128,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         print("Version Parser %s provides no help, unfortunately." % self.versionparser_name)
 
+    @abstractmethod
     def parse(self, version_str: str, args: configargparse.Namespace) -> VersionContainer:
         """
         Is called by GoPythonGo to parse a version string as it was read by a Versioner.
@@ -136,6 +139,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         raise NotImplementedError("Every Version Parser MUST implement parse()")
 
+    @abstractmethod
     def deserialize(self, version_str: str) -> VersionContainer:
         """
         parses a version string back into a container, it should be assumed that ``version_str`` has been created by
@@ -157,7 +161,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         if parserid == self.versionparser_name:
             return True, True  # we can convert and we can do so losslessly
-        return None
+        return False, False
 
     def can_convert_to(self, parserid: str) -> Tuple[bool, bool]:
         """
@@ -209,6 +213,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         return []
 
+    @abstractmethod
     def can_execute_action(self, version: VersionContainer, action: str) -> bool:
         """
         This method is called to make sure that a Version Parser, given a ``VersionContainer`` instance in ``version``
@@ -222,6 +227,7 @@ class BaseVersionParser(CommandLinePlugin):
         """
         raise NotImplementedError("This Version Parser does not support executing actions")
 
+    @abstractmethod
     def execute_action(self, version: VersionContainer, action: str) -> VersionContainer:
         """
         Execute an action on a version.
