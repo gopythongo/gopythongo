@@ -31,8 +31,8 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 _requirements = [
     'Jinja2==2.10',
     'ConfigArgParse==0.13.0',
-    'Sphinx==1.7.4',
-    'sphinx-rtd-theme==0.3.1',
+    'Sphinx==1.7.5',
+    'sphinx-rtd-theme==0.4.0',
     'colorama==0.3.9',
     'semantic-version==2.6.0',
     'packaging==17.1',
@@ -40,7 +40,7 @@ _requirements = [
     'hvac==0.5.0',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==17.5.0',
+    'pyopenssl==18.0.0',
     'bumpversion==0.5.3',
 ]
 
