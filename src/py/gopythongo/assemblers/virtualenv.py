@@ -53,7 +53,8 @@ class VirtualEnvAssembler(BaseAssembler):
             if not (os.path.exists(path) and os.path.exists(os.path.join(path, "setup.py"))):
                 raise ErrorMessage("Cannot run setup.py in %s, because it does not exist" % highlight(path))
 
-        if not os.path.exists(args.virtualenv_binary) or not os.access(args.virtualenv_binary, os.X_OK):
+        if args.is_inner and not os.path.exists(args.virtualenv_binary) or not \
+                os.access(args.virtualenv_binary, os.X_OK):
             raise ErrorMessage("virtualenv not found in path or not executable (%s).\n"
                                "You can specify an alternative path with %s" %
                                (args.virtualenv_binary, highlight("--use-virtualenv")))
