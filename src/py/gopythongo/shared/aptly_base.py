@@ -49,15 +49,15 @@ class AptlyBaseVersioner(BaseVersioner):
                                 allow_fallback_version: bool=False) -> List[DebianVersion]:
             raise NotImplementedError("Each subclass of AptlyBaseVersioner must implement query_repo_versions")
 
-        def read(self, args: configargparse.Namespace) -> str:
-            versions = self.query_repo_versions(args.aptly_query, args, allow_fallback_version=True)
+    def read(self, args: configargparse.Namespace) -> str:
+        versions = self.query_repo_versions(args.aptly_query, args, allow_fallback_version=True)
 
-            if not versions:
-                raise ErrorMessage("The Aptly Versioner was unable to find a base version using the specified query '%s'. "
-                                   "If the query is correct, you should specify a fallback version using %s." %
-                                   (highlight(args.aptly_query), highlight("--fallback-version")))
+        if not versions:
+            raise ErrorMessage("The Aptly Versioner was unable to find a base version using the specified query '%s'. "
+                               "If the query is correct, you should specify a fallback version using %s." %
+                               (highlight(args.aptly_query), highlight("--fallback-version")))
 
-            return str(versions[-1])
+        return str(versions[-1])
 
 
 class AptlyBaseStore(BaseStore):
