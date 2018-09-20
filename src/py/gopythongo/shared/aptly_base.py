@@ -22,6 +22,7 @@ class AptlyBaseVersioner(BaseVersioner):
         super().__init__(*args, **kwargs)
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
+        global _aptly_shared_args_added
         _aptly_args.add_shared_args(parser)
 
         if not _aptly_shared_args_added:
