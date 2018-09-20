@@ -74,4 +74,4 @@ class RemoteAptlyVersioner(AptlyBaseVersioner):
                     return []
 
 
-versioner_class = RemoteAptlyVersioner  # type: RemoteAptlyVersioner
+versioner_class = RemoteAptlyVersioner  # type: Type[RemoteAptlyVersioner]
