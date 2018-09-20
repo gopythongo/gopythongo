@@ -11,7 +11,7 @@ from typing import List
 
 from gopythongo.utils import highlight, ErrorMessage, create_script_path
 from gopythongo.utils.buildcontext import the_context
-from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionString
+
 
 _aptly_shared_args_added = False  # type: bool
 
@@ -31,18 +31,6 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
                                      help="Path to the aptly config file to use.")
         gr_aptly_shared.add_argument("--repo", dest="aptly_repo", default=None, env_var="REPO",
                                      help="Name of the aptly repository to place the package in.")
-
-        gr_aptly_shared.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
-                                     help="If the APT repository does not yet contain a package with the name "
-                                          "specified by --aptly-query, the Aptly Versioner can return a fallback "
-                                          "value. This is useful for fresh repositories.")
-        gr_aptly_shared.add_argument("--aptly-query", dest="aptly_query", default=None,
-                                     help="Set the query to run on the aptly repo. For example: get the latest "
-                                          "revision of a specific version through --aptly-query='Name ([yourpackage]), "
-                                          "$Version (>=0.9.5), Version (<=0.9.6)'). More information on the query "
-                                          "syntax can be found on https://aptly.info. To find the overall latest "
-                                          "version of GoPythonGo in a repo, you would use "
-                                          "--aptly-query='Name (gopythongo)'.")
 
         gr_ast = parser.add_argument_group("Aptly shared options (Stores)")
         gr_ast.add_argument("--aptly-distribution", dest="aptly_distribution", default="", env_var="APTLY_DISTRIBUTION",
@@ -95,16 +83,6 @@ def validate_shared_args(args: configargparse.Namespace) -> None:
     if not args.aptly_repo:
         raise ErrorMessage("To use the aptly Versioner or Store, you MUST provide the name of the aptly repository to "
                            "operate on via %s" % highlight("--repo"))
-
-    if args.aptly_fallback_version:
-        try:
-            DebianVersion.fromstring(args.aptly_fallback_version)
-        except InvalidDebianVersionString as e:
-            raise ErrorMessage("The fallback version string you specified via %s is not a valid Debian version "
-                               "string. (%s)" % (highlight("--fallback-version"), str(e))) from e
-
-    if not args.aptly_query:
-        raise ErrorMessage("To use the Aptly Versioner, you must specify --aptly-query.")
 
     if args.use_aptly_wrapper:
         wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
