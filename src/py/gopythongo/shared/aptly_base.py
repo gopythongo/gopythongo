@@ -14,24 +14,30 @@ from gopythongo.utils.debversion import DebianVersion, InvalidDebianVersionStrin
 from gopythongo.versioners import BaseVersioner
 
 
+_aptly_shared_args_added = False  # type: bool
+
+
 class AptlyBaseVersioner(BaseVersioner):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         _aptly_args.add_shared_args(parser)
-        gr_aptly_shared = parser.add_argument_group("Aptly shared options (Versioners)")
-        gr_aptly_shared.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
-                                     help="If the APT repository does not yet contain a package with the name "
-                                          "specified by --aptly-query, the Aptly Versioner can return a fallback "
-                                          "value. This is useful for fresh repositories.")
-        gr_aptly_shared.add_argument("--aptly-query", dest="aptly_query", default=None,
-                                     help="Set the query to run on the aptly repo. For example: get the latest "
-                                          "revision of a specific version through --aptly-query='Name ([yourpackage]), "
-                                          "$Version (>=0.9.5), Version (<=0.9.6)'). More information on the query "
-                                          "syntax can be found on https://aptly.info. To find the overall latest "
-                                          "version of GoPythonGo in a repo, you would use "
-                                          "--aptly-query='Name (gopythongo)'.")
+
+        if not _aptly_shared_args_added:
+            gr_aptly_shared = parser.add_argument_group("Aptly shared options (Versioners)")
+            gr_aptly_shared.add_argument("--aptly-fallback-version", dest="aptly_fallback_version", default=None,
+                                         help="If the APT repository does not yet contain a package with the name "
+                                              "specified by --aptly-query, the Aptly Versioner can return a fallback "
+                                              "value. This is useful for fresh repositories.")
+            gr_aptly_shared.add_argument("--aptly-query", dest="aptly_query", default=None,
+                                         help="Set the query to run on the aptly repo. For example: get the latest "
+                                              "revision of a specific version through --aptly-query="
+                                              "'Name ([yourpackage]), $Version (>=0.9.5), Version (<=0.9.6)'). More "
+                                              "information on the query syntax can be found on https://aptly.info. To "
+                                              "find the overall latest version of GoPythonGo in a repo, you would use "
+                                              "--aptly-query='Name (gopythongo)'.")
+        _aptly_shared_args_added = True
 
     def validate_args(self, args: configargparse.Namespace) -> None:
             _aptly_args.validate_shared_args(args)
