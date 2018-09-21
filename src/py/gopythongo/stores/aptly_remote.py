@@ -72,8 +72,8 @@ class RemoteAptlyStore(AptlyBaseStore):
     @staticmethod
     def _get_aptly_versioner() -> AptlyBaseVersioner:
         from gopythongo.versioners import get_versioners
-        from gopythongo.versioners.aptly import AptlyVersioner
-        aptlyv = cast(AptlyVersioner, get_versioners()["remote-aptly"])
+        from gopythongo.versioners.aptly_remote import RemoteAptlyVersioner
+        aptlyv = cast(RemoteAptlyVersioner, get_versioners()["remote-aptly"])
         return aptlyv
 
     @staticmethod
