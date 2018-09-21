@@ -3,31 +3,30 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+import shutil
+import uuid
 
+import aptly_api
 import configargparse
-import tempfile
 
 from typing import Any, Sequence, Union, Dict, cast, List, Type
 
-from gopythongo.shared.aptly_args import get_aptly_cmdline
-from gopythongo.shared.aptly_base import AptlyBaseStore
-from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
-    create_script_path, cmdargs_unquote_split
+from gopythongo.shared.aptly_base import AptlyBaseStore, AptlyBaseVersioner
+from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, \
+    create_script_path
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
 from gopythongo.versioners.parsers.debianparser import DebianVersionParser
-from gopythongo.versioners.aptly import AptlyVersioner
 
 
-class AptlyStore(AptlyBaseStore):
+class RemoteAptlyStore(AptlyBaseStore):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.aptly_wrapper_cmd = None  # type: str
 
     @property
     def store_name(self) -> str:
-        return u"aptly"
+        return "remote-aptly"
 
     @property
     def supported_version_parsers(self) -> List[str]:
@@ -36,16 +35,23 @@ class AptlyStore(AptlyBaseStore):
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         super().add_args(parser)
 
-        gp_ast = parser.add_argument_group("Aptly Local Store options")
-        gp_ast.add_argument("--aptly-repo-opts", dest="aptly_repo_opts", default="", env_var="APTLY_REPO_OPTS",
-                            help="Specify additional command-line parameters which will be appended to every "
-                                 "'aptly repo' command executed by the Aptly Store.")
-        gp_ast.add_argument("--aptly-publish-opts", dest="aptly_publish_opts", default="", env_var="APTLY_PUBLISH_OPTS",
-                            help="Specify additional command-line parameters which will be appended to every "
-                                 "'aptly publish' command executed by the Aptly Store.")
+        gp_ast = parser.add_argument_group("Aptly Remote Store options")
+        gp_ast.add_argument("--aptly-architecture", dest="aptly_architectures", action="append", default=[],
+                            help="Define what architectures to publish via aptly.")
+        gp_ast.add_argument("--aptly-skip-signing", dest="aptly_skip_signing", action="store_true", default=False,
+                            env_var="APTLY_SKIP_SIGNING",
+                            help="Tell aptly via API to skip signing the repo.")
+        gp_ast.add_argument("--aptly-gpg-key", dest="aptly_gpgkey", default=None,
+                            env_var="APTLY_GPG_KEY",
+                            help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
+                                 "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
+                                 "the secret keyring on the server. The best way to achieve this is by setting the "
+                                 "GNUPGHOME environment variable on the 'aptly api serve' command.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
+        if not args.aptly_server_url:
+            raise ErrorMessage("When using remote-aptly, you must provide %s" % highlight("--aptly-server-url"))
 
         from gopythongo.versioners import get_version_parsers
         debvp = cast(DebianVersionParser, get_version_parsers()["debian"])  # type: DebianVersionParser
@@ -56,17 +62,18 @@ class AptlyStore(AptlyBaseStore):
                                (highlight(args.version_action), highlight(args.version_action),
                                 highlight(", ".join(debvp.supported_actions))))
 
-        if "-distribution" in args.aptly_publish_opts:
-            print_warning("You are using %s in your Aptly Store options. You should use the %s GoPythonGo argument "
-                          "instead, since using -distribution in the aptly command line is invalid when GoPythonGo "
-                          "tries to update a published repo." %
-                          (highlight("-distribution"), highlight("--aptly-distribution")))
+        if args.aptly_skip_signing and args.aptly_gpgkey:
+            raise ErrorMessage("Don't specify to skip signing (--aptly-skip-signing) and also specify a GPG key for "
+                               "signing (--aptly-gpgkey).")
+        if not args.aptly_skip_signing and not args.aptly_gpgkey:
+            raise ErrorMessage("You must specify the key id or fingerprint of the GPG key to use to sign the published "
+                               "apt repository.")
 
     @staticmethod
-    def _get_aptly_versioner() -> AptlyVersioner:
+    def _get_aptly_versioner() -> AptlyBaseVersioner:
         from gopythongo.versioners import get_versioners
-        from gopythongo.versioners.aptly import AptlyVersioner
-        aptlyv = cast(AptlyVersioner, get_versioners()["aptly"])
+        from gopythongo.versioners.aptly_remote import RemoteAptlyVersioner
+        aptlyv = cast(RemoteAptlyVersioner, get_versioners()["remote-aptly"])
         return aptlyv
 
     @staticmethod
@@ -124,7 +131,7 @@ class AptlyStore(AptlyBaseStore):
                             "we now recursively search for an unused version string for %s" %
                             (action, highlight(str(after_action.version)), highlight(str(new_base)),
                              highlight(str(version.version)), highlight(package_name)))
-                return self._find_new_version(package_name, after_action, action, args)
+                self._find_new_version(package_name, after_action, action, args)
             else:
                 print_info("After executing action %s, the selected next version for %s is %s" %
                            (highlight(action), highlight(package_name), highlight(str(after_action.version))))
@@ -144,82 +151,74 @@ class AptlyStore(AptlyBaseStore):
         return ret
 
     def store(self, args: configargparse.Namespace) -> None:
-        self.aptly_wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
+        _aptly = aptly_api.Client(args.aptly_server_url)
+        _tmpfolder = str(uuid.uuid4())
         # add each package to the repo
         for pkg in the_context.packer_artifacts:
-            if not args.aptly_dont_remove:  # aptly DO remove
-                if self._check_package_exists(pkg.artifact_metadata["package_name"], args):
-                    print_info("Removing existing package %s from repo %s" %
-                               (highlight(pkg.artifact_metadata["package_name"]), args.aptly_repo))
-                    cmdline = get_aptly_cmdline(args)
-                    cmdline += ["repo", "remove", args.aptly_repo, pkg.artifact_metadata["package_name"]]
-                    run_process(*cmdline)
-
             print_info("Adding %s to repo %s" % (highlight(pkg.artifact_filename), highlight(args.aptly_repo)))
-            cmdline = get_aptly_cmdline(args)
-            cmdline += cmdargs_unquote_split(args.aptly_repo_opts)
+            try:
+                _aptly.files.upload(_tmpfolder, pkg.artifact_filename)
+            except aptly_api.AptlyAPIException as e:
+                raise ErrorMessage("Unable to upload package file %s to Aptly temporary folder %s. Error was: %s" %
+                                   (pkg.artifact_filename, _tmpfolder, str(e))) from e
 
-            cmdline += ["repo", "add", args.aptly_repo, pkg.artifact_filename]
-            run_process(*cmdline)
+            report = _aptly.repos.add_uploaded_file(args.aptly_repo, _tmpfolder, pkg.artifact_filename,
+                                                    remove_processed_files=True,
+                                                    force_replace=not args.aptly_dont_remove)
 
         # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
             # override to use vault_wrapper if specified on the command-line
-            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd)
-            if args.use_aptly_wrapper:
-                cmdline += ["--wrap-mode", "aptly"]
-                cmdline += ["--wrap-program", args.aptly_executable]
-            cmdline += ["publish"]
+            _aptly_wrapper_cmd = create_script_path(the_context.gopythongo_path, "vaultwrapper")
+            cmdline = [_aptly_wrapper_cmd, "--wrap-program", shutil.which("cat")]
+
+            if args.aptly_passphrase:
+                passphrase = args.aptly_passphrase
+            elif args.use_aptly_wrapper:
+                vault_ret = run_process(*cmdline, allow_nonzero_exitcode=False)
+                if vault_ret.output.strip():
+                    raise ErrorMessage("vaultwrapper returned an empty passphrase.")
+                else:
+                    passphrase = vault_ret.output.strip()
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
-            query_publish = get_aptly_cmdline(args) + ["publish"] + ["list", "-raw"]
-            out = run_process(*query_publish)
-            cmd = "repo"
-            if out.output:
-                lines = out.output.split("\n")  # type: List[str]
-                for l in lines:
-                    if l.strip() != "":
-                        endpoint, dist = l.split(" ", 1)
-                        if endpoint == args.aptly_publish_endpoint:
-                            print_info("Publishing endpoint %s already in use. Executing update..." %
-                                       highlight(args.aptly_publish_endpoint))
-                            cmd = "update"
+            publish_kwargs = {
+                "sources": {"name": args.aptly_repo},
+                "architectures": args.aptly_architectures,
+            }
+            aptly_kwargs = {
+                "distribution": args.aptly_distribution,
+                "prefix": args.aptly_publish_endpoint,
+            }
 
-            cmdline += [cmd,]
-
-            if args.aptly_passphrase:
-                # save the passphrase to a temporary file for aptly to read so we don't expose the passphrase on
-                # the process list
-                import gopythongo.main
-                tfd, tfn = tempfile.mkstemp()
-                gopythongo.main.tempfiles.append(tfn)
-                with open(tfd, "wt", encoding="utf-8") as tf:
-                    tf.write(args.aptly_publish_passphrase)
-
-                cmdline += ["-passphrase-file", tfn]
-
-            # when publishing the repo for the first time we need to add the -distribution flag
-            if cmd == "repo":
-                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
-                cmdline += ["-distribution=%s" % args.aptly_distribution]
-                cmdline += [args.aptly_repo, args.aptly_publish_endpoint]
+            if args.aptly_skip_signing:
+                aptly_kwargs["sign_skip"] = True
             else:
-                cmdline += cmdargs_unquote_split(args.aptly_publish_opts)
-                cmdline += [args.aptly_distribution, args.aptly_publish_endpoint]
+                aptly_kwargs["sign_gpgkey"] = args.aptly_gpgkey
+                aptly_kwargs["sign_passphrase"] = passphrase
 
-            run_process(*cmdline)
+            publish_kwargs.update(aptly_kwargs)
+            aptly_oper = lambda: _aptly.publish.publish(**publish_kwargs)
+            for published in  _aptly.publish.list():
+                if "%s:%s" % (published.storage, published.prefix) == args.aptly_publish_endpoint:
+                    print_info("Publishing endpoint %s already in use. Executing update..." %
+                               highlight(args.aptly_publish_endpoint))
+                    aptly_oper = lambda: _aptly.publish.update(**aptly_kwargs)
+                    break
+            aptly_oper()
 
     def print_help(self) -> None:
-        print("\n"
-              "===========\n"
+        print("Remove Aptly Store\n"
+              "==================\n"
               "\n"
-              "Build %s compatible Debian package repositories and signs them. It uses\n"
-              "the excellent %s tool for managing the repository, including GPG signing. See\n"
-              "https://aptly.info/ for more information.\n" %
-              (highlight("Aptly Store"), highlight("aptly"),))
+              "Stores .deb packages in a remote package repository managed by aptly\n"
+              "(https://aptly.info). The remote repository must run 'aptly api serve', i.e. an\n"
+              "aptly API server that this storage plug-in can call. This functionality is\n"
+              "especially useful if used inside an isolating build server like concourse.ci\n"
+              "where the build result can then be uploaded to the repository through the API.\n")
 
 
-store_class = AptlyStore  # type: Type[AptlyStore]
+store_class = RemoteAptlyStore  # type: Type[RemoteAptlyStore]

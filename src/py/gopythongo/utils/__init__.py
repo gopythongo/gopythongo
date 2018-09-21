@@ -222,7 +222,8 @@ class CommandLinePlugin(GoPythonGoEnableSuper, metaclass=ABCMeta):
     def validate_args(self, args: configargparse.Namespace) -> None:
         """
         Validate the arguments added by ``add_args``. Feel free to raise ``ErrorMessage`` from here if any argument
-        is invalid.
+        is invalid. Use `args.is_inner` to check whether ``validate_args`` is called on the "inner" GoPythonGo instance
+        that runs in the isolated environment.
 
         :param args: The parsed command-line arguments as provided by configargparse
         """

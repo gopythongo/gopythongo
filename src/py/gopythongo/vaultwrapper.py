@@ -152,6 +152,10 @@ def get_parser() -> configargparse.ArgumentParser:
                          help="Set the app-id for Vault app-id authentication.")
     gp_auth.add_argument("--user-id", dest="vault_userid", env_var="VAULT_USERID", default=None,
                          help="Set the user-id for Vault app-id authentication.")
+    gp_auth.add_argument("--role-id", dest="vault_roleid", env_var="VAULT_ROLEID", default=None,
+                         help="Set the role-id for Vault approle authentication.")
+    gp_auth.add_argument("--secret-id", dest="vault_secretid", env_var="VAULT_SECRETID", default=None,
+                         help="Set the secret-id for Vault approle authentication.")
     gp_auth.add_argument("--client-cert", dest="client_cert", default=None, env_var="VAULT_CLIENTCERT",
                          help="Use a HTTPS client certificate to connect.")
     gp_auth.add_argument("--client-key", dest="client_key", default=None, env_var="VAULT_CLIENTKEY",
@@ -165,14 +169,16 @@ def validate_args(args: configargparse.Namespace) -> None:
         pass
     elif args.vault_appid and args.vault_userid:
         pass
+    elif args.vault_roleid and args.vault_secretid:
+        pass
     elif args.client_cert and args.client_key:
         pass
     else:
         _out("* ERR VAULT WRAPPER *: You must specify an authentication method, so you must pass either "
              "--token or --app-id and --user-id or --client-cert and --client-key or set the VAULT_TOKEN, "
-             "VAULT_APPID and VAULT_USERID environment variables respectively. If you run GoPythonGo under "
-             "sudo (e.g. for pbuilder), make sure your build server environment variables also exist in the "
-             "root shell, or build containers, or whatever else you're using.")
+             "VAULT_APPID and VAULT_USERID or VAULT_ROLEID and VAULT_SECRETID environment variables respectively. "
+             "If you run GoPythonGo under sudo (e.g. for pbuilder), make sure your build server environment "
+             "variables also exist in the root shell, or build containers, or whatever else you're using.")
         if args.vault_appid:
             _out("* INF VAULT WRAPPER *: appid is set")
         if args.vault_userid:
@@ -221,6 +227,9 @@ def main() -> None:
 
             if args.vault_appid:
                 vcl.auth_app_id(args.vault_appid, args.vault_userid)
+
+            if args.vault_roleid:
+                vcl.auth_approle(args.vault_roleid, args.vault_secretid)
         except RequestException as e:
             _out("* ERR VAULT WRAPPER *: Failure while authenticating to Vault. (%s)" % str(e))
             sys.exit(1)
