@@ -183,7 +183,7 @@ class AptlyStore(AptlyBaseStore):
                 for l in lines:
                     if l.strip() != "":
                         endpoint, dist = l.split(" ", 1)
-                        if endpoint == args.aptly_publish_endpoint:
+                        if endpoint == args.aptly_publish_endpoint and dist == args.aptly_distribution:
                             print_info("Publishing endpoint %s already in use. Executing update..." %
                                        highlight(args.aptly_publish_endpoint))
                             cmd = "update"

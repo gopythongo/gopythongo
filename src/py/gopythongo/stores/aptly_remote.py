@@ -179,9 +179,9 @@ class RemoteAptlyStore(AptlyBaseStore):
             elif args.use_aptly_wrapper:
                 vault_ret = run_process(*cmdline, allow_nonzero_exitcode=False)
                 if vault_ret.output.strip():
-                    raise ErrorMessage("vaultwrapper returned an empty passphrase.")
-                else:
                     passphrase = vault_ret.output.strip()
+                else:
+                    raise ErrorMessage("vaultwrapper returned an empty passphrase.")
 
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
@@ -202,7 +202,7 @@ class RemoteAptlyStore(AptlyBaseStore):
 
             publish_kwargs.update(aptly_kwargs)
             aptly_oper = lambda: _aptly.publish.publish(**publish_kwargs)
-            for published in  _aptly.publish.list():
+            for published in _aptly.publish.list():
                 if "%s:%s" % (published.storage, published.prefix) == args.aptly_publish_endpoint:
                     print_info("Publishing endpoint %s already in use. Executing update..." %
                                highlight(args.aptly_publish_endpoint))
