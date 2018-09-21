@@ -87,7 +87,7 @@ class FPMPacker(BasePacker):
                                   "errors! (http://bugs.python.org/issue9334).")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
-        if args.is_inner and not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK):
+        if args.is_inner and (not os.path.exists(args.fpm) or not os.access(args.fpm, os.X_OK)):
             raise ErrorMessage("fpm not found in path or not executable (%s).\n"
                                "You can specify an alternative executable using %s" %
                                (args.fpm, highlight("--use-fpm")))
