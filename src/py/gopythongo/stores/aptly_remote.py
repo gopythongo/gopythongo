@@ -11,14 +11,13 @@ import configargparse
 
 from typing import Any, Sequence, Union, Dict, cast, List, Type
 
-from gopythongo.shared.aptly_base import AptlyBaseStore
-from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, print_warning, \
-    create_script_path, cmdargs_unquote_split
+from gopythongo.shared.aptly_base import AptlyBaseStore, AptlyBaseVersioner
+from gopythongo.utils import print_debug, highlight, print_info, run_process, ErrorMessage, \
+    create_script_path
 from gopythongo.utils.buildcontext import the_context
 from gopythongo.utils.debversion import DebianVersion
 from gopythongo.versioners.parsers import VersionContainer
 from gopythongo.versioners.parsers.debianparser import DebianVersionParser
-from gopythongo.versioners.aptly import AptlyVersioner
 
 
 class RemoteAptlyStore(AptlyBaseStore):
@@ -40,8 +39,10 @@ class RemoteAptlyStore(AptlyBaseStore):
         gp_ast.add_argument("--aptly-architecture", dest="aptly_architectures", action="append", default=[],
                             help="Define what architectures to publish via aptly.")
         gp_ast.add_argument("--aptly-skip-signing", dest="aptly_skip_signing", action="store_true", default=False,
+                            env_var="APTLY_SKIP_SIGNING",
                             help="Tell aptly via API to skip signing the repo.")
         gp_ast.add_argument("--aptly-gpg-key", dest="aptly_gpgkey", default=None,
+                            env_var="APTLY_GPG_KEY",
                             help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
                                  "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
                                  "the secret keyring on the server. The best way to achieve this is by setting the "
@@ -69,10 +70,10 @@ class RemoteAptlyStore(AptlyBaseStore):
                                "apt repository.")
 
     @staticmethod
-    def _get_aptly_versioner() -> AptlyVersioner:
+    def _get_aptly_versioner() -> AptlyBaseVersioner:
         from gopythongo.versioners import get_versioners
         from gopythongo.versioners.aptly import AptlyVersioner
-        aptlyv = cast(AptlyVersioner, get_versioners()["aptly"])
+        aptlyv = cast(AptlyVersioner, get_versioners()["remote-aptly"])
         return aptlyv
 
     @staticmethod
