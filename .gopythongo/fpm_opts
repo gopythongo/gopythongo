@@ -1,5 +1,5 @@
--p gopythongo-aptlyapi-{{debian_version.version}}.deb
--n gopythongo-aptlyapi
+-p gopythongo-{{debian_version.version}}.deb
+-n gopythongo
 -v "{{debian_version.version}}"
 -m "Jonas Maurus <jonas@gopythongo.com>"
 -d python3
