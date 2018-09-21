@@ -76,8 +76,8 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
 def validate_shared_args(args: configargparse.Namespace) -> None:
     if not args.aptly_server_url and (not os.path.exists(args.aptly_executable) or
                                       not os.access(args.aptly_executable, os.X_OK)):
-        raise ErrorMessage("aptly not found in path or not executable (%s). You can specify "
-                           "an alternative path using %s" %
+        raise ErrorMessage("aptly not found in path or not executable (%s) and --aptly-server-url not set. You can "
+                           "specify an alternative path using %s" %
                            (args.aptly_executable, highlight("--use-aptly")))
 
     if not args.aptly_repo:
