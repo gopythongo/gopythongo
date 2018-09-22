@@ -186,7 +186,7 @@ class RemoteAptlyStore(AptlyBaseStore):
             # check whether the publishing endpoint is already in use by executing "aptly publish list" and if so,
             # execute "aptly publish update" instead of "aptly publish repo"
             publish_kwargs = {
-                "sources": {"name": args.aptly_repo},
+                "sources": [{"name": args.aptly_repo}],
                 "architectures": args.aptly_architectures,
             }
             aptly_kwargs = {
