@@ -30,19 +30,19 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 
 _requirements = [
     'Jinja2==2.10',
-    'ConfigArgParse==0.13.0',
-    'Sphinx==1.8.3',
-    'sphinx-rtd-theme==0.4.2',
+    'ConfigArgParse==0.14.0',
+    'Sphinx==1.8.4',
+    'sphinx-rtd-theme==0.4.3',
     'colorama==0.4.1',
     'semantic-version==2.6.0',
-    'packaging==18.0',
+    'packaging==19.0',
     'typing==3.6.6',
     'hvac==0.7.2',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==18.0.0',
+    'pyopenssl==19.0.0',
     'bumpversion==0.5.3',
-    'aptly-api-client==0.1.6',
+    'aptly-api-client==0.2.0',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
