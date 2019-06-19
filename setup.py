@@ -36,7 +36,7 @@ _requirements = [
     'colorama==0.4.1',
     'semantic-version==2.6.0',
     'packaging==19.0',
-    'typing==3.6.6',
+    'typing==3.7.4',
     'hvac==0.9.2',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
