@@ -34,7 +34,7 @@ _requirements = [
     'Sphinx==2.2.1',
     'sphinx-rtd-theme==0.4.3',
     'colorama==0.4.1',
-    'semantic-version==2.8.1',
+    'semantic-version==2.8.3',
     'packaging==19.2',
     'typing==3.7.4.1',
     'hvac==0.9.6',
