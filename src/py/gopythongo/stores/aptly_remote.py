@@ -165,6 +165,10 @@ class RemoteAptlyStore(AptlyBaseStore):
             report = _aptly.repos.add_uploaded_file(args.aptly_repo, _tmpfolder, pkg.artifact_filename,
                                                     remove_processed_files=True,
                                                     force_replace=not args.aptly_dont_remove)
+            if report.failed_files:
+                raise ErrorMessage("Unable to add uploaded file(s) to Aptly repo: %s" % str(report))
+            else:
+                print_debug("File import report: %s" % report)
 
         # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
