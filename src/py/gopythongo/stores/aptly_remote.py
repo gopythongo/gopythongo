@@ -168,7 +168,7 @@ class RemoteAptlyStore(AptlyBaseStore):
             if report.failed_files:
                 raise ErrorMessage("Unable to add uploaded file(s) to Aptly repo: %s" % str(report))
             else:
-                print_debug("File import report: %s" % report)
+                print_debug("File import report: %s" % str(report))
 
         # publish the repo or update it if it has been previously published
         if args.aptly_publish_endpoint:
