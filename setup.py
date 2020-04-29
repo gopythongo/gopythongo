@@ -30,11 +30,11 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 
 _requirements = [
     'Jinja2==2.11.2',
-    'ConfigArgParse==1.2.1',
-    'Sphinx==3.0.1',
+    'ConfigArgParse==1.2.3',
+    'Sphinx==3.0.3',
     'sphinx-rtd-theme==0.4.3',
     'colorama==0.4.3',
-    'semantic-version==2.8.4',
+    'semantic-version==2.8.5',
     'packaging==20.3',
     'typing==3.7.4.1',
     'hvac==0.10.1',
