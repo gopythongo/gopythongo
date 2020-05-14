@@ -41,7 +41,7 @@ _requirements = [
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
     'pyopenssl==19.1.0',
-    'bumpversion==0.5.3',
+    'bumpversion==0.6.0',
     'aptly-api-client==0.2.1',
 ]
 
