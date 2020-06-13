@@ -31,17 +31,17 @@ _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests
 _requirements = [
     'Jinja2==2.11.2',
     'ConfigArgParse==1.2.3',
-    'Sphinx==3.0.3',
+    'Sphinx==3.1.0',
     'sphinx-rtd-theme==0.4.3',
     'colorama==0.4.3',
     'semantic-version==2.8.5',
-    'packaging==20.3',
+    'packaging==20.4',
     'typing==3.7.4.1',
-    'hvac==0.10.1',
+    'hvac==0.10.3',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
     'pyopenssl==19.1.0',
-    'bumpversion==0.5.3',
+    'bumpversion==0.6.0',
     'aptly-api-client==0.2.1',
 ]
 
