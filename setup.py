@@ -40,7 +40,7 @@ _requirements = [
     'hvac==0.10.5',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==20.0.0',
+    'pyopenssl==20.0.1',
     'bumpversion==0.6.0',
     'aptly-api-client==0.2.1',
 ]
