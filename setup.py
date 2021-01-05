@@ -32,7 +32,7 @@ _requirements = [
     'Jinja2==2.11.2',
     'ConfigArgParse==1.2.3',
     'Sphinx==3.4.2',
-    'sphinx-rtd-theme==0.5.0',
+    'sphinx-rtd-theme==0.5.1',
     'colorama==0.4.4',
     'semantic-version==2.8.5',
     'packaging==20.8',
