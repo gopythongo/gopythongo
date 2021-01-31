@@ -29,7 +29,7 @@ for l in lines:
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 _requirements = [
-    'Jinja2==2.11.2',
+    'Jinja2==2.11.3',
     'ConfigArgParse==1.2.3',
     'Sphinx==3.4.3',
     'sphinx-rtd-theme==0.5.1',
