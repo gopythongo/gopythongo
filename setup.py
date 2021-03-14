@@ -29,20 +29,20 @@ for l in lines:
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 _requirements = [
-    'Jinja2==2.11.2',
-    'ConfigArgParse==1.2.3',
-    'Sphinx==3.1.0',
-    'sphinx-rtd-theme==0.4.3',
-    'colorama==0.4.3',
+    'Jinja2==2.11.3',
+    'ConfigArgParse==1.3',
+    'Sphinx==3.5.2',
+    'sphinx-rtd-theme==0.5.1',
+    'colorama==0.4.4',
     'semantic-version==2.8.5',
-    'packaging==20.4',
-    'typing==3.7.4.1',
-    'hvac==0.10.3',
+    'packaging==20.9',
+    'typing==3.7.4.3',
+    'hvac==0.10.8',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
-    'pyopenssl==19.1.0',
+    'pyopenssl==20.0.1',
     'bumpversion==0.6.0',
-    'aptly-api-client==0.2.1',
+    'aptly-api-client==0.2.3',
 ]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
