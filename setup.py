@@ -37,7 +37,7 @@ _requirements = [
     'semantic-version==2.8.5',
     'packaging==20.9',
     'typing==3.10.0.0',
-    'hvac==0.10.10',
+    'hvac==0.10.11',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
     'pyopenssl==20.0.1',
