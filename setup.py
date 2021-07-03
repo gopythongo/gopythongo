@@ -35,7 +35,7 @@ _requirements = [
     'sphinx-rtd-theme==0.5.2',
     'colorama==0.4.4',
     'semantic-version==2.8.5',
-    'packaging==20.9',
+    'packaging==21.0',
     'typing==3.10.0.0',
     'hvac==0.10.14',
     'docker-py==1.10.6',
