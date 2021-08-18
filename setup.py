@@ -29,15 +29,15 @@ for l in lines:
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
 _requirements = [
-    'Jinja2==2.11.3',
-    'ConfigArgParse==1.3',
-    'Sphinx==3.5.2',
-    'sphinx-rtd-theme==0.5.1',
+    'Jinja2==3.0.1',
+    'ConfigArgParse==1.5.2',
+    'Sphinx==4.1.2',
+    'sphinx-rtd-theme==0.5.2',
     'colorama==0.4.4',
     'semantic-version==2.8.5',
-    'packaging==20.9',
-    'typing==3.7.4.3',
-    'hvac==0.10.8',
+    'packaging==21.0',
+    'typing==3.10.0.0',
+    'hvac==0.11.0',
     'docker-py==1.10.6',
     'dockerpty==0.4.1',
     'pyopenssl==20.0.1',
