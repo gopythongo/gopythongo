@@ -14,7 +14,7 @@ if ! test -e /usr/bin/gem; then
     $EATMYDATA apt-get --no-install-recommends -q -y \
         -o DPkg::Options::=--force-confold \
         -o DPkg::Options::=--force-confdef \
-        install ruby ruby-dev libffi-dev libffi6 zlib1g-dev zlib1g ruby-ffi
+        install ruby ruby-dev libffi-dev zlib1g-dev zlib1g ruby-ffi
 fi
 
 $EATMYDATA gem install fpm
