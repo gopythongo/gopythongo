@@ -32,7 +32,7 @@ class DjangoAssembler(BaseAssembler):
     def add_args(self, parser: configargparse.ArgumentParser) -> None:
         gr_django = parser.add_argument_group("Django Assembler options")
         gr_django.add_argument("--collect-static", dest="collect_static", action="store_true", default=False,
-                               help="If set, run 'django-admin.py collectstatic' inside the bundle")
+                               help="If set, run 'django-admin collectstatic' inside the bundle")
         gr_django.add_argument("--static-root", dest="static_root", default=None,
                                help="Where to collect static files from (Django's STATIC_ROOT)")
         gr_django.add_argument("--assert-static-root-empty", dest="fresh_static", action="store_true", default=False,
@@ -40,7 +40,7 @@ class DjangoAssembler(BaseAssembler):
                                     "before running collectstatic by DELETING it (be careful!)")
         gr_django.add_argument("--django-settings", dest="django_settings_module", default=None,
                                env_var="DJANGO_SETTINGS_MODULE",
-                               help="'--settings' argument to pass to django-admin.py when it is called by " +
+                               help="'--settings' argument to pass to django-admin when it is called by " +
                                     "this script. If --django-generate-secret-key is set, SECRET_KEY will be set "
                                     "in the environment.")
         gr_django.add_argument("--django-settings-envfile", dest="django_settings_envfile", default=None,
@@ -113,7 +113,7 @@ class DjangoAssembler(BaseAssembler):
                     utils.print_info("removing stale static artifacts in %s" % args.static_root)
                     shutil.rmtree(args.static_root)
 
-            django_admin = utils.create_script_path(args.build_path, 'django-admin.py')
+            django_admin = utils.create_script_path(args.build_path, 'django-admin')
             run_dja = [envpy, django_admin, "collectstatic"]
             if args.django_settings_module:
                 run_dja.append('--settings=%s' % args.django_settings_module)
