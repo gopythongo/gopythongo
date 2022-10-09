@@ -2,7 +2,7 @@ Jinja2==3.0.1
 ConfigArgParse==1.5.2
 Sphinx==4.1.2
 sphinx-rtd-theme==0.5.2
-colorama==0.4.4
+colorama==0.4.5
 semantic-version==2.10.0
 packaging==21.3
 typing-extensions==4.4.0
