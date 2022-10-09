@@ -3,7 +3,7 @@ ConfigArgParse==1.5.2
 Sphinx==4.1.2
 sphinx-rtd-theme==0.5.2
 colorama==0.4.4
-semantic-version==2.8.5
+semantic-version==2.10.0
 packaging==21.3
 typing-extensions==3.10.0.0
 hvac==0.11.0
