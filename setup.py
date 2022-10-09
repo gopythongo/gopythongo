@@ -1,6 +1,4 @@
 #!/usr/bin/python
-# -* encoding: utf-8 *-
-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,13 +7,25 @@ import os
 import re
 import sys
 
-from distutils.core import setup
-from setuptools import find_packages
+from setuptools import setup, find_packages
+
+try:
+    from pip._internal.req import parse_requirements
+except ImportError:
+    from pip.req import parse_requirements
+
+try:
+    from pip._internal.download import PipSession
+except ImportError:
+    try:
+        from pip.download import PipSession
+    except ImportError:
+        from pip._internal.network.session import PipSession
+
 
 _package_root = "src/py"
 _root_package = 'gopythongo'
 _HERE = os.path.abspath(os.path.dirname(__file__))
-
 
 with open("src/py/gopythongo/__init__.py", "rt", encoding="utf-8") as vf:
     lines = vf.readlines()
@@ -28,22 +38,10 @@ for l in lines:
 
 _packages = find_packages(_package_root, exclude=["*.tests", "*.tests.*", "tests.*", "tests"])
 
-_requirements = [
-    'Jinja2==3.0.1',
-    'ConfigArgParse==1.5.2',
-    'Sphinx==4.1.2',
-    'sphinx-rtd-theme==0.5.2',
-    'colorama==0.4.4',
-    'semantic-version==2.8.5',
-    'packaging==21.0',
-    'typing-extensions==3.10.0.0',
-    'hvac==0.11.0',
-    'docker-py==1.10.6',
-    'dockerpty==0.4.1',
-    'pyopenssl==20.0.1',
-    'bumpversion==0.6.0',
-    'aptly-api-client==0.2.3',
-]
+pipsession = PipSession()
+reqs_generator = parse_requirements(os.path.join(_HERE, "requirements.txt"),
+                                    session=pipsession)  # prepend setup.py's path (make no assumptions about cwd)
+_requirements = [(str(r.requirement) if hasattr(r, 'requirement') else str(r.req)) for r in reqs_generator]
 
 if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 3):
     _requirements.append('backports.shutil_get_terminal_size==1.0.0')
