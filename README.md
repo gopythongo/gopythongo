@@ -131,7 +131,6 @@ Future features
   * Potentially add an additional class of plug-ins "composers" which execute even before the creation of the
     build environment to prepare the source tree for building. These might do things like: clean up temp files,
     request/download/install stuff or clone submodules.
-  * Add Docker Store support to build, tag and upload Docker containers
   * Create integration and unittests
   * Add RPM and createrepo support
 
