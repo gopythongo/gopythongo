@@ -32,6 +32,9 @@ _dependencies = {
     "debian/buster": ["python3", "python3-pip", "python3-dev", "python3-virtualenv", "libpython3-stdlib",
                       "virtualenv", "binutils", "libssl-dev", "libffi-dev", "zlib1g-dev", "libpython3-dev",
                       "libc6-dev", "libc6", "python3.7-dev"],
+    "debian/bullseye": ["python3", "python3-pip", "python3-dev", "python3-virtualenv", "libpython3-stdlib",
+                        "virtualenv", "binutils", "libssl-dev", "libffi-dev", "zlib1g-dev", "libpython3-dev",
+                        "libc6-dev", "libc6", "python3.9-dev"]
 }  # type: Dict[str, List[str]]
 
 

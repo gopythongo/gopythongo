@@ -167,8 +167,9 @@ class AptlyStore(AptlyBaseStore):
             print_info("Publishing repo %s to endpoint %s" %
                        (highlight(args.aptly_repo), highlight(args.aptly_publish_endpoint)))
             # override to use vault_wrapper if specified on the command-line
-            cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd)
+            cmdline = get_aptly_cmdline(args)
             if args.use_aptly_wrapper:
+                cmdline = get_aptly_cmdline(args, override_aptly_cmd=self.aptly_wrapper_cmd)
                 cmdline += ["--wrap-mode", "aptly"]
                 cmdline += ["--wrap-program", args.aptly_executable]
             cmdline += ["publish"]

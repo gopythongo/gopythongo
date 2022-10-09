@@ -47,6 +47,9 @@ class RemoteAptlyStore(AptlyBaseStore):
                                  "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
                                  "the secret keyring on the server. The best way to achieve this is by setting the "
                                  "GNUPGHOME environment variable on the 'aptly api serve' command.")
+        gp_ast.add_argument("--aptly-timeout", dest="aptly_timeout", type=int, default=120,
+                            env_var="APTLY_TIMEOUT",
+                            help="Number of seconds to wait for the aptly API to respond before raising an error.")
 
     def validate_args(self, args: configargparse.Namespace) -> None:
         super().validate_args(args)
@@ -151,7 +154,7 @@ class RemoteAptlyStore(AptlyBaseStore):
         return ret
 
     def store(self, args: configargparse.Namespace) -> None:
-        _aptly = aptly_api.Client(args.aptly_server_url)
+        _aptly = aptly_api.Client(args.aptly_server_url, timeout=args.aptly_timeout)
         _tmpfolder = str(uuid.uuid4())
         # add each package to the repo
         for pkg in the_context.packer_artifacts:

@@ -1,5 +1,5 @@
 builder=pbuilder
-distribution=buster
+distribution=bullseye
 
 # local build options
 #pbuilder-create-opts="--keyring /etc/apt/trusted.gpg --debootstrapopts --keyring=/etc/apt/trusted.gpg --mirror http://fileserver.maurusnet.test/debian"
@@ -13,7 +13,7 @@ repo=gopythongo
 aptly-distribution=gopythongo
 # reference for build server
 aptly-publish-opts="-batch -architectures=amd64 -gpg-key=DDB131CF1DF6A9CF8200799002CBD940A78049AF"
-aptly-publish-endpoint=s3:gopythongo:nightly/buster
+aptly-publish-endpoint=s3:gopythongo:nightly/bullseye
 
 versioner=searchfile
 search-version-in=src/py/gopythongo/__init__.py
