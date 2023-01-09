@@ -1,6 +1,6 @@
 Jinja2==3.1.2
 ConfigArgParse==1.5.3
-Sphinx==5.2.3
+Sphinx==6.1.2
 sphinx-rtd-theme==1.0.0
 colorama==0.4.5
 semantic-version==2.10.0
