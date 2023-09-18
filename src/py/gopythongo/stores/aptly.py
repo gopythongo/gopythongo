@@ -198,7 +198,7 @@ class AptlyStore(AptlyBaseStore):
                 tfd, tfn = tempfile.mkstemp()
                 gopythongo.main.tempfiles.append(tfn)
                 with open(tfd, "wt", encoding="utf-8") as tf:
-                    tf.write(args.aptly_publish_passphrase)
+                    tf.write(args.aptly_passphrase)
 
                 cmdline += ["-passphrase-file", tfn]
 
