@@ -6,7 +6,7 @@ colorama==0.4.6
 semantic-version==2.10.0
 packaging==23.0
 typing-extensions==4.8.0
-hvac==1.0.2
+hvac==1.2.1
 docker-py==1.10.6
 dockerpty==0.4.1
 pyopenssl==23.2.0
