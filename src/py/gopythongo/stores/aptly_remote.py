@@ -41,12 +41,6 @@ class RemoteAptlyStore(AptlyBaseStore):
         gp_ast.add_argument("--aptly-skip-signing", dest="aptly_skip_signing", action="store_true", default=False,
                             env_var="APTLY_SKIP_SIGNING",
                             help="Tell aptly via API to skip signing the repo.")
-        gp_ast.add_argument("--aptly-gpg-key", dest="aptly_gpgkey", default=None,
-                            env_var="APTLY_GPG_KEY",
-                            help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
-                                 "repository. The GPG key must be known by the aptly API server, i.e. it must be in "
-                                 "the secret keyring on the server. The best way to achieve this is by setting the "
-                                 "GNUPGHOME environment variable on the 'aptly api serve' command.")
         gp_ast.add_argument("--aptly-timeout", dest="aptly_timeout", type=int, default=120,
                             env_var="APTLY_TIMEOUT",
                             help="Number of seconds to wait for the aptly API to respond before raising an error.")

@@ -202,6 +202,9 @@ class AptlyStore(AptlyBaseStore):
 
                 cmdline += ["-passphrase-file", tfn]
 
+            if args.aptly_gpgkey:
+                cmdline += ["-gpg-key", args.aptly_gpgkey]
+
             # when publishing the repo for the first time we need to add the -distribution flag
             if cmd == "repo":
                 cmdline += cmdargs_unquote_split(args.aptly_publish_opts)

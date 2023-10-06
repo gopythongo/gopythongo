@@ -62,6 +62,13 @@ def add_shared_args(parser: configargparse.ArgumentParser) -> None:
                                  "every user on the system. You're better of passing --passphrase-file to aptly via "
                                  "--aptly-publish-opts in that case. The most secure option would be to use "
                                  "--use-aptly-vault-wrapper.")
+        gr_ast.add_argument("--aptly-gpg-key", dest="aptly_gpgkey", default=None,
+                            env_var="APTLY_GPG_KEY",
+                            help="The fingerprint or key id of the GPG key that aptly should use to sign the published "
+                                 "repository. The GPG key must be known by the aptly API server or client, i.e. it "
+                                 "must be in the secret keyring on the server. The best way to achieve this is by "
+                                 "setting the GNUPGHOME environment variable on the 'aptly api serve' command or "
+                                 "the gopythongo environment.")
         gr_ast.add_argument("--use-aptly-vault-wrapper", dest="use_aptly_wrapper", env_var="APTLY_USE_WRAPPER",
                             default=False, action="store_true",
                             help="When you set this, GoPythonGo will not directly invoke aptly to publish or update "
