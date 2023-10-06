@@ -9,6 +9,6 @@ typing-extensions==4.4.0
 hvac==1.0.2
 docker-py==1.10.6
 dockerpty==0.4.1
-pyopenssl==22.1.0
+pyopenssl==23.2.0
 bumpversion==0.6.0
 aptly-api-client==0.2.4
