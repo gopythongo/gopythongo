@@ -79,6 +79,7 @@ setup(
     author_email="jonas@gopythongo.com",
     maintainer="GoPythonGo.com",
     maintainer_email="info@gopythongo.com",
+    url="https://github.com/gopythongo/gopythongo",
     description="Build shippable virtualenvs",
     long_description=long_description,
 )
