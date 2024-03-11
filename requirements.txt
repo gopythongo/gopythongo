@@ -4,7 +4,7 @@ Sphinx==7.2.6
 sphinx-rtd-theme==2.0.0
 colorama==0.4.6
 semantic-version==2.10.0
-packaging==23.2
+packaging==24.0
 typing-extensions==4.9.0
 hvac==2.0.0
 docker-py==1.10.6
