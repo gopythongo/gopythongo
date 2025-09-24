@@ -7,7 +7,7 @@ semantic-version==2.10.0
 packaging==24.0
 typing-extensions==4.15.0
 hvac==2.1.0
-dockery==7.1.0
+docker==7.1.0
 dockerpty==0.4.1
 pyopenssl==24.1.0
 bumpversion==0.6.0
