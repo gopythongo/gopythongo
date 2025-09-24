@@ -7,7 +7,7 @@
 import configargparse
 import os
 
-from docker.client import Client as DockerClient
+from docker import DockerClient
 from docker.tls import TLSConfig
 from gopythongo.utils import highlight, ErrorMessage
 from requests.exceptions import RequestException

@@ -4,8 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import pkg_resources
-
+from importlib.metadata import entry_points
 from typing import Dict, Union, Iterable, Any, Type, TypeVar
 
 
@@ -16,7 +15,7 @@ def load_plugins(entrypoint: str, registry: Dict[str, T], plugin_class_attribute
                  plugin_baseclass: Type[T], plugin_name_property: str,
                  initargs: Union[Iterable[Any], None]=None) -> None:
     """
-    Loads ``entrypoint`` via ``pkg_resources.iter_entry_points`` and imports all modules attached to it. It then
+    Loads ``entrypoint`` via ``importlib.metadata.entry_points`` and imports all modules attached to it. It then
     looks at the attribute ``plugin_class_attribute`` of the module, which is set to the plugin class. It instantiates
     an instance of the plugin class by calling it's constructor, passing the optional ``initargs``. It then reads the
     ``plugin_name_property`` of the instance which is a string that contains the plugin id, i.e. the "registration
@@ -37,7 +36,7 @@ def load_plugins(entrypoint: str, registry: Dict[str, T], plugin_class_attribute
         initargs = []
 
     # load external modules
-    for ep in pkg_resources.iter_entry_points(entrypoint):  # type: ignore
+    for ep in entry_points(group=entrypoint):  # type: ignore
         module = ep.load()
         if not hasattr(module, plugin_class_attribute):
             raise ImportError("Plugin modules for entry point %s must all have an attribute called %s, but %s has "

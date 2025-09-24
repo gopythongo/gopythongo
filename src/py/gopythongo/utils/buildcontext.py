@@ -10,8 +10,7 @@ import sys
 
 import tempfile
 
-from typing import Set, Any, Dict, List, Union, cast, Tuple
-from typing.io import TextIO
+from typing import Set, Any, Dict, List, Union, cast, Tuple, TextIO
 
 from gopythongo.packers import BasePacker, get_packers
 from gopythongo.utils import GoPythonGoEnableSuper, print_debug, highlight
