@@ -11,4 +11,4 @@ docker==7.1.0
 dockerpty==0.4.1
 pyopenssl==25.3.0
 bumpversion==0.6.0
-aptly-api-client==0.2.4
+aptly-api-client==0.3.0
